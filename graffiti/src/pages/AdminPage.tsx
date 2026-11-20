@@ -71,23 +71,21 @@ export function AdminPage() {
     setLoading(true);
     setError('');
     try {
+      const countData = await api.adminCounts();
+      setCounts(countData);
       if (tab === 'walls') {
         const data = await api.adminWalls();
         setWalls(data.items);
-        setCounts((current) => ({ ...current, walls: data.counts.walls ?? 0 }));
       } else if (tab === 'users') {
         const data = await api.adminUsers();
         setUsers(data.items);
-        setCounts((current) => ({ ...current, users: data.items.length }));
       } else if (tab === 'status') {
         const data = await api.adminStatusReports(reportTab);
         setReports(data.items);
         setReportCounts(data.counts);
-        setCounts((current) => ({ ...current, status: data.counts.pending }));
       } else {
         const data = await api.adminList(tab);
         setItems(data.items);
-        setCounts((current) => ({ ...current, ...data.counts, users: current.users }));
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось загрузить заявки');

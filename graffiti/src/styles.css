@@ -1882,6 +1882,10 @@ body.walk-route .site-footer {
     flex-wrap: wrap;
   }
 
+  .header-side {
+    margin-left: auto;
+  }
+
   .logo-text {
     font-size: 18px;
   }

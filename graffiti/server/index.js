@@ -891,6 +891,33 @@ app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/counts', requireAdmin, (_req, res) => {
+  const graffiti = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+        SUM(CASE WHEN moderation_status = 'published' THEN 1 ELSE 0 END) AS published,
+        SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected
+      FROM graffiti
+    `)
+    .get();
+  const status = db
+    .prepare("SELECT COUNT(*) AS count FROM status_reports WHERE moderation_status = 'pending'")
+    .get().count;
+  const walls = db
+    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending'")
+    .get().count;
+  const users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+  res.json({
+    pending: graffiti.pending || 0,
+    published: graffiti.published || 0,
+    rejected: graffiti.rejected || 0,
+    status,
+    walls,
+    users,
+  });
+});
+
 app.get('/api/admin/users', requireAdmin, (_req, res) => {
   const items = db
     .prepare(`

@@ -163,6 +163,10 @@ export const api = {
     return request<{ items: Wall[]; counts: AdminCounts }>('/api/admin/walls');
   },
 
+  adminCounts() {
+    return request<AdminCounts>('/api/admin/counts');
+  },
+
   adminUsers() {
     return request<{ items: AdminUser[]; counts: AdminCounts }>('/api/admin/users');
   },

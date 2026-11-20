@@ -241,7 +241,7 @@ dialog .button{margin:12px 0}
   .layout{height:auto;min-height:0;display:flex;flex-direction:column}
   .map-region{order:0;height:42dvh;min-height:285px;max-height:365px}
   .explorer{order:1;position:relative;z-index:700;overflow:visible;border:0;border-radius:29px 29px 0 0;margin-top:-28px;padding-top:13px;min-height:50dvh;box-shadow:0 -6px 25px #10180e16}
-  .sheet-handle{display:flex;align-items:center;justify-content:center;width:46px;height:32px;margin:-2px auto 8px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);touch-action:none;cursor:pointer;box-shadow:0 2px 8px #10180e18}
+  .sheet-handle{display:flex;align-items:center;justify-content:center;width:46px;height:32px;margin:-2px auto 8px;padding:0;border:0;background:none;color:var(--ink);touch-action:none;cursor:pointer;box-shadow:none}
   .sheet-handle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
   .sheet-handle:active{transform:scale(.95)}
   .intro{padding:0 21px 15px}
