@@ -18,6 +18,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3001);
+const HOST = process.env.HOST || '0.0.0.0';
 const COOKIE_SECRET = process.env.COOKIE_SECRET || 'stena-dev-cookie-secret';
 const JWT_SECRET = process.env.JWT_SECRET || 'stena-dev-jwt-secret';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -1079,7 +1080,7 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: error.message || 'Внутренняя ошибка сервера' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`[stena] API: http://localhost:${PORT}`);
   console.log(
     `[stena] AI moderation: ${aiConfig.provider}/${aiConfig.model} (auto-publish: ${aiConfig.autoPublish ? 'on' : 'off'})`,
