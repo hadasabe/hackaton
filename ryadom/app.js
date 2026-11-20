@@ -337,6 +337,7 @@ window.RyadomApp={
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;updateMap();}else beginGPS();},
  toast,
  showRoute:ids=>showPlannedRoute(ids),
+ clearRoute:()=>{routeDrawRequest++;clearPlannedRoute();},
  userPosition:()=>userRouteStart()
 };
 loadStenaGraffiti().finally(()=>{
