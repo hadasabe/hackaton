@@ -67,7 +67,7 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function allowedNarration(){return state.source==='demo'||(state.source==='gps'&&!state.gpsIssue&&geo.reliable(state.fix));}
 
 // The only network map dependency: visible OSM tiles. Library and all text are local.
-let map,personMarker,radiusCircle,accuracyCircle,demoLine,tileLayer,plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker,routeDrawRequest=0;
+let map,personMarker,radiusCircle,accuracyCircle,demoLine,tileLayer,plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker,routeDrawRequest=0,routeVisible=false;
 const markers=new Map();
 function initMap(){
  if(!window.L){$('map-alert').hidden=false;$('map-alert').textContent='Не найдена библиотека карты. Проверьте папку vendor.';return;}
@@ -84,7 +84,7 @@ function initMap(){
 function markerIcon(p){const near=state.near.some(n=>n.id===p.id);return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${p.image&&!p.photo?.noCrop?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async">`:''}</span><span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
 function clearPlannedRoute(){
  for(const layer of [plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker])if(layer)layer.remove();
- plannedRouteLine=plannedRouteCasing=routeStartMarker=routeEndMarker=null;
+ plannedRouteLine=plannedRouteCasing=routeStartMarker=routeEndMarker=null;routeVisible=false;
 }
 function routeEndpoint(label,latlng,kind){
  return L.marker(latlng,{icon:L.divIcon({className:'route-pin',html:`<span class="route-pin-dot ${kind}">${label}</span>`,iconSize:[36,36],iconAnchor:[18,18]}),interactive:false,keyboard:false,zIndexOffset:900,pane:'routePane'}).addTo(map);
@@ -105,6 +105,7 @@ async function showPlannedRoute(ids){
  if(!map||!points.length)return;
  state.follow=false;setTab('map',false);
  if(points.length===1){map.setView([points[0].lat,points[0].lng],17);routeStartMarker=routeEndpoint('A',[points[0].lat,points[0].lng],'start');return;}
+ routeVisible=true;
  const request=routeDrawRequest,straight=points.map(p=>[p.lat,p.lng]);
  let latlngs=straight,routed=false;
  try{
@@ -242,7 +243,7 @@ function initSheetDrag(){
 }
 const locator=geo.locationController({geolocation:navigator.geolocation,secure:window.isSecureContext,
  onStatus:()=>{state.source='gps';state.gpsIssue='';state.fix=null;updateProximity();},
- onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();window.dispatchEvent(new Event('ryadom:gps-fix'));},
+ onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();if(first&&!routeVisible){const nearest=places.filter(geo.validPosition).map(p=>({p,d:geo.meters(fix,p)})).sort((a,b)=>a.d-b.d).slice(0,3).map(item=>item.p.id);if(nearest.length>=2){void showPlannedRoute(nearest);toast('Построен маршрут по ближайшим местам.');}}window.dispatchEvent(new Event('ryadom:gps-fix'));},
  onError:error=>{if(error.code===1)setTab('nearby',false);state.gpsIssue=error.message;updateLocationUI();toast(error.message);}
 });
 function stopDemo(){clearInterval(state.timer);state.timer=null;state.running=false;}
