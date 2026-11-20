@@ -67,7 +67,7 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function allowedNarration(){return state.source==='demo'||(state.source==='gps'&&!state.gpsIssue&&geo.reliable(state.fix));}
 
 // The only network map dependency: visible OSM tiles. Library and all text are local.
-let map,personMarker,radiusCircle,accuracyCircle,demoLine,tileLayer,plannedRouteLine;
+let map,personMarker,radiusCircle,accuracyCircle,demoLine,tileLayer,plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker,routeDrawRequest=0;
 const markers=new Map();
 function initMap(){
  if(!window.L){$('map-alert').hidden=false;$('map-alert').textContent='Не найдена библиотека карты. Проверьте папку vendor.';return;}
@@ -78,9 +78,43 @@ function initMap(){
  L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
  for(const p of places){if(!geo.validPosition(p))continue;const marker=L.marker([p.lat,p.lng],{icon:markerIcon(p),title:p.name,alt:p.name,keyboard:true}).addTo(map);marker.bindTooltip(esc(p.name),{direction:'top',offset:[0,-27],className:'poi-tooltip'});marker.on('click',()=>selectPlace(p.id,true));markers.set(p.id,marker);}
  map.on('dragstart',()=>state.follow=false);
+ const routePane=map.createPane('routePane');routePane.style.zIndex=800;
  new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('map-region'));
 }
 function markerIcon(p){const near=state.near.some(n=>n.id===p.id);return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${p.image&&!p.photo?.noCrop?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async">`:''}</span><span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
+function clearPlannedRoute(){
+ for(const layer of [plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker])if(layer)layer.remove();
+ plannedRouteLine=plannedRouteCasing=routeStartMarker=routeEndMarker=null;
+}
+function routeEndpoint(label,latlng,kind){
+ return L.marker(latlng,{icon:L.divIcon({className:'route-pin',html:`<span class="route-pin-dot ${kind}">${label}</span>`,iconSize:[36,36],iconAnchor:[18,18]}),interactive:false,keyboard:false,zIndexOffset:900,pane:'routePane'}).addTo(map);
+}
+function drawPlannedRoute(latlngs,dashed=false){
+ plannedRouteCasing=L.polyline(latlngs,{color:'#121212',weight:11,opacity:.9,lineJoin:'round',lineCap:'round',interactive:false}).addTo(map);
+ plannedRouteLine=L.polyline(latlngs,{color:'#caff00',weight:6,opacity:1,lineJoin:'round',lineCap:'round',dashArray:dashed?'10 8':null,interactive:false}).addTo(map);
+}
+async function showPlannedRoute(ids){
+ const points=[...new Set(ids)].map(find).filter(p=>p&&geo.validPosition(p));
+ clearPlannedRoute();routeDrawRequest++;
+ if(!map||!points.length)return;
+ state.follow=false;setTab('map',false);
+ if(points.length===1){map.setView([points[0].lat,points[0].lng],17);routeStartMarker=routeEndpoint('A',[points[0].lat,points[0].lng],'start');return;}
+ const request=routeDrawRequest,straight=points.map(p=>[p.lat,p.lng]);
+ let latlngs=straight,routed=false;
+ try{
+  const coords=points.map(p=>`${p.lng},${p.lat}`).join(';');
+  const response=await fetch(`/api/walk-route?coords=${encodeURIComponent(coords)}`);
+  if(!response.ok)throw new Error('route');
+  const data=await response.json();
+  if(request!==routeDrawRequest)return;
+  if(data.geometry?.coordinates?.length){latlngs=data.geometry.coordinates.map(([lng,lat])=>[lat,lng]);routed=true;}
+ }catch(_error){if(request!==routeDrawRequest)return;}
+ drawPlannedRoute(latlngs,!routed);
+ routeStartMarker=routeEndpoint('A',latlngs[0],'start');
+ routeEndMarker=routeEndpoint('Б',latlngs[latlngs.length-1],'end');
+ map.fitBounds(L.latLngBounds(latlngs),{padding:[65,95],maxZoom:16});
+ if(!routed)toast('Маршрут по дорогам недоступен. Показано направление по прямой.');
+}
 function setWalkFullscreen(expanded){
  state.fullMap=Boolean(expanded);document.body.classList.toggle('walk-fullscreen',state.fullMap);
  $('expand-map').setAttribute('aria-expanded',String(state.fullMap));
@@ -266,14 +300,7 @@ window.RyadomApp={
  setTab,setMode,
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;setWalkFullscreen(true);updateMap();}else beginGPS();},
  toast,
- showRoute:ids=>{
-  const points=[...new Set(ids)].map(find).filter(p=>p&&geo.validPosition(p));
-  if(plannedRouteLine){plannedRouteLine.remove();plannedRouteLine=null;}
-  if(!map||!points.length)return;
-  if(points.length>1)plannedRouteLine=L.polyline(points.map(p=>[p.lat,p.lng]),{color:'#caff00',weight:5,dashArray:'9 8',opacity:.9,interactive:false}).addTo(map);
-  state.follow=false;setTab('map',false);
-  if(points.length===1)map.setView([points[0].lat,points[0].lng],17);else map.fitBounds(points.map(p=>[p.lat,p.lng]),{padding:[65,95],maxZoom:16});
- }
+ showRoute:ids=>showPlannedRoute(ids)
 };
 loadStenaGraffiti().finally(()=>{
  initMap();networkStatus();updateProximity();

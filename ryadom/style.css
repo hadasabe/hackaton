@@ -421,3 +421,11 @@ body.embed-mode .network-note{display:none!important}
 .search-box{border-radius:999px}
 .mobile-tabs{border-top:2px solid var(--ink)}
 .profile-photo-grid button{border-radius:16px}
+
+/* Planned route endpoints, drawn over the road-following lime line. */
+.route-pin{background:none;border:0}
+.route-pin-dot{display:grid;place-items:center;width:36px;height:36px;border:3px solid var(--ink);border-radius:50%;background:var(--lime);color:var(--ink);font:900 12px/1 "Arial Black",Arial,sans-serif;box-shadow:0 4px 12px #0b140a66}
+.route-pin-dot.end{background:#ff3d81}
+
+/* Leaflet draws the route into its own SVG; the UI icon rule must not clip it. */
+.leaflet-overlay-pane svg{width:auto;height:auto;max-width:none;max-height:none}

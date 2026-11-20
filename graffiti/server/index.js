@@ -153,7 +153,7 @@ app.get('/api/walk-route', async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${key}?overview=false&steps=false`,
+      `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${key}?overview=full&geometries=geojson&steps=false`,
       { signal: AbortSignal.timeout(12000) },
     );
     const data = await response.json().catch(() => ({}));
@@ -164,6 +164,7 @@ app.get('/api/walk-route', async (req, res) => {
     const result = {
       distance: route.distance,
       legs: (route.legs || []).map((leg) => ({ distance: leg.distance })),
+      geometry: route.geometry?.coordinates?.length ? route.geometry : null,
     };
     walkRouteCache.set(key, result);
     if (walkRouteCache.size > 200) {
