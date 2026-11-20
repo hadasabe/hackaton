@@ -140,9 +140,6 @@ function updateLocationUI(){
  const live=gps&&fix&&!state.gpsIssue&&geo.reliable(fix);
  document.body.classList.toggle('has-location',Boolean(fix));
  $('location-dot').className='location-dot'+(live?' live':demo?' demo':'');
- $('source-pill').hidden=Boolean(gps);
- $('source-pill').className='source-pill'+(live?' live':'');
- $('source-pill').textContent=demo?'Демо · без GPS':'Обзор города';
  $('accuracy-label').textContent=gps&&fix?`±${Math.round(fix.accuracy)} м`:demo?'Демо':'';
  $('location-title').textContent=demo?'Демонстрационная прогулка':gps?(state.gpsIssue?'GPS требует внимания':fix?'Вы на карте':'Определяем местоположение'):'Начнём с вашего места';
  let message='Разрешите геолокацию, чтобы находить истории рядом. Координаты обрабатываются на устройстве.';
@@ -150,10 +147,7 @@ function updateLocationUI(){
  if(gps){message=state.gpsIssue||(fix?geo.reliable(fix)?'Новые истории появляются в радиусе 100 м. Держите приложение открытым во время прогулки.':'Сигнал неточный или устарел. Карточки приблизительны, новые рассказы автоматически не запускаются.':'Разрешите доступ в запросе браузера. Первое измерение может занять несколько секунд.');}
  $('location-message').textContent=message;
  $('gps-button').innerHTML=icon('locate')+`<span>${gps&&locator.active?'Остановить GPS-прогулку':demo?'Перейти к настоящему GPS':'Начать прогулку'}</span>`;
- $('demo-console').hidden=!demo;$('gps-map-status').hidden=!gps;
- $('gps-map-status').querySelector('span').textContent=state.gpsIssue?'GPS недоступен · попробуйте снова':fix?`GPS работает · точность ±${Math.round(fix.accuracy)} м`:'Подключаем GPS…';
- $('map-heading').textContent=state.view==='catalog'?'Достопримечательности Саратова':demo?'Демо по историческому центру':gps?'Истории вокруг вас':'Город вне рамок';
- $('map-caption').textContent=fix?`Рядом ${state.near.length} · радиус 100 м`:`${placeCountLabel(places.length)} на карте · радиус 100 м`;
+ $('demo-console').hidden=!demo;
 }
 function picture(p){
  const tags=`<span class="picture-tag">${esc(p.artType||p.category)}</span>${p.photo?.archival?'<span class="archive-tag">Архивный снимок</span>':''}${!p.image?'<span class="photo-placeholder">Фото пока нет</span>':''}<span class="distance-tag" data-distance="${p.id}" ${state.fix?'':'hidden'}>${icon('walk')}<span>${displayDistance(distance(p))} от вас</span></span>`;
@@ -299,7 +293,7 @@ async function toggleAudio(){
  const id=voiceState.id||state.selected||state.near[0]?.id;if(id)startNarration(id);
 }
 
-$('gps-button').addEventListener('click',beginGPS);$('stop-gps').addEventListener('click',stopLocation);initSheetDrag();
+$('gps-button').addEventListener('click',beginGPS);initSheetDrag();
 $('toggle-walk').addEventListener('click',()=>{if(state.demoProgress>=100)beginDemo();setRunning(!state.running);});
 $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListener('click',beginDemo);
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});
