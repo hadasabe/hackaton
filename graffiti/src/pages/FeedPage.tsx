@@ -101,7 +101,6 @@ export function FeedPage() {
               <Plus size={17} />
               Добавить граффити
             </Link>
-            <a href="#feed" className="button button-outline">Смотреть ленту</a>
           </div>
         </div>
         <div className="hero-stats">
