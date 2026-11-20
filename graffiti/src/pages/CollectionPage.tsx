@@ -87,7 +87,13 @@ export function CollectionPage() {
       await api.removeFromCollection(numericId, item.id);
       setItems((current) => current.filter((entry) => entry.id !== item.id));
       setCollection((current) =>
-        current ? { ...current, item_count: Math.max(0, current.item_count - 1) } : current,
+        current
+          ? {
+              ...current,
+              item_count: Math.max(0, current.item_count - 1),
+              covers: current.covers.filter((cover) => cover !== item.image_path),
+            }
+          : current,
       );
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось убрать работу');
