@@ -1,0 +1,9 @@
+preview/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+release/
+ryadom-mobile.zip
+*.tmp

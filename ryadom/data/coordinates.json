@@ -1,0 +1,114 @@
+[
+  {
+    "slug": "saratovskaya-gosudarstvennaya-konservatoriya-imeni-l-v-sobinova",
+    "source": "https://welcome-saratov.ru/landmarks/saratovskaya-gosudarstvennaya-konservatoriya-imeni-l-v-sobinova/",
+    "name": "Саратовская государственная консерватория им. Л. В. Собинова",
+    "lat": 51.529833648083,
+    "lng": 46.034377407409
+  },
+  {
+    "slug": "pamyatnik-n-g-chernyshevskomu",
+    "source": "https://welcome-saratov.ru/landmarks/pamyatnik-n-g-chernyshevskomu/",
+    "name": "Памятник Н.Г. Чернышевскому",
+    "lat": 51.529785050308,
+    "lng": 46.035213095245
+  },
+  {
+    "slug": "gorodskoy-sad-lipki",
+    "source": "https://welcome-saratov.ru/landmarks/gorodskoy-sad-lipki/",
+    "name": "Городской сад «Липки»",
+    "lat": 51.528223898587,
+    "lng": 46.037290871658
+  },
+  {
+    "slug": "saratovskiy-khudozhestvennyy-muzey-imeni-a-n-radishcheva",
+    "source": "https://welcome-saratov.ru/landmarks/saratovskiy-khudozhestvennyy-muzey-imeni-a-n-radishcheva/",
+    "name": "Саратовский художественный музей им. А. Н. Радищева",
+    "lat": 51.532288375833,
+    "lng": 46.035176101852
+  },
+  {
+    "slug": "khram-utoli-moya-pechali",
+    "source": "https://welcome-saratov.ru/landmarks/khram-utoli-moya-pechali/",
+    "name": "Храм «Утоли моя печали»",
+    "lat": 51.530202965415,
+    "lng": 46.035884169593
+  },
+  {
+    "slug": "osobnyak-p-i-shmidta",
+    "source": "https://welcome-saratov.ru/landmarks/osobnyak-p-i-shmidta/",
+    "name": "Особняк П.И. Шмидта",
+    "lat": 51.529740560792,
+    "lng": 46.037854730644
+  },
+  {
+    "slug": "gosudarstvennyy-muzey-k-a-fedina",
+    "source": "https://welcome-saratov.ru/landmarks/gosudarstvennyy-muzey-k-a-fedina/",
+    "name": "Государственный музей К. А. Федина",
+    "lat": 51.526417072989,
+    "lng": 46.045460940475
+  },
+  {
+    "slug": "naberezhnaya-kosmonavtov",
+    "source": "https://welcome-saratov.ru/landmarks/naberezhnaya-kosmonavtov/",
+    "name": "Набережная космонавтов",
+    "lat": 51.525411368538,
+    "lng": 46.049385067459
+  },
+  {
+    "slug": "saratovskiy-oblastnoy-muzey-kraevedeniya",
+    "source": "https://welcome-saratov.ru/landmarks/saratovskiy-oblastnoy-muzey-kraevedeniya/",
+    "name": "Саратовский областной музей краеведения",
+    "lat": 51.527536957369,
+    "lng": 46.055717711639
+  },
+  {
+    "slug": "svyato-troitskiy-kafedralnyy-sobor",
+    "source": "https://welcome-saratov.ru/landmarks/svyato-troitskiy-kafedralnyy-sobor/",
+    "name": "Свято-Троицкий Кафедральный собор",
+    "lat": 51.528036071446,
+    "lng": 46.055258194443
+  },
+  {
+    "slug": "dom-knigi",
+    "source": "https://welcome-saratov.ru/landmarks/dom-knigi/",
+    "name": "Дом книги",
+    "lat": 51.532448796579,
+    "lng": 46.024177386837
+  },
+  {
+    "slug": "gostinitsa-volga",
+    "source": "https://welcome-saratov.ru/landmarks/gostinitsa-volga/",
+    "name": "Гостиница «Волга»",
+    "lat": 51.532040413384,
+    "lng": 46.026317584656
+  },
+  {
+    "slug": "saratovskiy-tsirk-imeni-bratev-nikitinykh",
+    "source": "https://welcome-saratov.ru/landmarks/saratovskiy-tsirk-imeni-bratev-nikitinykh/",
+    "name": "Саратовский цирк им. братьев Никитиных",
+    "lat": 51.533918216657,
+    "lng": 46.020979228172
+  },
+  {
+    "slug": "muzey-usadba-n-g-chernyshevskogo",
+    "source": "https://welcome-saratov.ru/landmarks/muzey-usadba-n-g-chernyshevskogo/",
+    "name": "Музей-усадьба Н.Г. Чернышевского",
+    "lat": 51.525165719324,
+    "lng": 46.041278737989
+  },
+  {
+    "slug": "memorialnyy-kompleks-zhuravli",
+    "source": "https://welcome-saratov.ru/landmarks/memorialnyy-kompleks-zhuravli/",
+    "name": "Мемориальный комплекс «Журавли»",
+    "lat": 51.544352942166,
+    "lng": 46.049965276443
+  },
+  {
+    "slug": "gorodskoy-park-kultury-i-otdykha-im-gorkogo",
+    "source": "https://welcome-saratov.ru/landmarks/gorodskoy-park-kultury-i-otdykha-im-gorkogo/",
+    "name": "Городской парк",
+    "lat": 51.517959662407,
+    "lng": 45.998834079376
+  }
+]
