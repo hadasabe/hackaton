@@ -329,7 +329,7 @@ app.get('/api/graffiti/:id', (req, res) => {
       author_name: comment.author_name,
       body: comment.body,
       created_at: comment.created_at,
-      can_delete: comment.actor_id === req.actorId,
+      can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
     }));
   res.json({ item, comments });
 });
@@ -468,7 +468,7 @@ app.delete('/api/comments/:id', requireUser, (req, res) => {
     res.status(404).json({ error: 'Комментарий не найден' });
     return;
   }
-  if (comment.actor_id !== req.actorId) {
+  if (comment.actor_id !== req.actorId && req.user.role !== 'admin') {
     res.status(403).json({ error: 'Можно удалить только свой комментарий' });
     return;
   }
@@ -612,22 +612,11 @@ function getWallById(id) {
     .get(id);
 }
 
-function getThreadMessages(inquiryId) {
-  return db
-    .prepare(`
-      SELECT wm.id, wm.body, wm.created_at, wm.sender_id, u.name AS sender_name
-      FROM wall_messages wm
-      JOIN users u ON u.id = wm.sender_id
-      WHERE wm.inquiry_id = ?
-      ORDER BY datetime(wm.created_at) ASC
-    `)
-    .all(inquiryId);
-}
 
 app.get('/api/walls', (req, res) => {
   const query = cleanText(req.query.q, 80);
   const terms = WALL_TERMS.has(req.query.terms) ? req.query.terms : null;
-  const where = ["w.status = 'open'"];
+  const where = ["w.status = 'open'", "w.moderation_status = 'published'"];
   const params = [];
   if (terms) {
     where.push('w.terms = ?');
@@ -640,15 +629,15 @@ app.get('/api/walls', (req, res) => {
   }
   const items = db
     .prepare(`
-      SELECT w.*, u.name AS owner_name,
-        (SELECT COUNT(*) FROM wall_inquiries wi WHERE wi.wall_id = w.id) AS inquiries_count
+      SELECT w.*, u.name AS owner_name
       FROM walls w
       JOIN users u ON u.id = w.owner_id
       WHERE ${where.join(' AND ')}
       ORDER BY datetime(w.created_at) DESC
       LIMIT 100
     `)
-    .all(...params);
+    .all(...params)
+    .map(({ vk_url: _vkUrl, ...wall }) => wall);
   res.json({ items });
 });
 
@@ -658,31 +647,14 @@ app.get('/api/walls/:id', (req, res) => {
     res.status(404).json({ error: 'Стена не найдена' });
     return;
   }
-
-  let inquiries = [];
-  let myInquiry = null;
-
-  if (req.user?.id === wall.owner_id) {
-    inquiries = db
-      .prepare(`
-        SELECT wi.*, u.name AS artist_name
-        FROM wall_inquiries wi
-        JOIN users u ON u.id = wi.artist_id
-        WHERE wi.wall_id = ?
-        ORDER BY datetime(wi.updated_at) DESC
-      `)
-      .all(wall.id)
-      .map((inquiry) => ({ ...inquiry, messages: getThreadMessages(inquiry.id) }));
-  } else if (req.user) {
-    const inquiry = db
-      .prepare('SELECT * FROM wall_inquiries WHERE wall_id = ? AND artist_id = ?')
-      .get(wall.id, req.user.id);
-    if (inquiry) {
-      myInquiry = { ...inquiry, messages: getThreadMessages(inquiry.id) };
-    }
+  const canSeeUnpublished =
+    req.user && (req.user.id === wall.owner_id || req.user.role === 'admin');
+  if (wall.moderation_status !== 'published' && !canSeeUnpublished) {
+    res.status(404).json({ error: 'Стена не найдена' });
+    return;
   }
-
-  res.json({ wall, inquiries, myInquiry });
+  delete wall.vk_url;
+  res.json({ wall });
 });
 
 app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
@@ -697,9 +669,10 @@ app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
   const terms = WALL_TERMS.has(req.body?.terms) ? req.body.terms : 'negotiable';
   const size = cleanText(req.body?.size, 40);
   const priceNote = cleanText(req.body?.price_note, 200);
+  const contact = cleanText(req.body?.contact, 200);
 
-  if (!title || !address) {
-    res.status(400).json({ error: 'Заполните название и адрес' });
+  if (!title || !address || !contact) {
+    res.status(400).json({ error: 'Заполните название, адрес и контакт для связи' });
     return;
   }
 
@@ -710,8 +683,9 @@ app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
     .prepare(`
       INSERT INTO walls (
         owner_id, title, address, description, type, size,
-        terms, price_note, image_path, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+        terms, price_note, contact, image_path, status,
+        moderation_status, reject_reason, published_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', 'pending', '', NULL, ?)
     `)
     .run(
       req.user.id,
@@ -722,6 +696,7 @@ app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
       size,
       terms,
       priceNote,
+      contact,
       `/api/media/${Number(mediaInfo.lastInsertRowid)}`,
       nowIso(),
     );
@@ -764,118 +739,77 @@ app.delete('/api/walls/:id', requireUser, (req, res) => {
 app.get('/api/my/walls', requireUser, (req, res) => {
   const items = db
     .prepare(`
-      SELECT w.*,
-        (SELECT COUNT(*) FROM wall_inquiries wi WHERE wi.wall_id = w.id) AS inquiries_count,
-        (SELECT MAX(updated_at) FROM wall_inquiries wi WHERE wi.wall_id = w.id) AS last_inquiry_at
+      SELECT w.*
       FROM walls w
       WHERE w.owner_id = ?
       ORDER BY datetime(w.created_at) DESC
     `)
-    .all(req.user.id);
+    .all(req.user.id)
+    .map(({ vk_url: _vkUrl, ...wall }) => wall);
   res.json({ items });
 });
 
-app.get('/api/my/inquiries', requireUser, (req, res) => {
+app.get('/api/admin/walls', requireAdmin, (_req, res) => {
   const items = db
     .prepare(`
-      SELECT wi.*, w.title, w.address, w.image_path, w.status AS wall_status,
-        u.name AS owner_name,
-        (SELECT body FROM wall_messages wm WHERE wm.inquiry_id = wi.id ORDER BY datetime(wm.created_at) DESC LIMIT 1) AS last_message
-      FROM wall_inquiries wi
-      JOIN walls w ON w.id = wi.wall_id
-      JOIN users u ON u.id = wi.owner_id
-      WHERE wi.artist_id = ?
-      ORDER BY datetime(wi.updated_at) DESC
+      SELECT w.*, u.name AS owner_name
+      FROM walls w
+      JOIN users u ON u.id = w.owner_id
+      ORDER BY
+        CASE w.moderation_status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END,
+        datetime(w.created_at) DESC
+      LIMIT 300
     `)
-    .all(req.user.id);
-  res.json({ items });
+    .all()
+    .map(({ vk_url: _vkUrl, ...wall }) => wall);
+  const counts = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+        SUM(CASE WHEN moderation_status = 'published' THEN 1 ELSE 0 END) AS published,
+        SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
+        (SELECT COUNT(*) FROM status_reports WHERE moderation_status = 'pending') AS status_pending
+      FROM walls
+    `)
+    .get();
+  res.json({
+    items,
+    counts: {
+      ...counts,
+      status: counts.status_pending || 0,
+      walls: counts.pending || 0,
+    },
+  });
 });
 
-app.post('/api/walls/:id/inquiries', requireUser, (req, res) => {
+app.post('/api/admin/walls/:id/approve', requireAdmin, (req, res) => {
   const wall = getWallById(Number(req.params.id));
   if (!wall) {
     res.status(404).json({ error: 'Стена не найдена' });
     return;
   }
-  if (wall.owner_id === req.user.id) {
-    res.status(400).json({ error: 'Это ваша стена' });
-    return;
-  }
-  if (wall.status !== 'open') {
-    res.status(409).json({ error: 'Стена сейчас закрыта для заявок' });
-    return;
-  }
-  const body = cleanText(req.body?.message, 1200);
-  if (!body) {
-    res.status(400).json({ error: 'Напишите сообщение владельцу' });
-    return;
-  }
-  if (!rateLimit(`wall-inquiry:${req.user.id}`, 20, 60 * 60 * 1000)) {
-    res.status(429).json({ error: 'Слишком много сообщений. Попробуйте позже.' });
-    return;
-  }
-
-  let inquiry = db
-    .prepare('SELECT * FROM wall_inquiries WHERE wall_id = ? AND artist_id = ?')
-    .get(wall.id, req.user.id);
-  if (!inquiry) {
-    const info = db
-      .prepare(`
-        INSERT INTO wall_inquiries (wall_id, owner_id, artist_id, status, created_at, updated_at)
-        VALUES (?, ?, ?, 'open', ?, ?)
-      `)
-      .run(wall.id, wall.owner_id, req.user.id, nowIso(), nowIso());
-    inquiry = { id: Number(info.lastInsertRowid) };
-  }
-  db.prepare('INSERT INTO wall_messages (inquiry_id, sender_id, body, created_at) VALUES (?, ?, ?, ?)')
-    .run(inquiry.id, req.user.id, body, nowIso());
-  db.prepare('UPDATE wall_inquiries SET updated_at = ? WHERE id = ?').run(nowIso(), inquiry.id);
-  res.status(201).json({ inquiryId: inquiry.id });
+  db.prepare(`
+    UPDATE walls
+    SET moderation_status = 'published',
+        reject_reason = '',
+        status = 'open',
+        published_at = COALESCE(published_at, ?)
+    WHERE id = ?
+  `).run(nowIso(), wall.id);
+  res.json({ ok: true });
 });
 
-app.get('/api/inquiries/:id/messages', requireUser, (req, res) => {
-  const inquiry = db.prepare('SELECT * FROM wall_inquiries WHERE id = ?').get(Number(req.params.id));
-  if (!inquiry) {
-    res.status(404).json({ error: 'Диалог не найден' });
+app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
+  const wall = getWallById(Number(req.params.id));
+  if (!wall) {
+    res.status(404).json({ error: 'Стена не найдена' });
     return;
   }
-  if (inquiry.owner_id !== req.user.id && inquiry.artist_id !== req.user.id) {
-    res.status(403).json({ error: 'Нет доступа к диалогу' });
-    return;
-  }
-  res.json({ messages: getThreadMessages(inquiry.id) });
-});
-
-app.post('/api/inquiries/:id/messages', requireUser, (req, res) => {
-  const inquiry = db.prepare('SELECT * FROM wall_inquiries WHERE id = ?').get(Number(req.params.id));
-  if (!inquiry) {
-    res.status(404).json({ error: 'Диалог не найден' });
-    return;
-  }
-  if (inquiry.owner_id !== req.user.id && inquiry.artist_id !== req.user.id) {
-    res.status(403).json({ error: 'Нет доступа к диалогу' });
-    return;
-  }
-  const body = cleanText(req.body?.body, 1200);
-  if (!body) {
-    res.status(400).json({ error: 'Сообщение не может быть пустым' });
-    return;
-  }
-  if (!rateLimit(`wall-message:${req.user.id}`, 60, 60 * 60 * 1000)) {
-    res.status(429).json({ error: 'Слишком много сообщений. Попробуйте позже.' });
-    return;
-  }
-  const info = db
-    .prepare('INSERT INTO wall_messages (inquiry_id, sender_id, body, created_at) VALUES (?, ?, ?, ?)')
-    .run(inquiry.id, req.user.id, body, nowIso());
-  db.prepare('UPDATE wall_inquiries SET updated_at = ? WHERE id = ?').run(nowIso(), inquiry.id);
-  res.status(201).json({
-    id: Number(info.lastInsertRowid),
-    body,
-    sender_id: req.user.id,
-    sender_name: req.user.name,
-    created_at: nowIso(),
-  });
+  const reason = cleanText(req.body?.reason, 300) || 'Не соответствует правилам публикации.';
+  db.prepare(`
+    UPDATE walls SET moderation_status = 'rejected', reject_reason = ? WHERE id = ?
+  `).run(reason, wall.id);
+  res.json({ ok: true });
 });
 
 app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
@@ -891,7 +825,8 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
         SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending,
         SUM(CASE WHEN moderation_status = 'published' THEN 1 ELSE 0 END) AS published,
         SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
-        (SELECT COUNT(*) FROM status_reports WHERE moderation_status = 'pending') AS status_pending
+        (SELECT COUNT(*) FROM status_reports WHERE moderation_status = 'pending') AS status_pending,
+        (SELECT COUNT(*) FROM walls WHERE moderation_status = 'pending') AS walls_pending
       FROM graffiti
     `)
     .get();
@@ -902,6 +837,7 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
       published: counts.published || 0,
       rejected: counts.rejected || 0,
       status: counts.status_pending || 0,
+      walls: counts.walls_pending || 0,
     },
   });
 });
@@ -1052,6 +988,7 @@ app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
 });
 
 if (process.env.NODE_ENV === 'production') {
+  app.get('/admin', (_req, res) => res.redirect('/#/admin'));
   app.use(express.static(DIST_DIR, { maxAge: '1h' }));
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {

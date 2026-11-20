@@ -8,8 +8,6 @@ import type {
   Status,
   StatusReport,
   Wall,
-  WallInquiry,
-  WallMessage,
 } from './types';
 
 export class ApiError extends Error {
@@ -134,9 +132,7 @@ export const api = {
   },
 
   wall(id: number) {
-    return request<{ wall: Wall; inquiries: WallInquiry[]; myInquiry: WallInquiry | null }>(
-      `/api/walls/${id}`,
-    );
+    return request<{ wall: Wall }>(`/api/walls/${id}`);
   },
 
   createWall(form: FormData) {
@@ -158,30 +154,23 @@ export const api = {
     return request<{ items: Wall[] }>('/api/my/walls');
   },
 
-  myInquiries() {
-    return request<{ items: WallInquiry[] }>('/api/my/inquiries');
-  },
-
-  contactWall(id: number, message: string) {
-    return request<{ inquiryId: number }>(`/api/walls/${id}/inquiries`, {
-      method: 'POST',
-      body: JSON.stringify({ message }),
-    });
-  },
-
-  inquiryMessages(id: number) {
-    return request<{ messages: WallMessage[] }>(`/api/inquiries/${id}/messages`);
-  },
-
-  sendInquiryMessage(id: number, body: string) {
-    return request<WallMessage>(`/api/inquiries/${id}/messages`, {
-      method: 'POST',
-      body: JSON.stringify({ body }),
-    });
-  },
-
   adminList(tab: 'pending' | 'published' | 'rejected') {
     return request<{ items: Graffiti[]; counts: AdminCounts }>(`/api/admin/graffiti?tab=${tab}`);
+  },
+
+  adminWalls() {
+    return request<{ items: Wall[]; counts: AdminCounts }>('/api/admin/walls');
+  },
+
+  approveWall(id: number) {
+    return request<{ ok: true }>(`/api/admin/walls/${id}/approve`, { method: 'POST' });
+  },
+
+  rejectWall(id: number, reason: string) {
+    return request<{ ok: true }>(`/api/admin/walls/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
   },
 
   approve(id: number) {

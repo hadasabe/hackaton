@@ -16,6 +16,7 @@ export function NewWallPage() {
   const [preview, setPreview] = useState('');
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('');
+  const [contact, setContact] = useState('');
   const [type, setType] = useState<WallType>('wall');
   const [size, setSize] = useState('');
   const [terms, setTerms] = useState<WallTerms>('negotiable');
@@ -51,7 +52,7 @@ export function NewWallPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!file || !title.trim() || !address.trim() || !consent) return;
+    if (!file || !title.trim() || !address.trim() || !contact.trim() || !consent) return;
     setSending(true);
     setError('');
     try {
@@ -59,13 +60,14 @@ export function NewWallPage() {
       form.append('photo', file);
       form.append('title', title.trim());
       form.append('address', address.trim());
+      form.append('contact', contact.trim());
       form.append('type', type);
       form.append('size', size.trim());
       form.append('terms', terms);
       form.append('price_note', priceNote.trim());
       form.append('description', description.trim());
-      const result = await api.createWall(form);
-      navigate(`/walls/${result.id}`);
+      await api.createWall(form);
+      navigate('/account', { state: { wallSubmitted: true } });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось выложить стену');
     } finally {
@@ -124,6 +126,17 @@ export function NewWallPage() {
               onChange={(event) => setAddress(event.target.value)}
               placeholder="Улица, дом, ориентир"
               maxLength={160}
+              required
+            />
+          </label>
+          <label className="field field-wide">
+            <span>Контакт для связи</span>
+            <input
+              className="input"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="Телефон, email, Telegram или ВК"
+              maxLength={200}
               required
             />
           </label>
@@ -190,7 +203,7 @@ export function NewWallPage() {
         <button
           type="submit"
           className="button button-dark button-wide"
-          disabled={sending || !file || !title.trim() || !address.trim() || !consent}
+          disabled={sending || !file || !title.trim() || !address.trim() || !contact.trim() || !consent}
         >
           {sending ? 'Публикуем…' : 'Опубликовать стену'}
         </button>

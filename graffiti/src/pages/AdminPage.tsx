@@ -11,17 +11,18 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { AdminCounts, AiCheck, Graffiti, Status, StatusReport, Style } from '../lib/types';
+import type { AdminCounts, AiCheck, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
 import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 
-type Tab = 'pending' | 'published' | 'rejected' | 'status';
+type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'status';
 type ReportTab = 'pending' | 'approved' | 'rejected';
 
 const TAB_LABEL: Record<Tab, string> = {
   pending: 'На модерации',
   published: 'Опубликованные',
   rejected: 'Отклонённые',
+  walls: 'Стены',
   status: 'Статусы',
 };
 
@@ -35,12 +36,14 @@ export function AdminPage() {
   const [tab, setTab] = useState<Tab>('pending');
   const [reportTab, setReportTab] = useState<ReportTab>('pending');
   const [items, setItems] = useState<Graffiti[]>([]);
+  const [walls, setWalls] = useState<Wall[]>([]);
   const [reports, setReports] = useState<StatusReport[]>([]);
   const [reportCounts, setReportCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [counts, setCounts] = useState<AdminCounts>({
     pending: 0,
     published: 0,
     rejected: 0,
+    walls: 0,
     status: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,11 @@ export function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      if (tab === 'status') {
+      if (tab === 'walls') {
+        const data = await api.adminWalls();
+        setWalls(data.items);
+        setCounts(data.counts);
+      } else if (tab === 'status') {
         const data = await api.adminStatusReports(reportTab);
         setReports(data.items);
         setReportCounts(data.counts);
@@ -105,6 +112,29 @@ export function AdminPage() {
     }
   }
 
+  async function approveWall(id: number) {
+    try {
+      await api.approveWall(id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось опубликовать стену');
+    }
+  }
+
+  async function rejectWall(id: number) {
+    const reason = window.prompt(
+      'Причина отклонения стены (увидит только владелец):',
+      'Фото или адрес не соответствуют правилам публикации.',
+    );
+    if (reason == null) return;
+    try {
+      await api.rejectWall(id, reason);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить стену');
+    }
+  }
+
   async function approveReport(id: number) {
     try {
       await api.approveStatusReport(id);
@@ -134,7 +164,7 @@ export function AdminPage() {
         <div>
           <span className="section-kicker"><ShieldCheck size={14} /> Редакция</span>
           <h1>Заявки и публикации</h1>
-          <p>Проверяйте фото, адреса и теги. AI уже оценил заявку — подтвердите её или отклоните. Всё, что опубликовано, сразу появляется в ленте.</p>
+          <p>Проверяйте работы и стены: фото, адреса, теги и контакты. Одобренные сразу появляются на сайте.</p>
         </div>
         <button type="button" className="button button-outline" onClick={() => void load()}>
           <RefreshCw size={15} /> Обновить
@@ -157,7 +187,14 @@ export function AdminPage() {
 
       {error ? <div className="notice error">{error}</div> : null}
 
-      {tab === 'status' ? (
+      {tab === 'walls' ? (
+        <WallsPanel
+          walls={walls}
+          loading={loading}
+          onApprove={(id) => void approveWall(id)}
+          onReject={(id) => void rejectWall(id)}
+        />
+      ) : tab === 'status' ? (
         <StatusReportsPanel
           reports={reports}
           reportTab={reportTab}
@@ -261,6 +298,79 @@ function AiCheckBadge({ check }: { check: AiCheck }) {
       </div>
       <p>{check.summary || 'Без комментария'}</p>
       {flags.length > 0 ? <small>Флаги: {flags.join(', ')}</small> : null}
+    </div>
+  );
+}
+
+function WallsPanel({
+  walls,
+  loading,
+  onApprove,
+  onReject,
+}: {
+  walls: Wall[];
+  loading: boolean;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="admin-list">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div className="admin-skeleton" key={index} />
+        ))}
+      </div>
+    );
+  }
+  if (walls.length === 0) {
+    return (
+      <div className="empty-admin">
+        <Clock3 size={32} />
+        <h3>Стен пока нет</h3>
+        <p>Когда владелец добавит стену, она появится здесь на проверке.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="admin-list">
+      {walls.map((wall) => (
+        <article className="admin-card" key={wall.id}>
+          <img src={wall.image_path} alt={`Стена: ${wall.title}`} loading="lazy" />
+          <div className="admin-card-body">
+            <div className="admin-card-top">
+              <span className="admin-id">#{wall.id}</span>
+              <span className={`moderation-badge ${wall.moderation_status}`}>
+                {wall.moderation_status === 'pending'
+                  ? 'на проверке'
+                  : wall.moderation_status === 'published'
+                    ? 'опубликована'
+                    : 'отклонена'}
+              </span>
+            </div>
+            <h3><MapPin size={15} /> {wall.title}</h3>
+            <p className="admin-description">{wall.address}</p>
+            <p className="admin-description">{wall.description}</p>
+            <div className="admin-meta">
+              <span>{wall.owner_name}</span>
+              <span>{formatDate(wall.created_at)}</span>
+              <span>Контакт: {wall.contact || 'не указан'}</span>
+            </div>
+            {wall.reject_reason ? <p className="reject-reason">Причина: {wall.reject_reason}</p> : null}
+            <div className="admin-actions">
+              {wall.moderation_status !== 'published' ? (
+                <button type="button" className="button button-lime" onClick={() => onApprove(wall.id)}>
+                  <Check size={15} /> Опубликовать
+                </button>
+              ) : null}
+              {wall.moderation_status !== 'rejected' ? (
+                <button type="button" className="button button-outline" onClick={() => onReject(wall.id)}>
+                  <X size={15} /> Отклонить
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </article>
+      ))}
     </div>
   );
 }

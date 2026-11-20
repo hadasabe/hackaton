@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
@@ -106,34 +107,14 @@ db.exec(`
     size TEXT NOT NULL DEFAULT '',
     terms TEXT NOT NULL DEFAULT 'negotiable',
     price_note TEXT NOT NULL DEFAULT '',
+    contact TEXT NOT NULL DEFAULT '',
     image_path TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'open',
+    moderation_status TEXT NOT NULL DEFAULT 'pending',
+    reject_reason TEXT NOT NULL DEFAULT '',
+    published_at TEXT,
     created_at TEXT NOT NULL,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS wall_inquiries (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    wall_id INTEGER NOT NULL,
-    owner_id INTEGER NOT NULL,
-    artist_id INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'open',
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    UNIQUE (wall_id, artist_id),
-    FOREIGN KEY (wall_id) REFERENCES walls(id) ON DELETE CASCADE,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES users(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS wall_messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    inquiry_id INTEGER NOT NULL,
-    sender_id INTEGER NOT NULL,
-    body TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (inquiry_id) REFERENCES wall_inquiries(id) ON DELETE CASCADE,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
   CREATE INDEX IF NOT EXISTS idx_graffiti_feed
@@ -148,10 +129,6 @@ db.exec(`
     ON moderation_checks(graffiti_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_walls_status
     ON walls(status, created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_wall_inquiries
-    ON wall_inquiries(owner_id, updated_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_wall_messages
-    ON wall_messages(inquiry_id, created_at ASC);
 `);
 
 function ensureColumn(table, column, definition) {
@@ -163,6 +140,21 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn('media', 'content_hash', 'TEXT');
 ensureColumn('media', 'dhash', 'TEXT');
+ensureColumn('walls', 'contact', "TEXT NOT NULL DEFAULT ''");
+{
+  const wallColumns = db.prepare('PRAGMA table_info(walls)').all();
+  const hadModeration = wallColumns.some((column) => column.name === 'moderation_status');
+  ensureColumn('walls', 'moderation_status', "TEXT NOT NULL DEFAULT 'pending'");
+  ensureColumn('walls', 'reject_reason', "TEXT NOT NULL DEFAULT ''");
+  ensureColumn('walls', 'published_at', 'TEXT');
+  if (!hadModeration) {
+    db.exec(`
+      UPDATE walls
+      SET moderation_status = 'published',
+          published_at = COALESCE(published_at, created_at)
+    `);
+  }
+}
 
 const PALETTES = [
   ['#111111', '#ff3d81', '#d8ff3e'],
@@ -219,167 +211,194 @@ function sampleSvg({ word, height, paletteIndex, eyebrow }) {
 </svg>`;
 }
 
-const SAMPLES = [
+export const SAMPLES = [
   {
-    word: 'КИРОВ',
-    height: 1120,
-    address: 'проспект Кирова, 34',
+    image: 'saratov-01.jpg',
+    word: 'ДВОР',
+    height: 900,
+    address: 'проспект Петра Столыпина, 32',
     status: 'alive',
-    style: 'mural',
-    author: 'арт-группа «Волга»',
-    description: 'Яркий мурал в арке на главной пешеходной улице. Один из самых фотографируемых фрагментов центра.',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Двор дома № 32: стены гаражей и пристроек зарисованы персонажами, цветами и леттерингом.',
     moderation: 'published',
   },
   {
+    image: 'saratov-02.jpg',
+    word: 'ПОРТРЕТ',
+    height: 900,
+    address: 'набережная Космонавтов',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Портрет на бетонной стене у набережной. Рядом — надпись о роли художника и цветные полосы.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-03.jpg',
+    word: 'ДВЕРЬ',
+    height: 1200,
+    address: 'улица Григорьева, 53',
+    status: 'partial',
+    style: 'text',
+    author: 'неизвестный художник',
+    description: 'Дверь и стены у дома № 53: теги, автографы и небольшие рисунки. Часть двери закрашена.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-04.jpg',
+    word: 'ЗАРУБИНА',
+    height: 900,
+    address: 'улица Зарубина',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Кирпичная стена с крупной работой: персонаж и леттеринг в сиреневых тонах.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-05.jpg',
+    word: 'ЮНОСТЬ',
+    height: 900,
+    address: 'улица Яблочкова',
+    status: 'alive',
+    style: 'text',
+    author: 'неизвестный художник',
+    description: 'Большие буквы «Юность» на бетонном откосе у дороги. Работа хорошо читается с улицы.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-06.jpg',
+    word: 'КОММУНАРНАЯ',
+    height: 900,
+    address: 'улица Коммунарная',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Геометрический леттеринг 2018 года на стене гаражей во дворе.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-07.jpg',
+    word: 'ПАНДА',
+    height: 900,
+    address: 'улица Вавилова / Пугачёва',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Панда с битой на стене проходного двора на углу Вавилова и Пугачёва.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-08.jpg',
+    word: 'ВАВИЛОВА',
+    height: 900,
+    address: 'улица Вавилова',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Цветная работа на бетонном заборе: буквы, растения и яркие заливки.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-09.jpg',
+    word: 'СТАРЫЕ СТЕНЫ',
+    height: 900,
+    address: 'Октябрьский район, старая промзона',
+    status: 'partial',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Роспись на фасаде старого дома: цветные фигуры и городской пейзаж. Часть стены скрыта деревьями.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-10.jpg',
+    word: 'УЛЫБНИСЬ',
+    height: 900,
+    address: 'сквер на улице Тараса Шевченко',
+    status: 'alive',
+    style: 'text',
+    author: 'неизвестный художник',
+    description: 'Надпись «Улыбнись» на кирпичной стене в сквере. Рядом поставили скамейку.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-11.jpg',
+    word: 'ЦВЕТОК',
+    height: 900,
+    address: 'набережная Космонавтов',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: '«Цветок фантазия» — крупная роспись на подпорной стене набережной.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-12.jpg',
+    word: 'КОТ',
+    height: 900,
+    address: 'улица Тараса Шевченко',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Кот с жёлтыми глазами и надписью «Cats are everywhere» на бетонной стене.',
+    moderation: 'published',
+  },
+  {
+    image: 'saratov-13.jpg',
+    word: 'ТАРЕЛКА',
+    height: 900,
+    address: 'Октябрьский район, дворы',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Летающая тарелка и розовое сердце на стене гаражей. Фото прислал горожанин.',
+    moderation: 'pending',
+  },
+  {
+    image: 'saratov-14.jpg',
+    word: 'ЛИЦО',
+    height: 1200,
+    address: 'Саратов, двор в центре',
+    status: 'partial',
+    style: 'other',
+    author: 'неизвестный художник',
+    description: 'Нарисованное лицо на старой двери во дворе. Работа частично сохранилась.',
+    moderation: 'pending',
+  },
+  {
+    image: 'saratov-15.jpg',
     word: 'ВОЛГА',
     height: 900,
-    address: 'улица Волжская, 23',
+    address: 'Волжский район, набережная',
     status: 'alive',
     style: 'graffiti',
     author: 'неизвестный художник',
-    description: 'Волнистая композиция на стене гаражей: синие линии и жёлтые брызги.',
-    moderation: 'published',
+    description: 'Граффити вдоль набережной: стена с росписями и вид на Волгу.',
+    moderation: 'pending',
   },
   {
-    word: 'КОТ',
-    height: 1200,
-    address: 'улица Сакко и Ванцетти, 21',
-    status: 'alive',
-    style: 'stencil',
-    author: 'Саша 64',
-    description: 'Саратовский кот в трафаретной технике. Говорят, появился за одну ночь.',
-    moderation: 'published',
-  },
-  {
-    word: 'ПТИЦЫ',
-    height: 980,
-    address: 'улица Московская, 9',
-    status: 'partial',
-    style: 'mural',
-    author: 'Аня Р.',
-    description: 'Птицы на фасаде. Часть работы закрашена коммунальными службами.',
-    moderation: 'published',
-  },
-  {
-    word: 'КОСМОС',
-    height: 1160,
-    address: 'улица Октябрьская, 44',
-    status: 'alive',
-    style: 'mural',
-    author: 'команда «Сны»',
-    description: 'Космический сюжет во дворе: планеты, спутники и фиолетовый фон.',
-    moderation: 'published',
-  },
-  {
-    word: 'ЗАВОД',
-    height: 820,
-    address: 'улица Чернышевского, 178',
-    status: 'erased',
-    style: 'text',
-    author: 'неизвестный художник',
-    description: 'Большая надпись на стене бывшего завода. Закрашена в 2025 году.',
-    moderation: 'published',
-  },
-  {
-    word: 'АРКА',
-    height: 1060,
-    address: 'улица Большая Казачья, 21',
-    status: 'alive',
-    style: 'graffiti',
-    author: 'Костя Л.',
-    description: 'Роспись арки во дворе: геометрия, стрелки и розовый фон.',
-    moderation: 'published',
-  },
-  {
-    word: 'СВЕТ',
-    height: 920,
-    address: 'улица Дзержинского, 13/15',
-    status: 'partial',
-    style: 'sticker',
-    author: 'неизвестный художник',
-    description: 'Серия стикеров и небольших рисунков на двери. Часть уже сняли.',
-    moderation: 'published',
-  },
-  {
-    word: 'ГОРОД',
-    height: 1180,
-    address: 'улица Кутякова, 3',
-    status: 'alive',
-    style: 'mural',
-    author: 'арт-группа «Волга»',
-    description: 'Панорама города на стене технопарка: силуэты крыш и Волга.',
-    moderation: 'published',
-  },
-  {
-    word: 'КАЛАЧ',
-    height: 860,
-    address: 'улица Рабочая, 29/39',
-    status: 'erased',
-    style: 'graffiti',
-    author: 'неизвестный художник',
-    description: 'Ироничная работа про саратовский калач. Стена перекрашена.',
-    moderation: 'published',
-  },
-  {
-    word: 'ЛЕНЬ',
-    height: 1000,
-    address: 'улица Чапаева, 68/70',
-    status: 'alive',
-    style: 'text',
-    author: 'Миша Т.',
-    description: 'Короткая надпись, ставшая локальным мемом двора.',
-    moderation: 'published',
-  },
-  {
-    word: 'СНЫ',
-    height: 1100,
-    address: 'улица Астраханская, 30',
+    image: 'saratov-16.jpg',
+    word: 'ПУСТО',
+    height: 900,
+    address: 'набережная Космонавтов',
     status: 'unknown',
-    style: 'mural',
-    author: 'команда «Сны»',
-    description: 'Сюрреалистический мурал на торце дома. Нужно подтвердить, сохранился ли.',
-    moderation: 'published',
-  },
-  {
-    word: 'ТИШИНА',
-    height: 980,
-    address: 'улица Некрасова, 12',
-    status: 'alive',
-    style: 'stencil',
-    author: 'неизвестный художник',
-    description: 'Новая трафаретная работа, присланная горожанином.',
-    moderation: 'pending',
-  },
-  {
-    word: 'ВЕТЕР',
-    height: 1080,
-    address: 'набережная Космонавтов, 5',
-    status: 'alive',
-    style: 'mural',
-    author: 'Лена К.',
-    description: 'Работа на бетонной стене у набережной.',
-    moderation: 'pending',
-  },
-  {
-    word: 'ДВОР',
-    height: 920,
-    address: 'улица Гоголя, 42',
-    status: 'partial',
     style: 'graffiti',
     author: 'неизвестный художник',
-    description: 'Дворовая роспись, часть которой уже закрашена.',
-    moderation: 'pending',
+    description: 'Пустая набережная без различимой работы.',
+    moderation: 'rejected',
+    reject_reason: 'На фото не видно граффити — пришлите крупный план работы.',
   },
   {
-    word: 'ПОРТ',
-    height: 840,
-    address: 'улица Лермонтова, 1',
-    status: 'erased',
+    image: 'tsoi-wall.jpg',
+    word: 'ЦОЙ',
+    height: 900,
+    address: 'Москва, Кривоарбатский переулок',
+    status: 'alive',
     style: 'mural',
-    author: 'арт-группа «Волга»',
-    description: 'Старая работа у порта. Стена снесена.',
-    moderation: 'rejected',
-    reject_reason: 'Фото не соответствует адресу — проверьте, пожалуйста.',
+    author: 'народная стена',
+    description: 'Стена Цоя на Арбате: портрет, «Перемен» и автографы. Гостевая работа в ленте.',
+    moderation: 'published',
   },
 ];
 
@@ -444,6 +463,7 @@ function wallSvg({ title, address, paletteIndex }) {
 
 const WALL_SAMPLES = [
   {
+    image: 'walls/garage.jpg',
     title: 'Гараж на Сакко',
     address: 'улица Сакко и Ванцетти, 21',
     description: 'Сухая стена гаража во дворе. Можно рисовать мурал или надпись, согласовать эскиз с владельцем.',
@@ -451,24 +471,29 @@ const WALL_SAMPLES = [
     size: '6 × 2,5 м',
     terms: 'free',
     price_note: 'Бесплатно, если работа не портит фасад',
+    contact: 'admin@stena.local',
   },
   {
+    image: 'walls/stone-wall.jpg',
     title: 'Стена у технопарка',
     address: 'улица Кутякова, 3',
-    description: 'Большая светлая стена, хороший трафик. Владелец готов обсудить материалы и сроки.',
+    description: 'Фактурная каменная стена во дворе. Подойдёт для мурала или небольшой работы, материалы обсуждаем с владельцем.',
     type: 'facade',
     size: '12 × 4 м',
     terms: 'materials',
     price_note: 'Краску и подготовку обсуждаем отдельно',
+    contact: 'admin@stena.local',
   },
   {
+    image: 'walls/concrete-fence.jpg',
     title: 'Забор на Волжской',
     address: 'улица Волжская, 23',
-    description: 'Металлический забор вдоль двора. Подойдёт для трафаретов, стикеров и небольших работ.',
+    description: 'Бетонный забор вдоль двора. Подойдёт для трафаретов, стикеров и небольших работ.',
     type: 'fence',
     size: '8 × 2 м',
     terms: 'paid',
     price_note: 'Аренда 3 000 ₽ за работу, договор не нужен',
+    contact: 'admin@stena.local',
   },
 ];
 
@@ -481,15 +506,21 @@ function seedWalls() {
   const insertWall = db.prepare(`
     INSERT INTO walls (
       owner_id, title, address, description, type, size,
-      terms, price_note, image_path, status, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+      terms, price_note, contact, image_path, status,
+      moderation_status, published_at, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', 'published', ?, ?)
   `);
 
   WALL_SAMPLES.forEach((wall, index) => {
-    const mediaId = insertMedia(
-      'image/svg+xml',
-      Buffer.from(wallSvg({ title: wall.title, address: wall.address, paletteIndex: index + 3 })),
-    );
+    const imagePath = wall.image ? path.join(__dirname, 'seed-images', wall.image) : null;
+    const imageData = imagePath && fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
+    const mediaId = imageData
+      ? insertMedia('image/jpeg', imageData)
+      : insertMedia(
+          'image/svg+xml',
+          Buffer.from(wallSvg({ title: wall.title, address: wall.address, paletteIndex: index + 3 })),
+        );
+    const createdAt = new Date(Date.now() - index * 86400000).toISOString();
     insertWall.run(
       admin.id,
       wall.title,
@@ -499,23 +530,40 @@ function seedWalls() {
       wall.size,
       wall.terms,
       wall.price_note,
+      wall.contact,
       `/api/media/${mediaId}`,
-      new Date(Date.now() - index * 86400000).toISOString(),
+      createdAt,
+      createdAt,
     );
   });
   console.log(`[stena] seeded ${WALL_SAMPLES.length} walls`);
 }
 
 export function seedDatabase() {
-  const adminCount = db.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'").get().count;
-  if (adminCount === 0) {
-    const name = process.env.ADMIN_NAME || 'Редакция';
-    const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
-    const password = process.env.ADMIN_PASSWORD || 'admin123';
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (existing) {
-      db.prepare("UPDATE users SET role = 'admin', name = ? WHERE id = ?").run(name, existing.id);
-    } else {
+  const name = process.env.ADMIN_NAME || 'Редакция';
+  const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  const existingAdmin = db.prepare('SELECT id, password_hash FROM users WHERE email = ?').get(email);
+
+  if (existingAdmin) {
+    db.prepare("UPDATE users SET role = 'admin', name = ? WHERE id = ?").run(name, existingAdmin.id);
+    if (configuredPassword && !bcrypt.compareSync(configuredPassword, existingAdmin.password_hash)) {
+      db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
+        bcrypt.hashSync(configuredPassword, 10),
+        existingAdmin.id,
+      );
+      console.log('[stena] admin password updated from ADMIN_PASSWORD');
+    }
+  } else {
+    const adminCount = db.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'").get().count;
+    if (adminCount === 0) {
+      let password = configuredPassword;
+      if (!password) {
+        password = crypto.randomBytes(15).toString('base64url');
+        console.log('[stena] ADMIN_PASSWORD не задан в .env');
+        console.log(`[stena] Сгенерирован пароль администратора: ${password}`);
+        console.log('[stena] Сохраните его в .env как ADMIN_PASSWORD.');
+      }
       db.prepare('INSERT INTO users (name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)').run(
         name,
         email,
@@ -523,8 +571,8 @@ export function seedDatabase() {
         'admin',
         new Date().toISOString(),
       );
+      console.log(`[stena] admin created: ${email}`);
     }
-    console.log(`[stena] admin created: ${email} / ${password}`);
   }
 
   seedWalls();
@@ -550,8 +598,14 @@ export function seedDatabase() {
   SAMPLES.forEach((sample, index) => {
     const createdAt = new Date(now - (SAMPLES.length - index) * 86400000).toISOString();
     const publishedAt = sample.moderation === 'published' ? createdAt : null;
-    const svg = sampleSvg({ word: sample.word, height: sample.height, paletteIndex: index });
-    const mediaId = insertMedia('image/svg+xml', Buffer.from(svg));
+    const imagePath = sample.image ? path.join(__dirname, 'seed-images', sample.image) : null;
+    const imageData = imagePath && fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
+    const mediaId = imageData
+      ? insertMedia('image/jpeg', imageData)
+      : insertMedia(
+          'image/svg+xml',
+          Buffer.from(sampleSvg({ word: sample.word, height: sample.height, paletteIndex: index })),
+        );
     const info = insertGraffiti.run(
       `/api/media/${mediaId}`,
       sample.address,

@@ -16,38 +16,14 @@ export interface Wall {
   size: string;
   terms: WallTerms;
   price_note: string;
+  contact?: string;
   image_path: string;
   status: 'open' | 'closed';
+  moderation_status: 'pending' | 'published' | 'rejected';
+  reject_reason: string;
+  published_at?: string | null;
   created_at: string;
   owner_name: string;
-  inquiries_count?: number;
-  last_inquiry_at?: string | null;
-}
-
-export interface WallMessage {
-  id: number;
-  body: string;
-  created_at: string;
-  sender_id: number;
-  sender_name: string;
-}
-
-export interface WallInquiry {
-  id: number;
-  wall_id: number;
-  owner_id: number;
-  artist_id: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  artist_name?: string;
-  owner_name?: string;
-  title?: string;
-  address?: string;
-  image_path?: string;
-  wall_status?: string;
-  last_message?: string;
-  messages?: WallMessage[];
 }
 
 export interface AiCheck {
@@ -122,6 +98,7 @@ export interface AdminCounts {
   published: number;
   rejected: number;
   status: number;
+  walls: number;
 }
 
 export interface StatusReport {

@@ -24,7 +24,14 @@ function Footer() {
         <span>граффити Саратова</span>
       </div>
       <p>
-        Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.
+        Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.{' '}
+        <a
+          href="https://github.com/hadasabe/hackaton/blob/main/graffiti/CREDITS.md"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Демо-фото: Wikimedia Commons
+        </a>
       </p>
       {!user ? <Link to="/login">Вход для редакции</Link> : null}
     </footer>

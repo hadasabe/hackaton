@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Ruler, UserRound } from 'lucide-react';
+import { AtSign, MapPin, Ruler, UserRound } from 'lucide-react';
 import { WALL_TERMS_META, WALL_TYPE_META } from '../lib/constants';
 import type { Wall } from '../lib/types';
 
@@ -18,6 +18,9 @@ export function WallCard({ wall }: { wall: Wall }) {
         <h3><Link to={`/walls/${wall.id}`}>{wall.title}</Link></h3>
         <p className="wall-address"><MapPin size={13} /> {wall.address}</p>
         <p className="wall-description">{wall.description}</p>
+        {wall.contact ? (
+          <p className="wall-contact-line"><AtSign size={13} /> {wall.contact}</p>
+        ) : null}
         <div className="wall-footer">
           <span><UserRound size={14} /> {wall.owner_name}</span>
           {wall.size ? <span><Ruler size={14} /> {wall.size}</span> : null}
