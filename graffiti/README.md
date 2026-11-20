@@ -202,6 +202,7 @@ graffiti/
 | `DELETE` | `/api/comments/:id` | автор комментария или админ |
 | `POST` | `/api/submissions` | только авторизованный, multipart |
 | `GET` | `/api/walls` | публично |
+| `GET` | `/api/walk-route` | публично, расстояние по дорогам OSM |
 | `GET` | `/api/walls/:id` | публично; стена на модерации — только владелец или админ |
 | `POST` | `/api/walls` | только авторизованный, multipart; нужен `contact` |
 | `PATCH` | `/api/walls/:id` | владелец или админ |

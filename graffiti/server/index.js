@@ -63,6 +63,7 @@ const STATUSES = new Set(['alive', 'erased', 'partial', 'unknown']);
 const STYLES = new Set(['mural', 'graffiti', 'stencil', 'sticker', 'text', 'other']);
 const WALL_TYPES = new Set(['garage', 'facade', 'fence', 'wall', 'other']);
 const WALL_TERMS = new Set(['free', 'materials', 'paid', 'negotiable']);
+const walkRouteCache = new Map();
 
 function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
@@ -119,6 +120,60 @@ function requireAdmin(req, res, next) {
 }
 
 app.use('/api', attachUser);
+
+app.get('/api/walk-route', async (req, res) => {
+  const raw = String(req.query.coords || '');
+  const points = raw.split(';').map((part) => part.split(',').map(Number));
+  if (
+    points.length < 2 ||
+    points.length > 30 ||
+    points.some(
+      (point) =>
+        point.length !== 2 ||
+        !Number.isFinite(point[0]) ||
+        !Number.isFinite(point[1]) ||
+        Math.abs(point[0]) > 180 ||
+        Math.abs(point[1]) > 90,
+    )
+  ) {
+    res.status(400).json({ error: 'Нужны координаты от 2 до 30 точек' });
+    return;
+  }
+  if (!rateLimit(`walk-route:${req.ip}`, 60, 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много запросов маршрута' });
+    return;
+  }
+
+  const key = points.map(([lng, lat]) => `${lng.toFixed(5)},${lat.toFixed(5)}`).join(';');
+  const cached = walkRouteCache.get(key);
+  if (cached) {
+    res.json(cached);
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${key}?overview=false&steps=false`,
+      { signal: AbortSignal.timeout(12000) },
+    );
+    const data = await response.json().catch(() => ({}));
+    const route = data?.routes?.[0];
+    if (!response.ok || data.code !== 'Ok' || !route) {
+      throw new Error(data?.message || `HTTP ${response.status}`);
+    }
+    const result = {
+      distance: route.distance,
+      legs: (route.legs || []).map((leg) => ({ distance: leg.distance })),
+    };
+    walkRouteCache.set(key, result);
+    if (walkRouteCache.size > 200) {
+      walkRouteCache.delete(walkRouteCache.keys().next().value);
+    }
+    res.json(result);
+  } catch (error) {
+    res.status(502).json({ error: `Не удалось построить маршрут: ${error.message}` });
+  }
+});
 
 app.post('/api/auth/register', (req, res) => {
   const name = cleanText(req.body?.name, 40);
