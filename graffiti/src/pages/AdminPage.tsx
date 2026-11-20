@@ -57,7 +57,7 @@ export function AdminPage() {
       if (tab === 'walls') {
         const data = await api.adminWalls();
         setWalls(data.items);
-        setCounts(data.counts);
+        setCounts((current) => ({ ...current, walls: data.counts.walls ?? 0 }));
       } else if (tab === 'status') {
         const data = await api.adminStatusReports(reportTab);
         setReports(data.items);
