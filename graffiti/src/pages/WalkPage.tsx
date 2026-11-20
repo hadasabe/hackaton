@@ -10,7 +10,7 @@ export function WalkPage() {
     <main className="walk-embed-page">
       <iframe
         className="walk-embed"
-        src="/walk-app/?embed=1&v=16"
+        src="/walk-app/?embed=1&v=17"
         title="АРТ-ПРОГУЛКА — маршруты по уличному искусству"
         allow="geolocation"
       />

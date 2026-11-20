@@ -7,7 +7,7 @@ const places=window.RYADOM_PLACES,geo=window.RyadomGeo;
 const recordings=window.RYADOM_AUDIO||{files:{}};
 const narratorName=recordings.voiceDisplayName||'Denis';
 const find=id=>places.find(p=>p.id===id);
-const state={source:'browse',fix:null,heading:null,headingAnchor:null,fullMap:false,gpsIssue:'',selected:null,exploring:false,view:'nearby',mode:'cards',near:[],found:new Set(),queue:new geo.NarrationQueue(),demoProgress:0,running:false,follow:true,timer:null};
+const state={source:'browse',fix:null,heading:null,headingAnchor:null,gpsIssue:'',selected:null,exploring:false,view:'nearby',mode:'cards',near:[],found:new Set(),queue:new geo.NarrationQueue(),demoProgress:0,running:false,follow:true,timer:null};
 const voiceState={id:null,engine:null,playing:false,paused:false,loading:false,generation:0,utterance:null,message:'Выберите место или начните прогулку'};
 const audio=new Audio();audio.preload='none';
 let audioPolicy='auto';try{audioPolicy=localStorage.getItem('ryadom-audio-policy')||'auto';}catch(_e){}
@@ -121,14 +121,6 @@ async function showPlannedRoute(ids){
  map.fitBounds(L.latLngBounds(latlngs),{padding:[65,95],maxZoom:16});
  if(!routed)toast('Маршрут по дорогам недоступен. Показано направление по прямой.');
 }
-function setWalkFullscreen(expanded){
- state.fullMap=Boolean(expanded);document.body.classList.toggle('walk-fullscreen',state.fullMap);
- $('expand-map').setAttribute('aria-expanded',String(state.fullMap));
- $('expand-map').setAttribute('aria-label',state.fullMap?'Вернуться к ленте':'Развернуть карту');
- $('expand-map').innerHTML=icon(state.fullMap?'close':'expand');
- if(state.fullMap)window.scrollTo({top:0,behavior:'instant'});
- requestAnimationFrame(()=>map?.invalidateSize({pan:false}));
-}
 function acceptHeading(fix){
  state.heading=geo.resolveHeading(state.headingAnchor,fix,state.heading);
  if(geo.reliable(fix)&&(!geo.reliable(state.headingAnchor)||geo.meters(state.headingAnchor,fix)>Math.max(8,state.headingAnchor.accuracy+fix.accuracy)))state.headingAnchor=fix;
@@ -160,7 +152,6 @@ function updateLocationUI(){
  if(gps){message=state.gpsIssue||(fix?geo.reliable(fix)?'Новые истории появляются в радиусе 100 м. Держите приложение открытым во время прогулки.':'Сигнал неточный или устарел. Карточки приблизительны, новые рассказы автоматически не запускаются.':'Разрешите доступ в запросе браузера. Первое измерение может занять несколько секунд.');}
  $('location-message').textContent=message;
  $('gps-button').innerHTML=icon('locate')+`<span>${gps&&locator.active?'Остановить GPS-прогулку':demo?'Перейти к настоящему GPS':'Начать прогулку'}</span>`;
- $('demo-button').textContent=demo?'Завершить демо-прогулку':'Попробовать демо-прогулку';
  $('demo-console').hidden=!demo;$('gps-map-status').hidden=!gps;
  $('gps-map-status').querySelector('span').textContent=state.gpsIssue?'GPS недоступен · попробуйте снова':live?`GPS работает · точность ±${Math.round(fix.accuracy)} м`:fix?'Ожидаем точный сигнал GPS':'Определяем ваше местоположение…';
  $('map-heading').textContent=state.view==='catalog'?'Достопримечательности Саратова':demo?'Демо по историческому центру':gps?'Истории вокруг вас':'Город вне рамок';
@@ -190,7 +181,7 @@ function renderCards(){
  document.querySelectorAll('[data-category]').forEach(button=>{const active=button.dataset.category===category;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
  $('list-heading').textContent=catalog?'Саратов в деталях':inspiration?'До начала прогулки':'Истории рядом';$('nearby-count').textContent=String(catalog||inspiration?list.length:state.near.length);$('radius-label').textContent=catalog?'Фотографии и истории':inspiration?'Подборка · без GPS':'В радиусе 100 м';$('catalog-tools').hidden=!catalog;
  $('place-list').hidden=voiceOnly;$('voice-companion').hidden=!voiceOnly;$('empty-state').hidden=!!active||voiceOnly;
- $('empty-message').innerHTML=state.fix?'В радиусе 100 м пока нет мест из каталога.<br>Продолжайте прогулку или откройте список.':catalog?'Попробуйте другое название или категорию.':'Включите GPS или попробуйте демо.<br>Мы покажем, что интересного вокруг.';
+ $('empty-message').innerHTML=state.fix?'В радиусе 100 м пока нет мест из каталога.<br>Продолжайте прогулку или откройте список.':catalog?'Попробуйте другое название или категорию.':'Включите GPS, чтобы увидеть, что интересного рядом.<br>Мы покажем места в радиусе 100 метров.';
  if(catalog&&!list.length)$('empty-message').textContent='По вашему запросу ничего не найдено. Попробуйте изменить фильтр.';
  const key=JSON.stringify([catalog,inspiration,query,category,list.map(p=>p.id).sort()]);
  if(key!==cardRenderKey){rememberDetails();const existing=new Map(Array.from($('place-list').querySelectorAll('[data-place-id]'),el=>[el.dataset.placeId,el]));const ids=new Set(list.map(p=>p.id));for(const [id,el] of existing)if(!ids.has(id))el.remove();for(const p of list){let el=existing.get(p.id);if(!el){const template=document.createElement('template');template.innerHTML=placeCard(p);el=template.content.firstElementChild;for(const detail of el.querySelectorAll('details[data-memory]'))detail.open=expandedDetails.has(detail.dataset.memory);}$('place-list').append(el);}cardRenderKey=key;}
@@ -201,12 +192,48 @@ function renderCards(){
 function updateProximity(){state.near=geo.nearby(places,state.fix);if(allowedNarration())state.near.forEach(p=>state.found.add(p.id));if(!state.exploring&&!state.near.some(p=>p.id===state.selected)&&state.view!=='catalog')state.selected=state.near[0]?.id||null;state.queue.discover(state.near.filter(p=>p.historyStatus!=='pending'),allowedNarration());renderCards();updateMap();updateLocationUI();updateHeadingNote();$('discovered').textContent=`${state.found.size} ${state.found.size%10===1&&state.found.size%100!==11?'место':state.found.size%10>=2&&state.found.size%10<=4&&(state.found.size%100<12||state.found.size%100>14)?'места':'мест'}`;maybeNarrate();}
 function selectPlace(id,fromMap=false){
  window.dispatchEvent(new CustomEvent('ryadom:place-selected',{detail:{id,fromMap}}));
- if(fromMap&&(innerWidth<=760||state.fullMap))setTab('nearby',false);
+ if(fromMap&&innerWidth<=760)setTab('nearby',false);
  state.selected=id;state.exploring=true;renderCards();updateMap();
  if(state.mode==='voice')startNarration(id);
  if(fromMap){const card=state.mode==='voice'?$('voice-companion'):$('place-list').querySelector(`[data-place-id="${id}"]`);(card||document.querySelector('.discoveries')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}
 }
-function setTab(tab,scroll=true){state.view=tab;setWalkFullscreen(tab==='map');document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateHeadingNote();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
+function setTab(tab,scroll=true){state.view=tab;document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');if(tab!=='map'){const explorer=$('explorer');if(explorer){explorer.style.transition='';explorer.style.transform='';}}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='nearby'?'map':tab)));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateHeadingNote();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
+function initSheetDrag(){
+ const handle=$('sheet-handle'),explorer=$('explorer');
+ if(!handle||!explorer)return;
+ let startY=0,delta=0,dragging=false;
+ const openMap=()=>setTab('map',true);
+ const finish=allowOpen=>{
+  if(!dragging)return;
+  dragging=false;
+  const open=allowOpen&&delta>Math.min(130,innerHeight*.16);
+  explorer.style.transition='transform .2s ease';
+  if(open){
+   explorer.style.transform='translateY(100%)';
+   window.setTimeout(()=>{openMap();explorer.style.transition='';explorer.style.transform='';},190);
+  }else explorer.style.transform='';
+  delta=0;
+ };
+ handle.addEventListener('pointerdown',event=>{
+  if(innerWidth>760)return;
+  dragging=true;startY=event.clientY;delta=0;
+  explorer.style.transition='none';explorer.style.transform='';
+  handle.setPointerCapture?.(event.pointerId);
+ });
+ handle.addEventListener('pointermove',event=>{
+  if(!dragging)return;
+  delta=Math.max(0,event.clientY-startY);
+  explorer.style.transform=`translateY(${delta}px)`;
+ });
+ handle.addEventListener('pointerup',()=>{
+  if(!dragging)return;
+  const tapped=delta<8;
+  finish(!tapped);
+  if(tapped)openMap();
+ });
+ handle.addEventListener('pointercancel',()=>finish(false));
+ handle.addEventListener('click',event=>{if(event.detail===0)openMap();});
+}
 const locator=geo.locationController({geolocation:navigator.geolocation,secure:window.isSecureContext,
  onStatus:()=>{state.source='gps';state.gpsIssue='';state.fix=null;updateProximity();},
  onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();window.dispatchEvent(new Event('ryadom:gps-fix'));},
@@ -214,13 +241,13 @@ const locator=geo.locationController({geolocation:navigator.geolocation,secure:w
 });
 function stopDemo(){clearInterval(state.timer);state.timer=null;state.running=false;}
 function stopSources(){locator.stop();stopDemo();if(demoLine){demoLine.remove();demoLine=null;}}
-function beginGPS(){if(state.source==='gps'&&locator.active){stopLocation();return;}stopSources();stopNarration();state.queue.reset();state.found.clear();state.fix=null;state.heading=null;state.headingAnchor=null;state.source='gps';state.exploring=false;state.follow=true;updateProximity();if(locator.start())setWalkFullscreen(true);}
+function beginGPS(){if(state.source==='gps'&&locator.active){stopLocation();return;}stopSources();stopNarration();state.queue.reset();state.found.clear();state.fix=null;state.heading=null;state.headingAnchor=null;state.source='gps';state.exploring=false;state.follow=true;updateProximity();locator.start();}
 function stopLocation(){setTab('nearby',false);state.heading=null;state.headingAnchor=null;stopSources();stopNarration();state.source='browse';state.fix=null;state.gpsIssue='';state.near=[];state.queue.reset();state.selected=null;state.exploring=false;updateProximity();}
 const demoIds=['conservatory','art-garmoshka','chernyshevsky','utoli','schmidt','art-time-face','lipki','estate','fedin','embankment','trinity','local-history','radishchev'];
 const demoPath=demoIds.map(id=>find(id));const segments=demoPath.slice(1).map((p,i)=>geo.meters(demoPath[i],p));const routeLength=segments.reduce((s,n)=>s+n,0);
 function beginDemo(){setTab('nearby',false);state.heading=null;state.headingAnchor=null;stopSources();stopNarration();state.queue.reset();state.found.clear();state.source='demo';state.fix=null;state.gpsIssue='';state.selected='conservatory';state.exploring=false;state.follow=true;if(map){demoLine=L.polyline(demoPath.map(p=>[p.lat,p.lng]),{color:'#caff00',weight:3,dashArray:'6 9',opacity:.75,interactive:false}).addTo(map);map.setView([demoPath[0].lat,demoPath[0].lng],17);}moveDemo(0);setRunning(false);}
 function moveDemo(value){state.demoProgress=Math.max(0,Math.min(100,Number(value)));let rest=routeLength*state.demoProgress/100;for(let i=0;i<segments.length;i++){if(rest<=segments[i]||i===segments.length-1){const f=Math.min(1,rest/segments[i]);state.heading=geo.bearing(demoPath[i],demoPath[i+1]);state.fix={lat:demoPath[i].lat+(demoPath[i+1].lat-demoPath[i].lat)*f,lng:demoPath[i].lng+(demoPath[i+1].lng-demoPath[i].lng)*f,accuracy:5,timestamp:Date.now()};break;}rest-=segments[i];}$('walk-progress').value=String(state.demoProgress);updateProximity();if(state.demoProgress>=100&&state.running){setRunning(false);toast('Демо завершено. Для настоящей прогулки включите GPS.');}}
-function setRunning(running){stopDemo();state.running=running;if(running)setWalkFullscreen(true);$('toggle-walk').innerHTML=icon(running?'pause':'play')+`<span>${running?'Приостановить':state.demoProgress>=100?'Пройти ещё раз':'Продолжить демо'}</span>`;if(running){let previous=performance.now();state.timer=setInterval(()=>{const now=performance.now();const elapsed=Math.min(1,Math.max(0,(now-previous)/1000));previous=now;moveDemo(state.demoProgress+1.25*elapsed/routeLength*100);},400);}}
+function setRunning(running){stopDemo();state.running=running;$('toggle-walk').innerHTML=icon(running?'pause':'play')+`<span>${running?'Приостановить':state.demoProgress>=100?'Пройти ещё раз':'Продолжить демо'}</span>`;if(running){let previous=performance.now();state.timer=setInterval(()=>{const now=performance.now();const elapsed=Math.min(1,Math.max(0,(now-previous)/1000));previous=now;moveDemo(state.demoProgress+1.25*elapsed/routeLength*100);},400);}}
 function nextDemo(){setRunning(false);stopNarration();state.queue.finish();state.exploring=false;let length=0;const stops=[0,...segments.map(n=>(length+=n)/routeLength*100)];const next=stops.find(n=>n>state.demoProgress+.1);if(next===undefined){toast('Демо завершено. Можно начать заново.');return;}moveDemo(next);setRunning(false);}
 
 function audioUI(){
@@ -262,19 +289,16 @@ async function toggleAudio(){
  const id=voiceState.id||state.selected||state.near[0]?.id;if(id)startNarration(id);
 }
 
-$('gps-button').addEventListener('click',beginGPS);$('stop-gps').addEventListener('click',stopLocation);
-$('demo-button').addEventListener('click',()=>state.source==='demo'?stopLocation():beginDemo());
+$('gps-button').addEventListener('click',beginGPS);$('stop-gps').addEventListener('click',stopLocation);initSheetDrag();
 $('toggle-walk').addEventListener('click',()=>{if(state.demoProgress>=100)beginDemo();setRunning(!state.running);});
 $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListener('click',beginDemo);
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});
 $('card-mode').addEventListener('click',()=>setMode('cards'));$('voice-mode').addEventListener('click',()=>setMode('voice'));
 $('audio-play').addEventListener('click',toggleAudio);$('audio-close').addEventListener('click',()=>setMode('cards'));
 $('place-list').addEventListener('click',e=>{const listen=e.target.closest('[data-listen]');if(listen){state.selected=listen.dataset.listen;setMode('voice');return;}const card=e.target.closest('[data-place]');if(card){selectPlace(card.dataset.place);if(map){state.follow=false;const p=find(card.dataset.place);map.setView([p.lat,p.lng],17);}setTab('map',false);}});
-for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>setTab(button.dataset.tab));
+for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('mobile-map')){setTab('nearby');return;}setTab(tab);});
 for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
 $('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
-$('expand-map').addEventListener('click',()=>state.fullMap?setTab('nearby'):setWalkFullscreen(true));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.fullMap)setTab('nearby',false);});
 $('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(map){if(state.fix)map.setView([state.fix.lat,state.fix.lng],17);else{map.setView([51.5305,46.0375],15);toast('Включите GPS, чтобы показать ваше положение.');}}});
 $('close-settings').addEventListener('click',()=>$('settings-dialog').close());
 $('audio-policy').addEventListener('change',e=>{audioPolicy=e.target.value;try{localStorage.setItem('ryadom-audio-policy',audioPolicy);}catch(_e){}stopNarration();voiceState.message='Настройка озвучки изменена. Нажмите воспроизведение.';audioUI();});
@@ -300,7 +324,7 @@ window.RyadomApp={
  getState:()=>({source:state.source,selected:state.selected,nearIds:state.near.map(p=>p.id)}),
  selectPlace:(id,fromMap=true)=>{if(find(id))selectPlace(id,fromMap);},
  setTab,setMode,
- beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;setWalkFullscreen(true);updateMap();}else beginGPS();},
+ beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;updateMap();}else beginGPS();},
  toast,
  showRoute:ids=>showPlannedRoute(ids),
  userPosition:()=>userRouteStart()
