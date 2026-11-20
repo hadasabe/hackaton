@@ -22,6 +22,7 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET || 'stena-dev-cookie-secret';
 const JWT_SECRET = process.env.JWT_SECRET || 'stena-dev-jwt-secret';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
+const RYADOM_DIR = path.join(__dirname, '..', '..', 'ryadom');
 const SESSION_COOKIE = 'stena_session';
 
 seedDatabase();
@@ -34,6 +35,17 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(COOKIE_SECRET));
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '30d', immutable: true }));
+app.use(
+  '/walk',
+  (req, res, next) => {
+    if (/^\/(tools|tests)\//.test(req.path) || /\.(md|py|cjs|cmd|zip)$/i.test(req.path)) {
+      res.status(404).end();
+      return;
+    }
+    next();
+  },
+  express.static(RYADOM_DIR, { maxAge: '1h' }),
+);
 
 const upload = multer({
   storage: multer.memoryStorage(),

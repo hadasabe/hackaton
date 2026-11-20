@@ -186,6 +186,16 @@ p {
   background: var(--card);
 }
 
+.main-nav .nav-walk {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.main-nav .nav-walk:hover {
+  background: #c7ef2e;
+}
+
 .main-nav .nav-submit {
   background: var(--ink);
   color: var(--card);
