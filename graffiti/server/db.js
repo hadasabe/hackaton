@@ -135,6 +135,54 @@ db.exec(`
     FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS walk_routes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_id INTEGER NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    visibility TEXT NOT NULL DEFAULT 'public' CHECK (visibility IN ('public', 'link')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_route_stops (
+    route_id INTEGER NOT NULL,
+    place_id TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    PRIMARY KEY (route_id, place_id),
+    FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_route_reactions (
+    route_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    value TEXT NOT NULL CHECK (value IN ('like', 'dislike')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (route_id, actor_id),
+    FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_route_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    route_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    author_name TEXT NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    deleted_at TEXT,
+    FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_route_favorites (
+    route_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (route_id, actor_id),
+    FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_graffiti_feed
     ON graffiti(moderation_status, published_at DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_graffiti
@@ -151,6 +199,12 @@ db.exec(`
     ON collections(owner_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_collection_items
     ON collection_items(collection_id, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_walk_routes_public
+    ON walk_routes(visibility, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_walk_routes_owner
+    ON walk_routes(owner_id, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_walk_route_comments
+    ON walk_route_comments(route_id, created_at);
 `);
 
 function ensureColumn(table, column, definition) {

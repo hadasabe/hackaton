@@ -3235,3 +3235,10 @@ body.walk-route .site-footer {
     margin-left: 0;
   }
 }
+
+.share-status {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}

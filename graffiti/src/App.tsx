@@ -56,6 +56,7 @@ export default function App() {
             <Route path="/collections/:id" element={<CollectionPage />} />
             <Route path="/walls" element={<WallsPage />} />
             <Route path="/walk" element={<WalkPage />} />
+            <Route path="/r/:slug" element={<WalkPage />} />
             <Route
               path="/walls/new"
               element={(

@@ -8,6 +8,7 @@ import {
   MapPin,
   MessageCircle,
   Send,
+  Share2,
   ThumbsDown,
   ThumbsUp,
   Trash2,
@@ -41,6 +42,7 @@ export function GraffitiPage() {
   const [reportDone, setReportDone] = useState(false);
   const [reportError, setReportError] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
     if (!Number.isInteger(numericId)) {
@@ -111,6 +113,17 @@ export function GraffitiPage() {
     } finally {
       setSending(false);
     }
+  }
+
+  async function shareGraffiti() {
+    const url = `${window.location.origin}/#/g/${numericId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareStatus('Ссылка скопирована');
+    } catch {
+      setShareStatus(url);
+    }
+    window.setTimeout(() => setShareStatus(''), 5000);
   }
 
   async function removeComment(commentId: number) {
@@ -210,6 +223,13 @@ export function GraffitiPage() {
             <span className="comments-count">
               <MessageCircle size={17} /> {comments.length}
             </span>
+            <button
+              type="button"
+              className="button button-outline"
+              onClick={() => void shareGraffiti()}
+            >
+              <Share2 size={17} /> Поделиться
+            </button>
             {user ? (
               <button
                 type="button"
@@ -220,6 +240,7 @@ export function GraffitiPage() {
               </button>
             ) : null}
           </div>
+          {shareStatus ? <p className="share-status">{shareStatus}</p> : null}
 
           <section className="status-report-box">
             <div className="status-report-head">

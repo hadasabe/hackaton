@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -584,6 +585,320 @@ app.delete('/api/collections/:id/items/:graffitiId', requireUser, (req, res) => 
   }
   db.prepare('DELETE FROM collection_items WHERE collection_id = ? AND graffiti_id = ?').run(id, graffitiId);
   res.json({ ok: true, contains: false });
+});
+
+const WALK_ROUTE_VISIBILITIES = new Set(['public', 'link']);
+
+function normalizeWalkStops(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((id) => typeof id === 'string' && /^[a-z0-9-]{1,64}$/i.test(id)))];
+}
+
+function walkRouteStops(routeId) {
+  return db
+    .prepare('SELECT place_id FROM walk_route_stops WHERE route_id = ? ORDER BY position ASC')
+    .all(routeId)
+    .map((row) => row.place_id);
+}
+
+const WALK_ROUTE_SELECT = `
+  SELECT wr.*, u.name AS owner_name,
+    (SELECT COUNT(*) FROM walk_route_reactions r WHERE r.route_id = wr.id AND r.value = 'like') AS likes,
+    (SELECT COUNT(*) FROM walk_route_reactions r WHERE r.route_id = wr.id AND r.value = 'dislike') AS dislikes,
+    (SELECT COUNT(*) FROM walk_route_comments c WHERE c.route_id = wr.id AND c.deleted_at IS NULL) AS comments_count,
+    (SELECT r.value FROM walk_route_reactions r WHERE r.route_id = wr.id AND r.actor_id = ?) AS my_reaction,
+    (SELECT 1 FROM walk_route_favorites f WHERE f.route_id = wr.id AND f.actor_id = ?) AS favorite
+  FROM walk_routes wr
+  JOIN users u ON u.id = wr.owner_id
+`;
+
+function walkRouteSummary(row, req) {
+  return {
+    ...row,
+    stops: walkRouteStops(row.id),
+    likes: Number(row.likes || 0),
+    dislikes: Number(row.dislikes || 0),
+    comments_count: Number(row.comments_count || 0),
+    my_reaction: row.my_reaction || null,
+    favorite: Boolean(row.favorite),
+    can_edit: Boolean(req.user && (req.user.id === row.owner_id || req.user.role === 'admin')),
+    is_mine: Boolean(req.user && req.user.id === row.owner_id),
+  };
+}
+
+function findWalkRoute(slug, req) {
+  return db
+    .prepare(`${WALK_ROUTE_SELECT} WHERE wr.slug = ?`)
+    .get(req.actorId, req.actorId, slug);
+}
+
+app.get('/api/walk-routes', (req, res) => {
+  const mine = req.query.scope === 'mine';
+  if (mine && !req.user) {
+    res.status(401).json({ error: 'Войдите, чтобы увидеть свои маршруты' });
+    return;
+  }
+  const where = mine ? 'wr.owner_id = ?' : "wr.visibility = 'public'";
+  const params = mine
+    ? [req.actorId, req.actorId, req.user.id]
+    : [req.actorId, req.actorId];
+  const rows = db
+    .prepare(`${WALK_ROUTE_SELECT} WHERE ${where} ORDER BY datetime(wr.created_at) DESC LIMIT 100`)
+    .all(...params);
+  res.json({ items: rows.map((row) => walkRouteSummary(row, req)) });
+});
+
+app.get('/api/walk-routes/favorites', requireUser, (req, res) => {
+  const rows = db
+    .prepare(`
+      ${WALK_ROUTE_SELECT}
+      WHERE EXISTS (
+        SELECT 1 FROM walk_route_favorites f
+        WHERE f.route_id = wr.id AND f.actor_id = ?
+      )
+      ORDER BY datetime(wr.created_at) DESC
+      LIMIT 100
+    `)
+    .all(req.actorId, req.actorId, req.actorId);
+  res.json({ items: rows.map((row) => walkRouteSummary(row, req)) });
+});
+
+app.get('/api/walk-routes/:slug', (req, res) => {
+  const row = findWalkRoute(String(req.params.slug || ''), req);
+  if (!row) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  const comments = db
+    .prepare(`
+      SELECT id, actor_id, author_name, body, created_at
+      FROM walk_route_comments
+      WHERE route_id = ? AND deleted_at IS NULL
+      ORDER BY datetime(created_at) ASC
+    `)
+    .all(row.id)
+    .map((comment) => ({
+      id: comment.id,
+      author_name: comment.author_name,
+      body: comment.body,
+      created_at: comment.created_at,
+      can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
+    }));
+  res.json({ route: walkRouteSummary(row, req), comments });
+});
+
+app.post('/api/walk-routes', requireUser, (req, res) => {
+  const title = cleanText(req.body?.title, 80);
+  const description = cleanText(req.body?.description, 600);
+  const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility) ? req.body.visibility : 'public';
+  const stops = normalizeWalkStops(req.body?.stops);
+  if (title.length < 2) {
+    res.status(400).json({ error: 'Название маршрута слишком короткое' });
+    return;
+  }
+  if (stops.length < 2) {
+    res.status(400).json({ error: 'В маршруте должно быть хотя бы две остановки' });
+    return;
+  }
+  if (stops.length > 30) {
+    res.status(400).json({ error: 'В маршруте слишком много остановок' });
+    return;
+  }
+  if (!rateLimit(`walk-route-create:${req.actorId}`, 10, 60 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много новых маршрутов. Попробуйте позже.' });
+    return;
+  }
+  let slug;
+  do {
+    slug = crypto.randomBytes(6).toString('base64url');
+  } while (db.prepare('SELECT 1 FROM walk_routes WHERE slug = ?').get(slug));
+  const createdAt = nowIso();
+  const create = db.transaction(() => {
+    const info = db
+      .prepare(`
+        INSERT INTO walk_routes (owner_id, slug, title, description, visibility, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `)
+      .run(req.user.id, slug, title, description, visibility, createdAt, createdAt);
+    const routeId = Number(info.lastInsertRowid);
+    const insertStop = db.prepare(
+      'INSERT INTO walk_route_stops (route_id, place_id, position) VALUES (?, ?, ?)',
+    );
+    stops.forEach((placeId, index) => insertStop.run(routeId, placeId, index));
+    return routeId;
+  });
+  const routeId = create();
+  const row = db.prepare(`${WALK_ROUTE_SELECT} WHERE wr.id = ?`).get(req.actorId, req.actorId, routeId);
+  res.status(201).json({ route: walkRouteSummary(row, req) });
+});
+
+app.patch('/api/walk-routes/:id', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const route = db.prepare('SELECT * FROM walk_routes WHERE id = ?').get(id);
+  if (!route) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  if (route.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно менять только свои маршруты' });
+    return;
+  }
+  const title = cleanText(req.body?.title ?? route.title, 80);
+  const description = cleanText(req.body?.description ?? route.description, 600);
+  const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility)
+    ? req.body.visibility
+    : route.visibility;
+  const stops = req.body?.stops === undefined ? null : normalizeWalkStops(req.body.stops);
+  if (title.length < 2) {
+    res.status(400).json({ error: 'Название маршрута слишком короткое' });
+    return;
+  }
+  if (stops && (stops.length < 2 || stops.length > 30)) {
+    res.status(400).json({ error: 'В маршруте должно быть от 2 до 30 остановок' });
+    return;
+  }
+  const update = db.transaction(() => {
+    db.prepare(`
+      UPDATE walk_routes
+      SET title = ?, description = ?, visibility = ?, updated_at = ?
+      WHERE id = ?
+    `).run(title, description, visibility, nowIso(), id);
+    if (stops) {
+      db.prepare('DELETE FROM walk_route_stops WHERE route_id = ?').run(id);
+      const insertStop = db.prepare(
+        'INSERT INTO walk_route_stops (route_id, place_id, position) VALUES (?, ?, ?)',
+      );
+      stops.forEach((placeId, index) => insertStop.run(id, placeId, index));
+    }
+  });
+  update();
+  res.json({ ok: true });
+});
+
+app.delete('/api/walk-routes/:id', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const route = db.prepare('SELECT * FROM walk_routes WHERE id = ?').get(id);
+  if (!route) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  if (route.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно удалять только свои маршруты' });
+    return;
+  }
+  db.prepare('DELETE FROM walk_routes WHERE id = ?').run(id);
+  res.json({ ok: true });
+});
+
+app.post('/api/walk-routes/:id/reaction', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const value = req.body?.value;
+  if (!Number.isInteger(id) || !['like', 'dislike'].includes(value)) {
+    res.status(400).json({ error: 'Некорректная реакция' });
+    return;
+  }
+  const route = db.prepare('SELECT id FROM walk_routes WHERE id = ?').get(id);
+  if (!route) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  const current = db
+    .prepare('SELECT value FROM walk_route_reactions WHERE route_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (current?.value === value) {
+    db.prepare('DELETE FROM walk_route_reactions WHERE route_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else if (current) {
+    db.prepare(
+      'UPDATE walk_route_reactions SET value = ?, created_at = ? WHERE route_id = ? AND actor_id = ?',
+    ).run(value, nowIso(), id, req.actorId);
+  } else {
+    db.prepare(
+      'INSERT INTO walk_route_reactions (route_id, actor_id, value, created_at) VALUES (?, ?, ?, ?)',
+    ).run(id, req.actorId, value, nowIso());
+  }
+  const counts = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN value = 'like' THEN 1 ELSE 0 END) AS likes,
+        SUM(CASE WHEN value = 'dislike' THEN 1 ELSE 0 END) AS dislikes
+      FROM walk_route_reactions WHERE route_id = ?
+    `)
+    .get(id);
+  const mine = db
+    .prepare('SELECT value FROM walk_route_reactions WHERE route_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  res.json({
+    likes: counts.likes || 0,
+    dislikes: counts.dislikes || 0,
+    my_reaction: mine?.value || null,
+  });
+});
+
+app.post('/api/walk-routes/:id/favorite', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const route = db.prepare('SELECT id FROM walk_routes WHERE id = ?').get(id);
+  if (!route) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  const existing = db
+    .prepare('SELECT 1 FROM walk_route_favorites WHERE route_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (existing) {
+    db.prepare('DELETE FROM walk_route_favorites WHERE route_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else {
+    db.prepare(
+      'INSERT INTO walk_route_favorites (route_id, actor_id, created_at) VALUES (?, ?, ?)',
+    ).run(id, req.actorId, nowIso());
+  }
+  res.json({ favorite: !existing });
+});
+
+app.post('/api/walk-routes/:id/comments', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const body = cleanText(req.body?.body, 800);
+  if (!Number.isInteger(id) || body.length < 1) {
+    res.status(400).json({ error: 'Комментарий не может быть пустым' });
+    return;
+  }
+  const route = db.prepare('SELECT id FROM walk_routes WHERE id = ?').get(id);
+  if (!route) {
+    res.status(404).json({ error: 'Маршрут не найден' });
+    return;
+  }
+  if (!rateLimit(`walk-route-comment:${req.actorId}`, 15, 10 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много комментариев. Попробуйте позже.' });
+    return;
+  }
+  const createdAt = nowIso();
+  const info = db
+    .prepare(`
+      INSERT INTO walk_route_comments (route_id, actor_id, author_name, body, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `)
+    .run(id, req.actorId, req.user.name, body, createdAt);
+  res.status(201).json({
+    id: Number(info.lastInsertRowid),
+    author_name: req.user.name,
+    body,
+    created_at: createdAt,
+    can_delete: true,
+  });
+});
+
+app.delete('/api/walk-routes/comments/:commentId', requireUser, (req, res) => {
+  const id = Number(req.params.commentId);
+  const comment = db.prepare('SELECT * FROM walk_route_comments WHERE id = ?').get(id);
+  if (!comment) {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  if (comment.actor_id !== req.actorId && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно удалять только свои комментарии' });
+    return;
+  }
+  db.prepare('UPDATE walk_route_comments SET deleted_at = ? WHERE id = ?').run(nowIso(), id);
+  res.json({ ok: true });
 });
 
 app.get('/api/graffiti/:id', (req, res) => {
