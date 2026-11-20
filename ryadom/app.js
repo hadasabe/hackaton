@@ -17,6 +17,52 @@ $('audio-policy').value=audioPolicy;
 const displayDistance=n=>!Number.isFinite(n)?'':n<1000?`${Math.round(n)} м`:`${(n/1000).toFixed(1).replace('.',',')} км`;
 const placeCountLabel=n=>`${n} ${n%10===1&&n%100!==11?'место':n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?'места':'мест'}`;
 const distance=p=>state.fix?geo.meters(state.fix,p):Infinity;
+const STENA_STYLES={mural:'Мурал',graffiti:'Граффити',stencil:'Трафарет',sticker:'Стикер',text:'Надпись',other:'Другое'};
+const STENA_STATUSES={alive:'На месте',erased:'Стёрто',partial:'Частично закрашено',unknown:'Сохранность не подтверждена'};
+const normalizeAddress=value=>String(value||'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]+/g,' ').replace(/\b(улица|ул|проспект|пр|набережная|сквер|район|дом|д)\b/g,' ').replace(/\s+/g,' ').trim();
+function findLocationForAddress(address){
+ const normalized=normalizeAddress(address),house=normalized.match(/\d+/)?.[0];
+ return places.find(p=>{
+  if(!geo.validPosition(p))return false;
+  const candidate=normalizeAddress(p.address);
+  if(candidate===normalized)return true;
+  if(!house||!candidate.split(' ').includes(house))return false;
+  return normalized.split(' ').some(token=>token.length>3&&!/^\d+$/.test(token)&&candidate.includes(token));
+ });
+}
+async function loadStenaGraffiti(){
+ try{
+  const response=await fetch('/api/feed',{headers:{Accept:'application/json'}});
+  if(!response.ok)return;
+  const data=await response.json();
+  for(const item of data.items||[]){
+   const id=`stena-${item.id}`,matched=findLocationForAddress(item.address);
+   if(!item?.id||places.some(p=>p.id===id))continue;
+   if(matched?.category==='Стрит-арт')continue;
+   places.push({
+    id,
+    name:`Граффити: ${item.address}`,
+    category:'Стрит-арт',
+    artType:STENA_STYLES[item.style]||'Граффити',
+    address:item.address,
+    era:'Архив «Стены»',
+    description:item.description||'Работа из архива «Стены».',
+    story:item.description||'',
+    statusNote:STENA_STATUSES[item.status]||'',
+    city:/^москва/i.test(item.address)?'МОСКВА':'САРАТОВ',
+    artist:item.author_name&&item.author_name!=='неизвестный художник'?item.author_name:'',
+    image:item.image_path,
+    lat:matched?.lat,
+    lng:matched?.lng,
+    glyph:'cards',
+    sources:[{title:'Стена — архив граффити',url:'/'}],
+    source:'/',
+    stena:true
+   });
+  }
+  document.querySelectorAll('.total-places').forEach(el=>el.textContent=String(places.length));
+ }catch(_error){}
+}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5000);}
 function allowedNarration(){return state.source==='demo'||(state.source==='gps'&&!state.gpsIssue&&geo.reliable(state.fix));}
 
@@ -30,7 +76,7 @@ function initMap(){
  tileLayer.on('tileerror',()=>{if(!navigator.onLine)return;const el=$('map-alert');el.hidden=false;el.textContent='Подложка карты не загрузилась. Проверьте интернет; точки и расстояния продолжают работать.';});
  tileLayer.on('tileload',()=>{if($('map-alert').textContent.startsWith('Подложка'))$('map-alert').hidden=true;});
  L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
- for(const p of places){const marker=L.marker([p.lat,p.lng],{icon:markerIcon(p),title:p.name,alt:p.name,keyboard:true}).addTo(map);marker.bindTooltip(esc(p.name),{direction:'top',offset:[0,-27],className:'poi-tooltip'});marker.on('click',()=>selectPlace(p.id,true));markers.set(p.id,marker);}
+ for(const p of places){if(!geo.validPosition(p))continue;const marker=L.marker([p.lat,p.lng],{icon:markerIcon(p),title:p.name,alt:p.name,keyboard:true}).addTo(map);marker.bindTooltip(esc(p.name),{direction:'top',offset:[0,-27],className:'poi-tooltip'});marker.on('click',()=>selectPlace(p.id,true));markers.set(p.id,marker);}
  map.on('dragstart',()=>state.follow=false);
  new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('map-region'));
 }
@@ -55,7 +101,7 @@ function updateWalkPeek(){
 }
 function updateMap(){
  if(!map)return;
- for(const p of places){const marker=markers.get(p.id);const key=`${state.selected===p.id}-${state.near.some(n=>n.id===p.id)}`;if(marker._ryadomKey!==key){marker.setIcon(markerIcon(p));marker._ryadomKey=key;}}
+ for(const p of places){const marker=markers.get(p.id);if(!marker)continue;const key=`${state.selected===p.id}-${state.near.some(n=>n.id===p.id)}`;if(marker._ryadomKey!==key){marker.setIcon(markerIcon(p));marker._ryadomKey=key;}}
  if(!state.fix){for(const layer of [personMarker,radiusCircle,accuracyCircle])if(layer)layer.remove();personMarker=radiusCircle=accuracyCircle=null;return;}
  const latlng=[state.fix.lat,state.fix.lng];
  if(!personMarker){radiusCircle=L.circle(latlng,{radius:100,color:'#caff00',weight:1.3,dashArray:'5 6',fillColor:'#caff00',fillOpacity:.1,interactive:false}).addTo(map);personMarker=L.marker(latlng,{icon:L.divIcon({className:'user-arrow-marker',html:'<span class="user-arrow-wrap"><span class="user-arrow"></span></span>',iconSize:[38,38],iconAnchor:[19,19]}),interactive:false,keyboard:false,zIndexOffset:1000}).addTo(map);}else{personMarker.setLatLng(latlng);radiusCircle.setLatLng(latlng);}
@@ -91,7 +137,7 @@ function picture(p){
 function storyParagraphs(story){return String(story||'').split(/\n\s*\n/).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('');}
 function storySources(p){return (p.sources?.length?p.sources:[{title:'Туристический портал Саратова',url:p.source}]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>`).join(' · ');}
 function photoCredit(p){if(!p.photo)return '';const photo=p.photo;return `<details class="photo-credit" data-memory="photo-${p.id}"><summary>Об этом снимке</summary><p>${photo.title?esc(photo.title)+'.<br>':''}Источник фото: <a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer">${esc(photo.author.replace(/^Источник:\s*/,''))}</a>.<br><a href="${esc(photo.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(photo.license)}</a>. ${esc(photo.modified||'Уменьшено; в интерфейсе кадрировано')}.</p></details>`;}
-function placeCard(p){return `<article class="place-card editorial-card" data-place-id="${p.id}">${picture(p)}<div class="card-content"><div class="card-kicker">${esc(p.era||p.category)} · САРАТОВ</div><h3>${esc(p.name)}</h3><div class="outside-label" data-outside="${p.id}" hidden>Вне радиуса · открыто вручную</div><p class="card-description">${esc(p.description)}</p>${p.artist?`<p class="art-credit">Автор: <strong>${esc(p.artist)}</strong></p>`:''}${p.statusNote?`<details class="place-status" data-memory="status-${p.id}"><summary>Актуальность места</summary><p class="place-status-note">${esc(p.statusNote)}</p></details>`:''}<details class="story-details" data-story="${p.id}" data-memory="story-${p.id}"><summary>История места <span aria-hidden="true">+</span></summary><div class="story-text">${storyParagraphs(p.story)}${p.lookFor?`<aside class="look-for"><strong>Присмотритесь</strong><p>${esc(p.lookFor)}</p></aside>`:''}<div class="story-sources"><span>Источники истории</span>${storySources(p)}</div></div></details><div class="card-address">${icon('pin')}${esc(p.address)}</div><div class="card-actions"><button class="listen-story" data-listen="${p.id}">${icon('headphones')}Послушать</button><button class="card-map-link" data-place="${p.id}">${icon('map-icon')}На карте</button></div>${photoCredit(p)}</div></article>`;}
+function placeCard(p){return `<article class="place-card editorial-card" data-place-id="${p.id}">${picture(p)}<div class="card-content"><div class="card-kicker">${esc(p.era||p.category)} · ${esc(p.city||'САРАТОВ')}</div><h3>${esc(p.name)}</h3><div class="outside-label" data-outside="${p.id}" hidden>Вне радиуса · открыто вручную</div><p class="card-description">${esc(p.description)}</p>${p.artist?`<p class="art-credit">Автор: <strong>${esc(p.artist)}</strong></p>`:''}${p.statusNote?`<details class="place-status" data-memory="status-${p.id}"><summary>Актуальность места</summary><p class="place-status-note">${esc(p.statusNote)}</p></details>`:''}<details class="story-details" data-story="${p.id}" data-memory="story-${p.id}"><summary>История места <span aria-hidden="true">+</span></summary><div class="story-text">${storyParagraphs(p.story)}${p.lookFor?`<aside class="look-for"><strong>Присмотритесь</strong><p>${esc(p.lookFor)}</p></aside>`:''}<div class="story-sources"><span>Источники истории</span>${storySources(p)}</div></div></details><div class="card-address">${icon('pin')}${esc(p.address)}</div><div class="card-actions"><button class="listen-story" data-listen="${p.id}">${icon('headphones')}Послушать</button>${geo.validPosition(p)?`<button class="card-map-link" data-place="${p.id}">${icon('map-icon')}На карте</button>`:''}</div>${photoCredit(p)}</div></article>`;}
 let cardRenderKey=null,voiceRenderKey=null;
 const expandedDetails=new Set();
 function rememberDetails(){for(const el of $('place-list').querySelectorAll('details[data-memory]')){if(el.open)expandedDetails.add(el.dataset.memory);else expandedDetails.delete(el.dataset.memory);}}
@@ -123,7 +169,7 @@ function selectPlace(id,fromMap=false){
  if(state.mode==='voice')startNarration(id);
  if(fromMap){const card=state.mode==='voice'?$('voice-companion'):$('place-list').querySelector(`[data-place-id="${id}"]`);(card||document.querySelector('.discoveries')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}
 }
-function setTab(tab,scroll=true){state.view=tab;setWalkFullscreen(tab==='map');document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateWalkPeek();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
+function setTab(tab,scroll=true){state.view=tab;setWalkFullscreen(tab==='map');document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateWalkPeek();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
 const locator=geo.locationController({geolocation:navigator.geolocation,secure:window.isSecureContext,
  onStatus:()=>{state.source='gps';state.gpsIssue='';state.fix=null;updateProximity();},
  onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();},
@@ -210,7 +256,6 @@ for(const el of document.querySelectorAll('.total-places'))el.textContent=String
 const clipCount=Object.keys(recordings.files||{}).length;$('recordings-status').textContent=clipCount?`Готово нейрозаписей: ${clipCount}. Голос ${narratorName}.`:'Готовые записи ещё не добавлены.';
 $('voice-summary').textContent=clipCount?`Голос ${narratorName} · готовая нейроозвучка`:'Нейрозаписи готовятся · доступен резервный голос';
 document.addEventListener('error',event=>{if(event.target instanceof HTMLImageElement&&(event.target.closest('.editorial-picture')||event.target.closest('.poi-photo')||event.target.closest('.walk-feed')))event.target.hidden=true;},true);
-initMap();networkStatus();updateProximity();
 setInterval(()=>{if(state.source==='gps'&&state.fix){updateLocationUI();maybeNarrate();}},5000);
 
 // Public UI bridge: saved walks contain public place IDs, never location history.
@@ -222,7 +267,7 @@ window.RyadomApp={
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;setWalkFullscreen(true);updateMap();}else beginGPS();},
  toast,
  showRoute:ids=>{
-  const points=[...new Set(ids)].map(find).filter(Boolean);
+  const points=[...new Set(ids)].map(find).filter(p=>p&&geo.validPosition(p));
   if(plannedRouteLine){plannedRouteLine.remove();plannedRouteLine=null;}
   if(!map||!points.length)return;
   if(points.length>1)plannedRouteLine=L.polyline(points.map(p=>[p.lat,p.lng]),{color:'#caff00',weight:5,dashArray:'9 8',opacity:.9,interactive:false}).addTo(map);
@@ -230,4 +275,7 @@ window.RyadomApp={
   if(points.length===1)map.setView([points[0].lat,points[0].lng],17);else map.fitBounds(points.map(p=>[p.lat,p.lng]),{padding:[65,95],maxZoom:16});
  }
 };
-window.dispatchEvent(new Event('ryadom:ready'));
+loadStenaGraffiti().finally(()=>{
+ initMap();networkStatus();updateProximity();
+ window.dispatchEvent(new Event('ryadom:ready'));
+});
