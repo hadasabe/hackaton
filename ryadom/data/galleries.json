@@ -1,0 +1,82 @@
+{
+  "art-time-face": [
+    {
+      "src": "assets/photos/art-time-face-tursar-original.jpg",
+      "author": "Туристический Саратов; индивидуальный автор снимка в подписи не указан",
+      "license": "Некоммерческая перепечатка без изменений, с указанием автора и ссылкой",
+      "licenseUrl": "https://www.tursar.ru/static/reprint.html",
+      "source": "https://www.tursar.ru/page-joy.php?j=4156",
+      "imageUrl": "https://www.tursar.ru/uploads/img4156_1.jpg",
+      "title": "Мурал «Лицо времени»",
+      "modified": "Без изменений",
+      "noCrop": true,
+      "noResize": true,
+      "width": 1024,
+      "height": 683
+    }
+  ],
+  "art-saratov-cat": [
+    {
+      "src": "assets/photos/art-saratov-cat-tursar-original.jpg",
+      "author": "Туристический Саратов; индивидуальный автор снимка в подписи не указан",
+      "license": "Некоммерческая перепечатка без изменений, с указанием автора и ссылкой",
+      "licenseUrl": "https://www.tursar.ru/static/reprint.html",
+      "source": "https://www.tursar.ru/page-joy.php?j=4153",
+      "imageUrl": "https://www.tursar.ru/uploads/img4153_1.jpg",
+      "title": "Мурал «Котъ Саратовскiй»",
+      "modified": "Без изменений",
+      "noCrop": true,
+      "noResize": true,
+      "width": 1024,
+      "height": 686
+    }
+  ],
+  "art-flowers-of-life": [
+    {
+      "src": "assets/photos/art-flowers-of-life-tursar-original.jpg",
+      "author": "Туристический Саратов; индивидуальный автор снимка в подписи не указан",
+      "license": "Некоммерческая перепечатка без изменений, с указанием автора и ссылкой",
+      "licenseUrl": "https://www.tursar.ru/static/reprint.html",
+      "source": "https://www.tursar.ru/page-joy.php?j=4155",
+      "imageUrl": "https://www.tursar.ru/uploads/img4155_1.jpg",
+      "title": "Мурал «Цветы жизни»",
+      "modified": "Без изменений",
+      "noCrop": true,
+      "noResize": true,
+      "width": 1024,
+      "height": 683
+    }
+  ],
+  "art-liberated-labor": [
+    {
+      "src": "assets/photos/art-liberated-labor-detail-tursar-original.jpg",
+      "author": "Туристический Саратов; индивидуальный автор снимка в подписи не указан",
+      "license": "Некоммерческая перепечатка без изменений, с указанием автора и ссылкой",
+      "licenseUrl": "https://www.tursar.ru/static/reprint.html",
+      "source": "https://www.tursar.ru/page-joy.php?j=4220",
+      "imageUrl": "https://www.tursar.ru/uploads/img4220_1.JPG",
+      "title": "Мозаика «Освобождённый труд» — общий вид торца",
+      "modified": "Без изменений",
+      "noCrop": true,
+      "noResize": true,
+      "width": 1200,
+      "height": 675
+    }
+  ],
+  "art-greetings-saratov": [
+    {
+      "src": "assets/photos/art-greetings-saratov-opening.jpg",
+      "author": "Источник: «Общественное мнение»; автор репортажа — Ольга Симонова, отдельный автор фотографии не указан",
+      "license": "Перепечатка с обязательной ссылкой на «Общественное мнение»",
+      "licenseUrl": "https://om-saratov.ru/culture/16-october-2026-i175247-stanet-znakovym-v-saratove",
+      "source": "https://om-saratov.ru/culture/16-october-2026-i175247-stanet-znakovym-v-saratove",
+      "imageUrl": "https://om-saratov.ru/files/pages/175247/17921529890_16_october_2026_i175247_stanet_znakovym_v_saratove.jpg",
+      "title": "Открытие мурала 16 октября 2026 года",
+      "modified": "Без изменений",
+      "noCrop": true,
+      "noResize": true,
+      "width": 1200,
+      "height": 675
+    }
+  ]
+}
