@@ -93,8 +93,14 @@ function drawPlannedRoute(latlngs,dashed=false){
  plannedRouteCasing=L.polyline(latlngs,{color:'#121212',weight:11,opacity:.9,lineJoin:'round',lineCap:'round',interactive:false}).addTo(map);
  plannedRouteLine=L.polyline(latlngs,{color:'#caff00',weight:6,opacity:1,lineJoin:'round',lineCap:'round',dashArray:dashed?'10 8':null,interactive:false}).addTo(map);
 }
+function userRouteStart(){
+ if(state.source!=='gps'||state.gpsIssue||!geo.reliable(state.fix))return null;
+ return {lat:state.fix.lat,lng:state.fix.lng};
+}
 async function showPlannedRoute(ids){
- const points=[...new Set(ids)].map(find).filter(p=>p&&geo.validPosition(p));
+ const routeIds=[...new Set(ids)];
+ const start=userRouteStart();
+ const points=(start?[start]:[]).concat(routeIds.map(find).filter(p=>p&&geo.validPosition(p)));
  clearPlannedRoute();routeDrawRequest++;
  if(!map||!points.length)return;
  state.follow=false;setTab('map',false);
@@ -110,7 +116,7 @@ async function showPlannedRoute(ids){
   if(data.geometry?.coordinates?.length){latlngs=data.geometry.coordinates.map(([lng,lat])=>[lat,lng]);routed=true;}
  }catch(_error){if(request!==routeDrawRequest)return;}
  drawPlannedRoute(latlngs,!routed);
- routeStartMarker=routeEndpoint('A',latlngs[0],'start');
+ routeStartMarker=routeEndpoint(start?'Я':'A',latlngs[0],'start');
  routeEndMarker=routeEndpoint('Б',latlngs[latlngs.length-1],'end');
  map.fitBounds(L.latLngBounds(latlngs),{padding:[65,95],maxZoom:16});
  if(!routed)toast('Маршрут по дорогам недоступен. Показано направление по прямой.');
@@ -203,7 +209,7 @@ function selectPlace(id,fromMap=false){
 function setTab(tab,scroll=true){state.view=tab;setWalkFullscreen(tab==='map');document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateHeadingNote();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
 const locator=geo.locationController({geolocation:navigator.geolocation,secure:window.isSecureContext,
  onStatus:()=>{state.source='gps';state.gpsIssue='';state.fix=null;updateProximity();},
- onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();},
+ onFix:fix=>{const first=!state.fix;acceptHeading(fix);state.source='gps';state.fix=fix;state.gpsIssue='';if(first&&map)map.setView([fix.lat,fix.lng],17);updateProximity();window.dispatchEvent(new Event('ryadom:gps-fix'));},
  onError:error=>{if(error.code===1)setTab('nearby',false);state.gpsIssue=error.message;updateLocationUI();toast(error.message);}
 });
 function stopDemo(){clearInterval(state.timer);state.timer=null;state.running=false;}
@@ -296,7 +302,8 @@ window.RyadomApp={
  setTab,setMode,
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;setWalkFullscreen(true);updateMap();}else beginGPS();},
  toast,
- showRoute:ids=>showPlannedRoute(ids)
+ showRoute:ids=>showPlannedRoute(ids),
+ userPosition:()=>userRouteStart()
 };
 loadStenaGraffiti().finally(()=>{
  initMap();networkStatus();updateProximity();
