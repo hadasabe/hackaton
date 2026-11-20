@@ -45,7 +45,12 @@ app.use(
     }
     next();
   },
-  express.static(RYADOM_DIR, { maxAge: '1h' }),
+  express.static(RYADOM_DIR, {
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    },
+  }),
 );
 
 const upload = multer({
@@ -1059,9 +1064,15 @@ app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
 if (process.env.NODE_ENV === 'production') {
   app.get('/admin', (_req, res) => res.redirect('/#/admin'));
   app.get(['/walk', '/walk/'], (_req, res) => res.redirect('/#/walk'));
-  app.use(express.static(DIST_DIR, { maxAge: '1h' }));
+  app.use(express.static(DIST_DIR, {
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    },
+  }));
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(DIST_DIR, 'index.html'));
       return;
     }
