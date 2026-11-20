@@ -40,8 +40,8 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .eyebrow{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:1.4px;line-height:1.6;color:var(--muted)}
 .eyebrow>span{height:6px;width:6px;border-radius:50%;background:var(--ink)}
 h1,h2,h3{color:var(--ink);font-family:"Arial Black","Segoe UI",Arial,sans-serif;font-weight:900}
-h1{font-size:43px;line-height:1.04;letter-spacing:-2.3px;margin:17px 0 16px}
-h1 em,.catalog-intro h2 em{font-style:normal;box-decoration-break:clone;-webkit-box-decoration-break:clone;background:var(--lime);padding:0 4px 2px;margin-left:-4px}
+h1{font-size:43px;line-height:1.2;letter-spacing:-2.3px;margin:17px 0 16px}
+h1 em,.catalog-intro h2 em{display:inline-block;font-style:normal;line-height:1;vertical-align:baseline;box-decoration-break:clone;-webkit-box-decoration-break:clone;background:var(--lime);padding:0 4px;margin-left:-4px}
 .intro>p{font-size:16px;line-height:1.65;color:var(--muted);margin:0 0 22px}
 .mode-switch{display:flex;gap:4px;background:#e6e8dc;border-radius:16px;padding:4px}
 .mode-switch button{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-height:46px;padding:10px 9px;border:0;border-radius:12px;background:none;color:#52564b;font-size:13px;font-weight:700;white-space:nowrap}
@@ -72,7 +72,7 @@ h2{font-size:19px;line-height:1.25;letter-spacing:-.7px;margin:0}
 .radius-label{font-size:11px;color:var(--muted);text-align:right;line-height:1.45}
 .catalog-intro{display:none;margin:0 0 27px}
 .catalog-intro .eyebrow{font-size:9px;letter-spacing:1.2px}
-.catalog-intro h2{font-size:38px;line-height:1.06;letter-spacing:-1.8px;margin:16px 0 17px}
+.catalog-intro h2{font-size:38px;line-height:1.2;letter-spacing:-1.8px;margin:16px 0 17px}
 .catalog-intro>p{font-size:16px;line-height:1.65;color:var(--muted);margin:0}
 .mobile-catalog .catalog-intro{display:block}
 .mobile-catalog .intro,.mobile-catalog .location-box{display:none}
@@ -245,7 +245,7 @@ dialog .button{margin:12px 0}
   .sheet-handle:active{cursor:grabbing}
   .intro{padding:0 21px 15px}
   .intro .eyebrow{font-size:8px;letter-spacing:1.15px}
-  h1{font-size:35px;line-height:1.03;letter-spacing:-1.8px;margin:11px 0 13px}
+  h1{font-size:35px;line-height:1.2;letter-spacing:-1.8px;margin:11px 0 13px}
   .intro>p{font-size:15px;line-height:1.55;margin-bottom:16px}
   .intro>p br{display:none}
   .mode-switch button{font-size:12px;min-height:44px}
