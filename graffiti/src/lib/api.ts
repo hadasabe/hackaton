@@ -2,6 +2,7 @@ import type {
   AdminCounts,
   AdminUser,
   AuthUser,
+  CollectionSummary,
   Comment,
   FeedStats,
   Graffiti,
@@ -51,6 +52,51 @@ export const api = {
 
   graffiti(id: number) {
     return request<{ item: Graffiti; comments: Comment[] }>(`/api/graffiti/${id}`);
+  },
+
+  collections() {
+    return request<{ items: CollectionSummary[] }>('/api/collections');
+  },
+
+  collection(id: number) {
+    return request<{ collection: CollectionSummary; items: Graffiti[] }>(`/api/collections/${id}`);
+  },
+
+  myCollections(graffitiId?: number) {
+    const query = graffitiId ? `?graffiti_id=${graffitiId}` : '';
+    return request<{ items: CollectionSummary[] }>(`/api/my/collections${query}`);
+  },
+
+  createCollection(payload: { title: string; description: string }) {
+    return request<{ collection: CollectionSummary }>('/api/collections', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  updateCollection(id: number, payload: { title: string; description: string }) {
+    return request<{ ok: true; title: string; description: string }>(`/api/collections/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  deleteCollection(id: number) {
+    return request<{ ok: true }>(`/api/collections/${id}`, { method: 'DELETE' });
+  },
+
+  addToCollection(collectionId: number, graffitiId: number) {
+    return request<{ ok: true; contains: boolean }>(`/api/collections/${collectionId}/items`, {
+      method: 'POST',
+      body: JSON.stringify({ graffiti_id: graffitiId }),
+    });
+  },
+
+  removeFromCollection(collectionId: number, graffitiId: number) {
+    return request<{ ok: true; contains: boolean }>(
+      `/api/collections/${collectionId}/items/${graffitiId}`,
+      { method: 'DELETE' },
+    );
   },
 
   react(id: number, value: ReactionValue) {

@@ -117,6 +117,24 @@ db.exec(`
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS collections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS collection_items (
+    collection_id INTEGER NOT NULL,
+    graffiti_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (collection_id, graffiti_id),
+    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+    FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_graffiti_feed
     ON graffiti(moderation_status, published_at DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_graffiti
@@ -129,6 +147,10 @@ db.exec(`
     ON moderation_checks(graffiti_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_walls_status
     ON walls(status, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_collections_owner
+    ON collections(owner_id, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_collection_items
+    ON collection_items(collection_id, created_at DESC);
 `);
 
 function ensureColumn(table, column, definition) {

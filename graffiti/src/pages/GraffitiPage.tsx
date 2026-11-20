@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clock3,
+  FolderPlus,
   MapPin,
   MessageCircle,
   Send,
@@ -16,6 +17,7 @@ import { STATUS_META, STATUS_OPTIONS } from '../lib/constants';
 import type { Comment, Graffiti, ReactionValue, Status } from '../lib/types';
 import { formatDate, timeAgo } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
+import { CollectionPickerDialog } from '../components/CollectionPickerDialog';
 import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
@@ -38,6 +40,7 @@ export function GraffitiPage() {
   const [reportSending, setReportSending] = useState(false);
   const [reportDone, setReportDone] = useState(false);
   const [reportError, setReportError] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (!Number.isInteger(numericId)) {
@@ -207,6 +210,15 @@ export function GraffitiPage() {
             <span className="comments-count">
               <MessageCircle size={17} /> {comments.length}
             </span>
+            {user ? (
+              <button
+                type="button"
+                className="button button-outline detail-collection"
+                onClick={() => setPickerOpen(true)}
+              >
+                <FolderPlus size={17} /> В коллекцию
+              </button>
+            ) : null}
           </div>
 
           <section className="status-report-box">
@@ -350,6 +362,10 @@ export function GraffitiPage() {
           </section>
         </div>
       </div>
+
+      {pickerOpen ? (
+        <CollectionPickerDialog graffitiId={item.id} onClose={() => setPickerOpen(false)} />
+      ) : null}
     </main>
   );
 }

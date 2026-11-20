@@ -377,6 +377,215 @@ app.get('/api/feed', (req, res) => {
   res.json({ items, stats: publicStats() });
 });
 
+function collectionSummary(row, req) {
+  const covers = db
+    .prepare(`
+      SELECT g.image_path
+      FROM collection_items ci
+      JOIN graffiti g ON g.id = ci.graffiti_id
+      WHERE ci.collection_id = ? AND g.moderation_status = 'published'
+      ORDER BY datetime(ci.created_at) ASC
+      LIMIT 3
+    `)
+    .all(row.id)
+    .map((item) => item.image_path);
+  return {
+    ...row,
+    item_count: Number(row.item_count || 0),
+    covers,
+    can_edit: Boolean(req.user && (req.user.id === row.owner_id || req.user.role === 'admin')),
+  };
+}
+
+app.get('/api/collections', (req, res) => {
+  const rows = db
+    .prepare(`
+      SELECT c.*, u.name AS owner_name,
+        (SELECT COUNT(*) FROM collection_items ci
+         JOIN graffiti g ON g.id = ci.graffiti_id
+         WHERE ci.collection_id = c.id AND g.moderation_status = 'published') AS item_count
+      FROM collections c
+      JOIN users u ON u.id = c.owner_id
+      ORDER BY datetime(c.created_at) DESC
+      LIMIT 100
+    `)
+    .all();
+  res.json({ items: rows.map((row) => collectionSummary(row, req)) });
+});
+
+app.get('/api/my/collections', requireUser, (req, res) => {
+  const graffitiId = Number(req.query.graffiti_id);
+  const rows = db
+    .prepare(`
+      SELECT c.*, u.name AS owner_name,
+        (SELECT COUNT(*) FROM collection_items ci
+         JOIN graffiti g ON g.id = ci.graffiti_id
+         WHERE ci.collection_id = c.id AND g.moderation_status = 'published') AS item_count
+      FROM collections c
+      JOIN users u ON u.id = c.owner_id
+      WHERE c.owner_id = ?
+      ORDER BY datetime(c.created_at) DESC
+      LIMIT 100
+    `)
+    .all(req.user.id);
+  res.json({
+    items: rows.map((row) => {
+      const summary = collectionSummary(row, req);
+      if (Number.isInteger(graffitiId) && graffitiId > 0) {
+        summary.contains = Boolean(
+          db
+            .prepare('SELECT 1 FROM collection_items WHERE collection_id = ? AND graffiti_id = ?')
+            .get(row.id, graffitiId),
+        );
+      }
+      return summary;
+    }),
+  });
+});
+
+app.get('/api/collections/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ error: 'Некорректный id' });
+    return;
+  }
+  const row = db
+    .prepare(`
+      SELECT c.*, u.name AS owner_name,
+        (SELECT COUNT(*) FROM collection_items ci
+         JOIN graffiti g ON g.id = ci.graffiti_id
+         WHERE ci.collection_id = c.id AND g.moderation_status = 'published') AS item_count
+      FROM collections c
+      JOIN users u ON u.id = c.owner_id
+      WHERE c.id = ?
+    `)
+    .get(id);
+  if (!row) {
+    res.status(404).json({ error: 'Коллекция не найдена' });
+    return;
+  }
+  const items = db
+    .prepare(`
+      ${GRAFFITI_SELECT}
+      JOIN collection_items ci ON ci.graffiti_id = g.id
+      WHERE ci.collection_id = ? AND g.moderation_status = 'published'
+      ORDER BY datetime(ci.created_at) DESC
+    `)
+    .all(req.actorId, id);
+  res.json({ collection: collectionSummary(row, req), items });
+});
+
+app.post('/api/collections', requireUser, (req, res) => {
+  const title = cleanText(req.body?.title, 80);
+  const description = cleanText(req.body?.description, 400);
+  if (title.length < 2) {
+    res.status(400).json({ error: 'Название коллекции слишком короткое' });
+    return;
+  }
+  const count = db
+    .prepare('SELECT COUNT(*) AS count FROM collections WHERE owner_id = ?')
+    .get(req.user.id).count;
+  if (count >= 50) {
+    res.status(400).json({ error: 'Достигнут лимит коллекций' });
+    return;
+  }
+  const info = db
+    .prepare('INSERT INTO collections (owner_id, title, description, created_at) VALUES (?, ?, ?, ?)')
+    .run(req.user.id, title, description, nowIso());
+  const row = db
+    .prepare(`
+      SELECT c.*, u.name AS owner_name, 0 AS item_count
+      FROM collections c JOIN users u ON u.id = c.owner_id
+      WHERE c.id = ?
+    `)
+    .get(Number(info.lastInsertRowid));
+  res.status(201).json({ collection: collectionSummary(row, req) });
+});
+
+app.patch('/api/collections/:id', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const collection = db.prepare('SELECT * FROM collections WHERE id = ?').get(id);
+  if (!collection) {
+    res.status(404).json({ error: 'Коллекция не найдена' });
+    return;
+  }
+  if (collection.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно менять только свои коллекции' });
+    return;
+  }
+  const title = cleanText(req.body?.title ?? collection.title, 80);
+  const description = cleanText(req.body?.description ?? collection.description, 400);
+  if (title.length < 2) {
+    res.status(400).json({ error: 'Название коллекции слишком короткое' });
+    return;
+  }
+  db.prepare('UPDATE collections SET title = ?, description = ? WHERE id = ?').run(title, description, id);
+  res.json({ ok: true, title, description });
+});
+
+app.delete('/api/collections/:id', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const collection = db.prepare('SELECT * FROM collections WHERE id = ?').get(id);
+  if (!collection) {
+    res.status(404).json({ error: 'Коллекция не найдена' });
+    return;
+  }
+  if (collection.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно удалять только свои коллекции' });
+    return;
+  }
+  db.prepare('DELETE FROM collections WHERE id = ?').run(id);
+  res.json({ ok: true });
+});
+
+app.post('/api/collections/:id/items', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const graffitiId = Number(req.body?.graffiti_id);
+  const collection = db.prepare('SELECT * FROM collections WHERE id = ?').get(id);
+  if (!collection) {
+    res.status(404).json({ error: 'Коллекция не найдена' });
+    return;
+  }
+  if (collection.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно менять только свои коллекции' });
+    return;
+  }
+  const graffiti = db
+    .prepare("SELECT id FROM graffiti WHERE id = ? AND moderation_status = 'published'")
+    .get(graffitiId);
+  if (!graffiti) {
+    res.status(404).json({ error: 'Работа не найдена' });
+    return;
+  }
+  const count = db
+    .prepare('SELECT COUNT(*) AS count FROM collection_items WHERE collection_id = ?')
+    .get(id).count;
+  if (count >= 200) {
+    res.status(400).json({ error: 'В коллекции уже слишком много работ' });
+    return;
+  }
+  db.prepare(
+    'INSERT OR IGNORE INTO collection_items (collection_id, graffiti_id, created_at) VALUES (?, ?, ?)',
+  ).run(id, graffitiId, nowIso());
+  res.json({ ok: true, contains: true });
+});
+
+app.delete('/api/collections/:id/items/:graffitiId', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const graffitiId = Number(req.params.graffitiId);
+  const collection = db.prepare('SELECT * FROM collections WHERE id = ?').get(id);
+  if (!collection) {
+    res.status(404).json({ error: 'Коллекция не найдена' });
+    return;
+  }
+  if (collection.owner_id !== req.user.id && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно менять только свои коллекции' });
+    return;
+  }
+  db.prepare('DELETE FROM collection_items WHERE collection_id = ? AND graffiti_id = ?').run(id, graffitiId);
+  res.json({ ok: true, contains: false });
+});
+
 app.get('/api/graffiti/:id', (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {

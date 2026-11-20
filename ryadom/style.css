@@ -304,7 +304,7 @@ dialog .button{margin:12px 0}
   .has-location .location-box{margin-bottom:24px}
   .has-location #gps-button{min-height:48px;font-size:14px}
   .sheet-peek .map-region{height:calc(100dvh - var(--header-height) - var(--nav-height) - 32px - env(safe-area-inset-bottom));max-height:none;min-height:320px}
-  .sheet-peek .explorer{min-height:0;height:60px;overflow:hidden;padding-top:9px}
+  .sheet-peek .explorer{min-height:0;height:60px;overflow:hidden;padding-top:9px;border-radius:0;box-shadow:none}
   .sheet-peek .explorer > :not(.sheet-handle){display:none}
   .sheet-peek .sheet-handle{margin-top:0}
   .sheet-peek.voice-mode .map-bottom{bottom:165px}

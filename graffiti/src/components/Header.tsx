@@ -18,6 +18,7 @@ export function Header() {
 
       <nav className="main-nav" aria-label="Основная навигация">
         <NavLink to="/" end>Лента</NavLink>
+        <NavLink to="/collections">Коллекции</NavLink>
         <NavLink to="/walls">Стены</NavLink>
         <NavLink to="/walk" className="nav-walk">
           <Map size={15} />

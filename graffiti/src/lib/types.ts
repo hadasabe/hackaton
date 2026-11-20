@@ -102,6 +102,19 @@ export interface AdminCounts {
   users: number;
 }
 
+export interface CollectionSummary {
+  id: number;
+  owner_id: number;
+  title: string;
+  description: string;
+  owner_name: string;
+  item_count: number;
+  covers: string[];
+  can_edit: boolean;
+  created_at: string;
+  contains?: boolean;
+}
+
 export interface AdminUser {
   id: number;
   name: string;

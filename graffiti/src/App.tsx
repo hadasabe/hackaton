@@ -7,6 +7,8 @@ import { RequireAuth } from './components/RequireAuth';
 import { FeedPage } from './pages/FeedPage';
 import { GraffitiPage } from './pages/GraffitiPage';
 import { WallsPage } from './pages/WallsPage';
+import { CollectionsPage } from './pages/CollectionsPage';
+import { CollectionPage } from './pages/CollectionPage';
 import { WallPage } from './pages/WallPage';
 import { NewWallPage } from './pages/NewWallPage';
 import { AccountPage } from './pages/AccountPage';
@@ -50,6 +52,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<FeedPage />} />
             <Route path="/g/:id" element={<GraffitiPage />} />
+            <Route path="/collections" element={<CollectionsPage />} />
+            <Route path="/collections/:id" element={<CollectionPage />} />
             <Route path="/walls" element={<WallsPage />} />
             <Route path="/walk" element={<WalkPage />} />
             <Route
