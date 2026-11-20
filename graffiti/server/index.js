@@ -1660,6 +1660,9 @@ app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
 if (process.env.NODE_ENV === 'production') {
   app.get('/admin', (_req, res) => res.redirect('/#/admin'));
   app.get(['/walk', '/walk/'], (_req, res) => res.redirect('/#/walk'));
+  app.get('/r/:slug', (req, res) => {
+    res.redirect(`/#/r/${encodeURIComponent(req.params.slug)}`);
+  });
   app.use(express.static(DIST_DIR, {
     maxAge: '1h',
     setHeaders: (res, filePath) => {
