@@ -239,3 +239,5 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
  .exp-route-detail .exp-route-cover{aspect-ratio:1.75}
  .exp-route-copy h3{font-size:21px}
 }
+.exp-saved-routes{margin-bottom:24px}
+.exp-saved-routes>.eyebrow{margin-bottom:10px}
