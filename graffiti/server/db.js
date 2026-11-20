@@ -140,6 +140,8 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn('media', 'content_hash', 'TEXT');
 ensureColumn('media', 'dhash', 'TEXT');
+ensureColumn('users', 'shadow_banned', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('comments', 'hidden', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('walls', 'contact', "TEXT NOT NULL DEFAULT ''");
 {
   const wallColumns = db.prepare('PRAGMA table_info(walls)').all();

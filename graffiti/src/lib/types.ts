@@ -99,6 +99,19 @@ export interface AdminCounts {
   rejected: number;
   status: number;
   walls: number;
+  users: number;
+}
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+  created_at: string;
+  shadow_banned: number;
+  graffiti_count: number;
+  comments_count: number;
+  walls_count: number;
 }
 
 export interface StatusReport {

@@ -1,5 +1,6 @@
 import type {
   AdminCounts,
+  AdminUser,
   AuthUser,
   Comment,
   FeedStats,
@@ -160,6 +161,17 @@ export const api = {
 
   adminWalls() {
     return request<{ items: Wall[]; counts: AdminCounts }>('/api/admin/walls');
+  },
+
+  adminUsers() {
+    return request<{ items: AdminUser[]; counts: AdminCounts }>('/api/admin/users');
+  },
+
+  setShadowBan(id: number, banned: boolean) {
+    return request<{ ok: true; shadow_banned: boolean }>(`/api/admin/users/${id}/shadow-ban`, {
+      method: 'POST',
+      body: JSON.stringify({ banned }),
+    });
   },
 
   approveWall(id: number) {

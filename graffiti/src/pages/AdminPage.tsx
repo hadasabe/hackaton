@@ -7,16 +7,28 @@ import {
   RefreshCw,
   ShieldCheck,
   Trash2,
+  UserCheck,
+  UserX,
   X,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { AdminCounts, AiCheck, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
+import type { AdminCounts, AdminUser, AiCheck, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
 import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
+import { useConfirm } from '../components/ConfirmDialog';
 
-type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'status';
+type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'status' | 'users';
 type ReportTab = 'pending' | 'approved' | 'rejected';
+type ReasonKind = 'graffiti' | 'wall' | 'report';
+
+interface ReasonRequest {
+  kind: ReasonKind;
+  id: number;
+  title: string;
+  label: string;
+  defaultValue: string;
+}
 
 const TAB_LABEL: Record<Tab, string> = {
   pending: 'На модерации',
@@ -24,6 +36,7 @@ const TAB_LABEL: Record<Tab, string> = {
   rejected: 'Отклонённые',
   walls: 'Стены',
   status: 'Статусы',
+  users: 'Пользователи',
 };
 
 const REPORT_TAB_LABEL: Record<ReportTab, string> = {
@@ -33,11 +46,13 @@ const REPORT_TAB_LABEL: Record<ReportTab, string> = {
 };
 
 export function AdminPage() {
+  const confirm = useConfirm();
   const [tab, setTab] = useState<Tab>('pending');
   const [reportTab, setReportTab] = useState<ReportTab>('pending');
   const [items, setItems] = useState<Graffiti[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [reports, setReports] = useState<StatusReport[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [reportCounts, setReportCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [counts, setCounts] = useState<AdminCounts>({
     pending: 0,
@@ -45,10 +60,12 @@ export function AdminPage() {
     rejected: 0,
     walls: 0,
     status: 0,
+    users: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<Graffiti | null>(null);
+  const [reasonRequest, setReasonRequest] = useState<ReasonRequest | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,7 +74,11 @@ export function AdminPage() {
       if (tab === 'walls') {
         const data = await api.adminWalls();
         setWalls(data.items);
-        setCounts((current) => ({ ...current, walls: data.counts.walls ?? 0 }));
+        setCounts((current) => ({ ...current, ...data.counts, users: current.users }));
+      } else if (tab === 'users') {
+        const data = await api.adminUsers();
+        setUsers(data.items);
+        setCounts((current) => ({ ...current, users: data.items.length }));
       } else if (tab === 'status') {
         const data = await api.adminStatusReports(reportTab);
         setReports(data.items);
@@ -66,7 +87,7 @@ export function AdminPage() {
       } else {
         const data = await api.adminList(tab);
         setItems(data.items);
-        setCounts(data.counts);
+        setCounts((current) => ({ ...current, ...data.counts, users: current.users }));
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось загрузить заявки');
@@ -88,22 +109,24 @@ export function AdminPage() {
     }
   }
 
-  async function reject(id: number) {
-    const reason = window.prompt(
-      'Причина отклонения (увидит только редакция):',
-      'Не соответствует правилам публикации.',
-    );
-    if (reason == null) return;
-    try {
-      await api.reject(id, reason);
-      await load();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить');
-    }
+  function reject(id: number) {
+    setReasonRequest({
+      kind: 'graffiti',
+      id,
+      title: 'Отклонить работу?',
+      label: 'Причина отклонения (увидит только редакция)',
+      defaultValue: 'Не соответствует правилам публикации.',
+    });
   }
 
   async function remove(item: Graffiti) {
-    if (!window.confirm(`Удалить работу «${item.address}»? Это действие необратимо.`)) return;
+    const confirmed = await confirm({
+      title: 'Удалить работу?',
+      message: `«${item.address}» исчезнет из ленты без возможности восстановления.`,
+      confirmLabel: 'Удалить',
+      skipKey: 'delete-graffiti',
+    });
+    if (!confirmed) return;
     try {
       await api.remove(item.id);
       await load();
@@ -121,18 +144,14 @@ export function AdminPage() {
     }
   }
 
-  async function rejectWall(id: number) {
-    const reason = window.prompt(
-      'Причина отклонения стены (увидит только владелец):',
-      'Фото или адрес не соответствуют правилам публикации.',
-    );
-    if (reason == null) return;
-    try {
-      await api.rejectWall(id, reason);
-      await load();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить стену');
-    }
+  function rejectWall(id: number) {
+    setReasonRequest({
+      kind: 'wall',
+      id,
+      title: 'Отклонить стену?',
+      label: 'Причина отклонения (увидит только владелец)',
+      defaultValue: 'Фото или адрес не соответствуют правилам публикации.',
+    });
   }
 
   async function approveReport(id: number) {
@@ -144,17 +163,46 @@ export function AdminPage() {
     }
   }
 
-  async function rejectReport(id: number) {
-    const reason = window.prompt(
-      'Почему статус не подтверждён?',
-      'Не удалось подтвердить изменения по фото.',
-    );
-    if (reason == null) return;
+  function rejectReport(id: number) {
+    setReasonRequest({
+      kind: 'report',
+      id,
+      title: 'Отклонить статус?',
+      label: 'Почему статус не подтверждён?',
+      defaultValue: 'Не удалось подтвердить изменения по фото.',
+    });
+  }
+
+  async function submitReason(reason: string) {
+    if (!reasonRequest) return;
+    const { kind, id } = reasonRequest;
     try {
-      await api.rejectStatusReport(id, reason);
+      if (kind === 'graffiti') await api.reject(id, reason);
+      else if (kind === 'wall') await api.rejectWall(id, reason);
+      else await api.rejectStatusReport(id, reason);
+      setReasonRequest(null);
       await load();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить статус');
+      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить');
+    }
+  }
+
+  async function toggleShadow(user: AdminUser) {
+    const next = !user.shadow_banned;
+    const confirmed = await confirm({
+      title: next ? 'Скрыть пользователя?' : 'Вернуть пользователя?',
+      message: next
+        ? 'Пользователь продолжит пользоваться сайтом, но его новые работы и комментарии не будут видны другим. Он не узнает об ограничении.'
+        : 'Новые работы и комментарии снова станут видны другим.',
+      confirmLabel: next ? 'Скрыть' : 'Вернуть',
+      skipKey: next ? 'shadow-ban' : 'shadow-unban',
+    });
+    if (!confirmed) return;
+    try {
+      await api.setShadowBan(user.id, next);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось изменить ограничение');
     }
   }
 
@@ -187,7 +235,13 @@ export function AdminPage() {
 
       {error ? <div className="notice error">{error}</div> : null}
 
-      {tab === 'walls' ? (
+      {tab === 'users' ? (
+        <UsersPanel
+          users={users}
+          loading={loading}
+          onToggle={(user) => void toggleShadow(user)}
+        />
+      ) : tab === 'walls' ? (
         <WallsPanel
           walls={walls}
           loading={loading}
@@ -270,6 +324,14 @@ export function AdminPage() {
             setEditing(null);
             await load();
           }}
+        />
+      ) : null}
+
+      {reasonRequest ? (
+        <ReasonModal
+          request={reasonRequest}
+          onClose={() => setReasonRequest(null)}
+          onSubmit={submitReason}
         />
       ) : null}
     </main>
@@ -371,6 +433,124 @@ function WallsPanel({
           </div>
         </article>
       ))}
+    </div>
+  );
+}
+
+function UsersPanel({
+  users,
+  loading,
+  onToggle,
+}: {
+  users: AdminUser[];
+  loading: boolean;
+  onToggle: (user: AdminUser) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="admin-list">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div className="admin-skeleton" key={index} />
+        ))}
+      </div>
+    );
+  }
+  if (users.length === 0) {
+    return (
+      <div className="empty-admin">
+        <Clock3 size={32} />
+        <h3>Пользователей пока нет</h3>
+        <p>Зарегистрированные пользователи появятся здесь.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="admin-users">
+      {users.map((user) => (
+        <article className={`admin-user-card ${user.shadow_banned ? 'is-shadow' : ''}`} key={user.id}>
+          <div className="admin-user-info">
+            <div className="admin-user-head">
+              <strong>{user.name}</strong>
+              {user.role === 'admin' ? <span className="moderation-badge published">админ</span> : null}
+              {user.shadow_banned ? <span className="moderation-badge rejected">теневой бан</span> : null}
+            </div>
+            <span className="admin-user-email">{user.email}</span>
+            <div className="admin-meta">
+              <span>#{user.id}</span>
+              <span>с {formatDate(user.created_at)}</span>
+              <span>работ: {user.graffiti_count}</span>
+              <span>комментариев: {user.comments_count}</span>
+              <span>стен: {user.walls_count}</span>
+            </div>
+          </div>
+          {user.role === 'admin' ? null : (
+            <button
+              type="button"
+              className={`button ${user.shadow_banned ? 'button-outline' : 'button-danger'}`}
+              onClick={() => onToggle(user)}
+            >
+              {user.shadow_banned ? <UserCheck size={15} /> : <UserX size={15} />}
+              {user.shadow_banned ? 'Снять теневой бан' : 'Теневой бан'}
+            </button>
+          )}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ReasonModal({
+  request,
+  onClose,
+  onSubmit,
+}: {
+  request: ReasonRequest;
+  onClose: () => void;
+  onSubmit: (reason: string) => Promise<void>;
+}) {
+  const [reason, setReason] = useState(request.defaultValue);
+  const [sending, setSending] = useState(false);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!reason.trim()) return;
+    setSending(true);
+    try {
+      await onSubmit(reason.trim());
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={request.title}>
+      <form className="modal-card" onSubmit={(event) => void submit(event)}>
+        <div className="modal-head">
+          <div>
+            <span className="section-kicker">Модерация</span>
+            <h2>{request.title}</h2>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose} aria-label="Закрыть">
+            <X size={18} />
+          </button>
+        </div>
+        <label className="field">
+          <span>{request.label}</span>
+          <textarea
+            className="textarea"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            autoFocus
+            required
+          />
+        </label>
+        <div className="modal-actions">
+          <button type="button" className="button button-outline" onClick={onClose}>Отмена</button>
+          <button type="submit" className="button button-danger" disabled={sending || !reason.trim()}>
+            {sending ? 'Сохраняем…' : 'Отклонить'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

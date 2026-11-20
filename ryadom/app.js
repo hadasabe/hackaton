@@ -125,9 +125,6 @@ function acceptHeading(fix){
  state.heading=geo.resolveHeading(state.headingAnchor,fix,state.heading);
  if(geo.reliable(fix)&&(!geo.reliable(state.headingAnchor)||geo.meters(state.headingAnchor,fix)>Math.max(8,state.headingAnchor.accuracy+fix.accuracy)))state.headingAnchor=fix;
 }
-function updateHeadingNote(){
- $('heading-note').textContent=Number.isFinite(state.heading)?'Стрелка — направление движения':'Направление появится при движении';
-}
 function updateMap(){
  if(!map)return;
  for(const p of places){const marker=markers.get(p.id);if(!marker)continue;const key=`${state.selected===p.id}-${state.near.some(n=>n.id===p.id)}`;if(marker._ryadomKey!==key){marker.setIcon(markerIcon(p));marker._ryadomKey=key;}}
@@ -143,17 +140,18 @@ function updateLocationUI(){
  const live=gps&&fix&&!state.gpsIssue&&geo.reliable(fix);
  document.body.classList.toggle('has-location',Boolean(fix));
  $('location-dot').className='location-dot'+(live?' live':demo?' demo':'');
+ $('source-pill').hidden=Boolean(gps);
  $('source-pill').className='source-pill'+(live?' live':'');
- $('source-pill').textContent=demo?'Демо · без GPS':gps?'Геолокация':'Обзор города';
+ $('source-pill').textContent=demo?'Демо · без GPS':'Обзор города';
  $('accuracy-label').textContent=gps&&fix?`±${Math.round(fix.accuracy)} м`:demo?'Демо':'';
- $('location-title').textContent=demo?'Демонстрационная прогулка':gps?(state.gpsIssue?'GPS требует внимания':live?'Вы на карте':fix?'Уточняем ваше положение':'Определяем местоположение'):'Начнём с вашего места';
+ $('location-title').textContent=demo?'Демонстрационная прогулка':gps?(state.gpsIssue?'GPS требует внимания':fix?'Вы на карте':'Определяем местоположение'):'Начнём с вашего места';
  let message='Разрешите геолокацию, чтобы находить истории рядом. Координаты обрабатываются на устройстве.';
  if(demo)message='Движение имитируется. Расстояния считаются по настоящим координатам, но это не маршрут для навигации.';
  if(gps){message=state.gpsIssue||(fix?geo.reliable(fix)?'Новые истории появляются в радиусе 100 м. Держите приложение открытым во время прогулки.':'Сигнал неточный или устарел. Карточки приблизительны, новые рассказы автоматически не запускаются.':'Разрешите доступ в запросе браузера. Первое измерение может занять несколько секунд.');}
  $('location-message').textContent=message;
  $('gps-button').innerHTML=icon('locate')+`<span>${gps&&locator.active?'Остановить GPS-прогулку':demo?'Перейти к настоящему GPS':'Начать прогулку'}</span>`;
  $('demo-console').hidden=!demo;$('gps-map-status').hidden=!gps;
- $('gps-map-status').querySelector('span').textContent=state.gpsIssue?'GPS недоступен · попробуйте снова':live?`GPS работает · точность ±${Math.round(fix.accuracy)} м`:fix?'Ожидаем точный сигнал GPS':'Определяем ваше местоположение…';
+ $('gps-map-status').querySelector('span').textContent=state.gpsIssue?'GPS недоступен · попробуйте снова':fix?`GPS работает · точность ±${Math.round(fix.accuracy)} м`:'Подключаем GPS…';
  $('map-heading').textContent=state.view==='catalog'?'Достопримечательности Саратова':demo?'Демо по историческому центру':gps?'Истории вокруг вас':'Город вне рамок';
  $('map-caption').textContent=fix?`Рядом ${state.near.length} · радиус 100 м`:`${placeCountLabel(places.length)} на карте · радиус 100 м`;
 }
@@ -189,7 +187,7 @@ function renderCards(){
  const narrator=find(voiceState.id)||active,newVoiceKey=narrator?.id||'empty';
  if(newVoiceKey!==voiceRenderKey){const transcriptOpen=!!$('voice-companion').querySelector('details[open]');$('voice-companion').innerHTML=`<div class="voice-orbit">${icon('headphones')}</div><div class="eyebrow">ИСТОРИИ ВКЛЮЧАЮТСЯ ПО ПУТИ</div><h3>${narrator?esc(narrator.name):'Слушайте город'}</h3><p>${narrator?esc(narrator.description):'Начните прогулку с GPS или выберите место в каталоге.'}</p>${narrator?`<details ${transcriptOpen?'open':''}><summary>Прочитать текст рассказа</summary><div class="story-text">${storyParagraphs(narrator.story)}<div class="story-sources">${storySources(narrator)}</div></div></details>`:''}`;voiceRenderKey=newVoiceKey;}
 }
-function updateProximity(){state.near=geo.nearby(places,state.fix);if(allowedNarration())state.near.forEach(p=>state.found.add(p.id));if(!state.exploring&&!state.near.some(p=>p.id===state.selected)&&state.view!=='catalog')state.selected=state.near[0]?.id||null;state.queue.discover(state.near.filter(p=>p.historyStatus!=='pending'),allowedNarration());renderCards();updateMap();updateLocationUI();updateHeadingNote();$('discovered').textContent=`${state.found.size} ${state.found.size%10===1&&state.found.size%100!==11?'место':state.found.size%10>=2&&state.found.size%10<=4&&(state.found.size%100<12||state.found.size%100>14)?'места':'мест'}`;maybeNarrate();}
+function updateProximity(){state.near=geo.nearby(places,state.fix);if(allowedNarration())state.near.forEach(p=>state.found.add(p.id));if(!state.exploring&&!state.near.some(p=>p.id===state.selected)&&state.view!=='catalog')state.selected=state.near[0]?.id||null;state.queue.discover(state.near.filter(p=>p.historyStatus!=='pending'),allowedNarration());renderCards();updateMap();updateLocationUI();$('discovered').textContent=`${state.found.size} ${state.found.size%10===1&&state.found.size%100!==11?'место':state.found.size%10>=2&&state.found.size%10<=4&&(state.found.size%100<12||state.found.size%100>14)?'места':'мест'}`;maybeNarrate();}
 function selectPlace(id,fromMap=false){
  window.dispatchEvent(new CustomEvent('ryadom:place-selected',{detail:{id,fromMap}}));
  if(fromMap&&innerWidth<=760)setTab('nearby',false);
@@ -197,21 +195,34 @@ function selectPlace(id,fromMap=false){
  if(state.mode==='voice')startNarration(id);
  if(fromMap){const card=state.mode==='voice'?$('voice-companion'):$('place-list').querySelector(`[data-place-id="${id}"]`);(card||document.querySelector('.discoveries')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}
 }
-function setTab(tab,scroll=true){state.view=tab;document.body.classList.toggle('mobile-map',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');if(tab!=='map'){const explorer=$('explorer');if(explorer){explorer.style.transition='';explorer.style.transform='';}}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='nearby'?'map':tab)));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();updateHeadingNote();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
+function setTab(tab,scroll=true){state.view=tab;document.body.classList.toggle('sheet-peek',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');if(tab!=='map'){const explorer=$('explorer');if(explorer){explorer.style.transition='';explorer.style.transform='';}}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='nearby'?'map':tab)));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
 function initSheetDrag(){
  const handle=$('sheet-handle'),explorer=$('explorer');
  if(!handle||!explorer)return;
  let startY=0,delta=0,dragging=false;
- const openMap=()=>setTab('map',true);
- const finish=allowOpen=>{
+ const isPeek=()=>document.body.classList.contains('sheet-peek');
+ const collapse=()=>setTab('map',true);
+ const restore=()=>setTab('nearby',true);
+ const finish=commit=>{
   if(!dragging)return;
   dragging=false;
-  const open=allowOpen&&delta>Math.min(130,innerHeight*.16);
+  const peek=isPeek();
   explorer.style.transition='transform .2s ease';
-  if(open){
-   explorer.style.transform='translateY(100%)';
-   window.setTimeout(()=>{openMap();explorer.style.transition='';explorer.style.transform='';},190);
-  }else explorer.style.transform='';
+  if(!commit){
+   explorer.style.transform='';
+   if(peek)restore();else collapse();
+  }else if(peek){
+   if(delta<-30){
+    explorer.style.transform='translateY(-28px)';
+    window.setTimeout(()=>{restore();explorer.style.transition='';explorer.style.transform='';},190);
+   }else explorer.style.transform='';
+  }else{
+   const threshold=Math.min(110,innerHeight*.14);
+   if(delta>threshold){
+    explorer.style.transform=`translateY(${Math.min(delta,160)}px)`;
+    window.setTimeout(()=>{collapse();explorer.style.transition='';explorer.style.transform='';},190);
+   }else explorer.style.transform='';
+  }
   delta=0;
  };
  handle.addEventListener('pointerdown',event=>{
@@ -222,17 +233,16 @@ function initSheetDrag(){
  });
  handle.addEventListener('pointermove',event=>{
   if(!dragging)return;
-  delta=Math.max(0,event.clientY-startY);
-  explorer.style.transform=`translateY(${delta}px)`;
+  if(isPeek())delta=event.clientY-startY;
+  else delta=Math.max(0,event.clientY-startY);
+  explorer.style.transform=isPeek()?`translateY(${Math.min(0,delta)}px)`:`translateY(${Math.min(delta,160)}px)`;
  });
  handle.addEventListener('pointerup',()=>{
   if(!dragging)return;
-  const tapped=delta<8;
-  finish(!tapped);
-  if(tapped)openMap();
+  finish(Math.abs(delta)>=8);
  });
  handle.addEventListener('pointercancel',()=>finish(false));
- handle.addEventListener('click',event=>{if(event.detail===0)openMap();});
+ handle.addEventListener('click',event=>{if(event.detail===0){if(isPeek())restore();else collapse();}});
 }
 const locator=geo.locationController({geolocation:navigator.geolocation,secure:window.isSecureContext,
  onStatus:()=>{state.source='gps';state.gpsIssue='';state.fix=null;updateProximity();},
@@ -296,7 +306,7 @@ $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration(
 $('card-mode').addEventListener('click',()=>setMode('cards'));$('voice-mode').addEventListener('click',()=>setMode('voice'));
 $('audio-play').addEventListener('click',toggleAudio);$('audio-close').addEventListener('click',()=>setMode('cards'));
 $('place-list').addEventListener('click',e=>{const listen=e.target.closest('[data-listen]');if(listen){state.selected=listen.dataset.listen;setMode('voice');return;}const card=e.target.closest('[data-place]');if(card){selectPlace(card.dataset.place);if(map){state.follow=false;const p=find(card.dataset.place);map.setView([p.lat,p.lng],17);}setTab('map',false);}});
-for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('mobile-map')){setTab('nearby');return;}setTab(tab);});
+for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('sheet-peek')){setTab('nearby');return;}setTab(tab);});
 for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
 $('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
 $('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(map){if(state.fix)map.setView([state.fix.lat,state.fix.lng],17);else{map.setView([51.5305,46.0375],15);toast('Включите GPS, чтобы показать ваше положение.');}}});

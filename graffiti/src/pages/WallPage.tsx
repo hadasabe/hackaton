@@ -4,6 +4,7 @@ import { ArrowLeft, AtSign, MapPin, Ruler, Trash2, UserRound } from 'lucide-reac
 import { api } from '../lib/api';
 import { WALL_TERMS_META, WALL_TYPE_META } from '../lib/constants';
 import type { Wall } from '../lib/types';
+import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -21,6 +22,7 @@ export function WallPage() {
   const { id } = useParams();
   const numericId = Number(id);
   const { user } = useAuth();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [wall, setWall] = useState<Wall | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,14 @@ export function WallPage() {
   }
 
   async function removeWall() {
-    if (!wall || !window.confirm('Удалить стену?')) return;
+    if (!wall) return;
+    const confirmed = await confirm({
+      title: 'Удалить стену?',
+      message: 'Объявление и фото исчезнут без возможности восстановления.',
+      confirmLabel: 'Удалить',
+      skipKey: 'delete-wall',
+    });
+    if (!confirmed) return;
     try {
       await api.deleteWall(wall.id);
       navigate('/walls');

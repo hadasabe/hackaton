@@ -82,7 +82,7 @@ function getUser(req) {
     const payload = jwt.verify(token, JWT_SECRET);
     if (typeof payload !== 'object') return null;
     const user = db
-      .prepare('SELECT id, name, email, role FROM users WHERE id = ?')
+      .prepare('SELECT id, name, email, role, shadow_banned FROM users WHERE id = ?')
       .get(Number(payload.sub));
     return user || null;
   } catch {
@@ -280,9 +280,9 @@ function rateLimit(key, limit, windowMs) {
 
 const GRAFFITI_SELECT = `
   SELECT g.*,
-    (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'like') AS likes,
-    (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'dislike') AS dislikes,
-    (SELECT COUNT(*) FROM comments c WHERE c.graffiti_id = g.id AND c.deleted_at IS NULL) AS comments_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'like' AND r.actor_id NOT IN (SELECT 'user:' || u.id FROM users u WHERE u.shadow_banned = 1)) AS likes,
+    (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'dislike' AND r.actor_id NOT IN (SELECT 'user:' || u.id FROM users u WHERE u.shadow_banned = 1)) AS dislikes,
+    (SELECT COUNT(*) FROM comments c WHERE c.graffiti_id = g.id AND c.deleted_at IS NULL AND c.hidden = 0) AS comments_count,
     (SELECT r.value FROM reactions r WHERE r.graffiti_id = g.id AND r.actor_id = ?) AS my_reaction
   FROM graffiti g
 `;
@@ -395,9 +395,10 @@ app.get('/api/graffiti/:id', (req, res) => {
       SELECT id, actor_id, author_name, body, created_at
       FROM comments
       WHERE graffiti_id = ? AND deleted_at IS NULL
+        AND (hidden = 0 OR actor_id = ? OR ? = 1)
       ORDER BY datetime(created_at) ASC
     `)
-    .all(id)
+    .all(id, req.actorId, req.user?.role === 'admin' ? 1 : 0)
     .map((comment) => ({
       id: comment.id,
       author_name: comment.author_name,
@@ -479,8 +480,8 @@ app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
     return;
   }
   const info = db
-    .prepare('INSERT INTO comments (graffiti_id, actor_id, author_name, body, created_at) VALUES (?, ?, ?, ?, ?)')
-    .run(id, req.actorId, authorName, body, nowIso());
+    .prepare('INSERT INTO comments (graffiti_id, actor_id, author_name, body, created_at, hidden) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(id, req.actorId, authorName, body, nowIso(), req.user.shadow_banned ? 1 : 0);
   res.status(201).json({
     id: Number(info.lastInsertRowid),
     author_name: authorName,
@@ -622,16 +623,19 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
     .prepare('INSERT INTO media (mime, data, created_at, content_hash, dhash) VALUES (?, ?, ?, ?, ?)')
     .run(req.file.mimetype, req.file.buffer, nowIso(), imageHash, imageDHash);
   const imagePath = `/api/media/${Number(mediaInfo.lastInsertRowid)}`;
-  const autoPublish = canAutoPublish(ai);
+  const shadowBanned = Boolean(req.user.shadow_banned);
+  const autoPublish = !shadowBanned && canAutoPublish(ai);
   const createdAt = nowIso();
   const moderationStatus = autoPublish ? 'published' : 'pending';
+  const storedStatus = shadowBanned ? 'rejected' : moderationStatus;
+  const storedReason = shadowBanned ? 'Скрыто теневой модерацией' : '';
 
   const info = db
     .prepare(`
       INSERT INTO graffiti (
         image_path, address, status, style, author_name, description,
-        moderation_status, created_by, created_at, published_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        moderation_status, reject_reason, created_by, created_at, published_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .run(
       imagePath,
@@ -640,7 +644,8 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
       style,
       '',
       description,
-      moderationStatus,
+      storedStatus,
+      storedReason,
       req.actorId,
       createdAt,
       autoPublish ? createdAt : null,
@@ -884,6 +889,46 @@ app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
     UPDATE walls SET moderation_status = 'rejected', reject_reason = ? WHERE id = ?
   `).run(reason, wall.id);
   res.json({ ok: true });
+});
+
+app.get('/api/admin/users', requireAdmin, (_req, res) => {
+  const items = db
+    .prepare(`
+      SELECT
+        u.id, u.name, u.email, u.role, u.created_at, u.shadow_banned,
+        (SELECT COUNT(*) FROM graffiti g WHERE g.created_by = 'user:' || u.id) AS graffiti_count,
+        (SELECT COUNT(*) FROM comments c WHERE c.actor_id = 'user:' || u.id AND c.deleted_at IS NULL) AS comments_count,
+        (SELECT COUNT(*) FROM walls w WHERE w.owner_id = u.id) AS walls_count
+      FROM users u
+      ORDER BY datetime(u.created_at) DESC, u.id DESC
+      LIMIT 500
+    `)
+    .all();
+  res.json({ items, counts: { users: items.length } });
+});
+
+app.post('/api/admin/users/:id/shadow-ban', requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  const banned = req.body?.banned;
+  if (!Number.isInteger(id) || typeof banned !== 'boolean') {
+    res.status(400).json({ error: 'Некорректные данные' });
+    return;
+  }
+  const target = db.prepare('SELECT id, role FROM users WHERE id = ?').get(id);
+  if (!target) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  if (target.id === req.user.id) {
+    res.status(400).json({ error: 'Нельзя применить ограничение к себе' });
+    return;
+  }
+  if (target.role === 'admin') {
+    res.status(400).json({ error: 'Нельзя ограничить администратора' });
+    return;
+  }
+  db.prepare('UPDATE users SET shadow_banned = ? WHERE id = ?').run(banned ? 1 : 0, id);
+  res.json({ ok: true, shadow_banned: banned });
 });
 
 app.get('/api/admin/graffiti', requireAdmin, (req, res) => {

@@ -1,5 +1,6 @@
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ConfirmProvider } from './components/ConfirmDialog';
 import { Header } from './components/Header';
 import { AdminGate } from './components/AdminGate';
 import { RequireAuth } from './components/RequireAuth';
@@ -43,7 +44,8 @@ export default function App() {
   return (
     <HashRouter>
       <AuthProvider>
-        <div className="app-shell">
+        <ConfirmProvider>
+          <div className="app-shell">
           <Header />
           <Routes>
             <Route path="/" element={<FeedPage />} />
@@ -88,7 +90,8 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
-        </div>
+          </div>
+        </ConfirmProvider>
       </AuthProvider>
     </HashRouter>
   );

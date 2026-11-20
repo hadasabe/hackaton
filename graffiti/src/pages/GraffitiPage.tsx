@@ -16,12 +16,14 @@ import { STATUS_META, STATUS_OPTIONS } from '../lib/constants';
 import type { Comment, Graffiti, ReactionValue, Status } from '../lib/types';
 import { formatDate, timeAgo } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
+import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
 
 export function GraffitiPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const numericId = Number(id);
   const [item, setItem] = useState<Graffiti | null>(null);
@@ -109,7 +111,13 @@ export function GraffitiPage() {
   }
 
   async function removeComment(commentId: number) {
-    if (!window.confirm('Удалить комментарий?')) return;
+    const confirmed = await confirm({
+      title: 'Удалить комментарий?',
+      message: 'Комментарий исчезнет для всех. Действие необратимо.',
+      confirmLabel: 'Удалить',
+      skipKey: 'delete-comment',
+    });
+    if (!confirmed) return;
     try {
       await api.deleteComment(commentId);
       setComments((current) => current.filter((comment) => comment.id !== commentId));
