@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import { LogOut, Map, ShieldCheck, SprayCan, Upload } from 'lucide-react';
+import { LogOut, Map, ShieldCheck, SprayCan } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
@@ -22,10 +22,6 @@ export function Header() {
         <NavLink to="/walk" className="nav-walk">
           <Map size={15} />
           Прогулка
-        </NavLink>
-        <NavLink to="/submit" className="nav-submit">
-          <Upload size={15} />
-          Добавить
         </NavLink>
         {isAdmin ? (
           <NavLink to="/admin" className="nav-admin">
