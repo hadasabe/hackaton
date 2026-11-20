@@ -240,9 +240,9 @@ dialog .button{margin:12px 0}
   .layout{height:auto;min-height:0;display:flex;flex-direction:column}
   .map-region{order:0;height:42dvh;min-height:285px;max-height:365px}
   .explorer{order:1;position:relative;z-index:700;overflow:visible;border:0;border-radius:29px 29px 0 0;margin-top:-28px;padding-top:13px;min-height:50dvh;box-shadow:0 -6px 25px #10180e16}
-  .sheet-handle{display:flex;justify-content:center;align-items:flex-start;width:100%;height:24px;padding:7px 0 0;margin:-7px 0 3px;border:0;background:none;touch-action:none;cursor:grab}
-  .sheet-handle::before{content:"";display:block;width:39px;height:4px;border-radius:3px;background:#c1c7b4}
-  .sheet-handle:active{cursor:grabbing}
+  .sheet-handle{display:flex;align-items:center;justify-content:center;width:46px;height:32px;margin:-2px auto 8px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);touch-action:none;cursor:pointer;box-shadow:0 2px 8px #10180e18}
+  .sheet-handle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .sheet-handle:active{transform:scale(.95)}
   .intro{padding:0 21px 15px}
   .intro .eyebrow{font-size:8px;letter-spacing:1.15px}
   h1{font-size:35px;line-height:1.25;letter-spacing:-1.8px;margin:11px 0 13px}
@@ -302,10 +302,10 @@ dialog .button{margin:12px 0}
   .has-location .location-box p{display:none}
   .has-location .location-box{margin-bottom:24px}
   .has-location #gps-button{min-height:48px;font-size:14px}
-  .sheet-peek .map-region{height:calc(100dvh - var(--header-height) - var(--nav-height) - 68px - env(safe-area-inset-bottom));max-height:none;min-height:320px}
-  .sheet-peek .explorer{min-height:0;height:96px;overflow:hidden;padding-top:13px}
-  .sheet-peek .explorer > :not(.sheet-handle):not(.exp-catalog-tabs){display:none}
-  .sheet-peek .exp-catalog-tabs{display:flex;margin:0 21px}
+  .sheet-peek .map-region{height:calc(100dvh - var(--header-height) - var(--nav-height) - 32px - env(safe-area-inset-bottom));max-height:none;min-height:320px}
+  .sheet-peek .explorer{min-height:0;height:60px;overflow:hidden;padding-top:9px}
+  .sheet-peek .explorer > :not(.sheet-handle){display:none}
+  .sheet-peek .sheet-handle{margin-top:0}
   .sheet-peek.voice-mode .map-bottom{bottom:165px}
   .mobile-catalog .map-region{display:none}
   .mobile-catalog .explorer{margin:0;padding:28px 0 0;border-radius:0;box-shadow:none;min-height:calc(100dvh - 150px)}
