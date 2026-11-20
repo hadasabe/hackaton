@@ -64,8 +64,6 @@ h1 em,.catalog-intro h2 em{font-style:normal;box-decoration-break:clone;-webkit-
 .full{width:100%}
 #gps-button{font-size:16px;min-height:54px}
 .text-button{min-height:44px;border:0;background:none;padding:6px 0;font-size:13px;font-weight:650;color:#4c5144;text-decoration:underline;text-underline-offset:4px}
-.demo-switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}
-.demo-switch-row>span{font-size:11px;white-space:nowrap;color:var(--muted)}
 .discoveries{padding:0 28px 28px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:19px}
 .section-head>div{display:flex;align-items:center;gap:9px;min-width:0}
@@ -268,8 +266,6 @@ dialog .button{margin:12px 0}
   .location-heading{display:none}
   .location-box p{font-size:12px;line-height:1.6;margin:0 0 12px}
   #gps-button{min-height:54px;font-size:16px;border-radius:16px}
-  .demo-switch-row{margin-top:2px}
-  .demo-switch-row .text-button{font-size:12px}
   .discoveries{padding:0 21px 28px}
   .section-head{margin-bottom:16px}
   h2{font-size:18px}

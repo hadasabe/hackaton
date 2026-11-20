@@ -241,7 +241,7 @@ const locator=geo.locationController({geolocation:navigator.geolocation,secure:w
 });
 function stopDemo(){clearInterval(state.timer);state.timer=null;state.running=false;}
 function stopSources(){locator.stop();stopDemo();if(demoLine){demoLine.remove();demoLine=null;}}
-function beginGPS(){if(state.source==='gps'&&locator.active){stopLocation();return;}stopSources();stopNarration();state.queue.reset();state.found.clear();state.fix=null;state.heading=null;state.headingAnchor=null;state.source='gps';state.exploring=false;state.follow=true;updateProximity();locator.start();}
+function beginGPS(){if(state.source==='gps'&&locator.active){stopLocation();return;}stopSources();stopNarration();state.queue.reset();state.found.clear();state.fix=null;state.heading=null;state.headingAnchor=null;state.source='gps';state.exploring=false;state.follow=true;updateProximity();if(locator.start()&&innerWidth<=760)setTab('map',true);}
 function stopLocation(){setTab('nearby',false);state.heading=null;state.headingAnchor=null;stopSources();stopNarration();state.source='browse';state.fix=null;state.gpsIssue='';state.near=[];state.queue.reset();state.selected=null;state.exploring=false;updateProximity();}
 const demoIds=['conservatory','art-garmoshka','chernyshevsky','utoli','schmidt','art-time-face','lipki','estate','fedin','embankment','trinity','local-history','radishchev'];
 const demoPath=demoIds.map(id=>find(id));const segments=demoPath.slice(1).map((p,i)=>geo.meters(demoPath[i],p));const routeLength=segments.reduce((s,n)=>s+n,0);
