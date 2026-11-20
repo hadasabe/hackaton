@@ -14,6 +14,12 @@ export default defineConfig({
             res.end();
             return;
           }
+          if (req.url === '/walk' || req.url === '/walk/') {
+            res.statusCode = 302;
+            res.setHeader('Location', '/#/walk');
+            res.end();
+            return;
+          }
           next();
         });
       },
@@ -28,7 +34,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3001',
       '/uploads': 'http://localhost:3001',
-      '/walk': 'http://localhost:3001',
+      '/walk-app': 'http://localhost:3001',
     },
   },
 });

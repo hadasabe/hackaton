@@ -19,10 +19,10 @@ export function Header() {
       <nav className="main-nav" aria-label="Основная навигация">
         <NavLink to="/" end>Лента</NavLink>
         <NavLink to="/walls">Стены</NavLink>
-        <a href="/walk/" className="nav-walk">
+        <NavLink to="/walk" className="nav-walk">
           <Map size={15} />
           Прогулка
-        </a>
+        </NavLink>
         <NavLink to="/submit" className="nav-submit">
           <Upload size={15} />
           Добавить

@@ -1,4 +1,5 @@
 'use strict';
+if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed-mode');
 const $=id=>document.getElementById(id);
 const icon=name=>`<svg aria-hidden="true"><use href="#${name}"/></svg>`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

@@ -393,3 +393,31 @@ body.walk-fullscreen{overflow:hidden;padding:0}
 .place-status{border:1px solid #dbe2cf;border-radius:13px;background:#edf1e4;margin:0 0 16px}
 .place-status>summary{cursor:pointer;min-height:44px;padding:11px 13px;font-size:12px;line-height:1.6;font-weight:750;color:#586447}
 .place-status>.place-status-note{border:0;border-top:1px solid #dbe2cf;background:none;border-radius:0;padding:12px 13px;margin:0;font-size:12px;line-height:1.75;color:#667453}
+
+/* Embedded as the second section of the Stena site: the outer header is Stena's. */
+body.embed-mode{--header-height:0px}
+body.embed-mode .header,
+body.embed-mode .network-note{display:none!important}
+
+/* Shared visual language with «Стена»: paper, ink, lime and hard offset shadows. */
+.place-card,
+.location-box,
+.profile-stats button,
+.profile-photo-grid button,
+.exp-saved-card,
+.search-box,
+.category-chips button,
+.mode-switch,
+.exp-catalog-tabs{border:2px solid var(--ink)}
+.place-card,
+.location-box,
+.exp-saved-card,
+.profile-stats button{box-shadow:5px 5px 0 var(--ink)}
+.button{border:2px solid var(--ink);border-radius:999px;box-shadow:3px 3px 0 var(--ink)}
+.button:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.secondary{background:var(--surface)}
+.category-chips button{border-radius:999px}
+.search-box{border-radius:999px}
+.mobile-tabs{border-top:2px solid var(--ink)}
+.profile-photo-grid button{border-radius:16px}

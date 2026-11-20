@@ -36,7 +36,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(COOKIE_SECRET));
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '30d', immutable: true }));
 app.use(
-  '/walk',
+  '/walk-app',
   (req, res, next) => {
     if (/^\/(tools|tests)\//.test(req.path) || /\.(md|py|cjs|cmd|zip)$/i.test(req.path)) {
       res.status(404).end();
@@ -1001,6 +1001,7 @@ app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
 
 if (process.env.NODE_ENV === 'production') {
   app.get('/admin', (_req, res) => res.redirect('/#/admin'));
+  app.get(['/walk', '/walk/'], (_req, res) => res.redirect('/#/walk'));
   app.use(express.static(DIST_DIR, { maxAge: '1h' }));
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {

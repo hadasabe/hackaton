@@ -13,6 +13,7 @@ import { SubmitPage } from './pages/SubmitPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AdminPage } from './pages/AdminPage';
+import { WalkPage } from './pages/WalkPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 function Footer() {
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/" element={<FeedPage />} />
             <Route path="/g/:id" element={<GraffitiPage />} />
             <Route path="/walls" element={<WallsPage />} />
+            <Route path="/walk" element={<WalkPage />} />
             <Route
               path="/walls/new"
               element={(
