@@ -6,6 +6,7 @@
 .exp-catalog-tabs button span{display:inline-block;padding:1px 5px;margin-left:3px;border-radius:10px;background:var(--lime);color:var(--ink);font-size:10px}
 .experience-view .intro,.experience-view .location-box,.experience-view .discoveries,.experience-view .sidebar-footer{display:none}
 .experience-view[data-experience-view=favorites] .exp-catalog-tabs{display:none}
+.experience-view[data-experience-view=profile] .exp-catalog-tabs{display:none}
 .experience-panel{padding:0 28px 35px}
 .exp-panel-heading{padding:0 0 25px}
 .exp-panel-heading h2,.exp-empty h2{font-size:40px;line-height:1.04;letter-spacing:-1.9px;margin:15px 0 18px}
@@ -71,6 +72,38 @@
 .exp-plan-footer{padding-top:24px}
 .exp-plan-footer .exp-external{margin-top:15px;background:var(--ink);color:var(--surface);font-size:13px}
 .exp-plan-footer .exp-clear-plan{color:#74654a;margin-top:23px}
+
+/* Local profile: same paper, ink and lime language as the reference screens. */
+.profile-view{padding:4px 0 35px}
+.profile-head{display:flex;align-items:center;gap:17px;padding:10px 0 24px}
+.profile-avatar{display:grid;place-items:center;width:84px;height:84px;flex-shrink:0;border-radius:50%;background:var(--lime);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.profile-avatar svg{width:35px;height:35px;stroke-width:1.7}
+.profile-head h2{font-size:35px;line-height:1;letter-spacing:-1.5px;margin:7px 0 9px}
+.profile-head p{font-size:13px;line-height:1.65;color:var(--muted);margin:0}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px}
+.profile-stats button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-height:80px;padding:13px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-align:left}
+.profile-stats button:hover{border-color:var(--ink)}
+.profile-stats strong{font-size:25px;line-height:1;letter-spacing:-1px}
+.profile-stats span{font-size:10px;line-height:1.35;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.6px}
+.profile-gallery{margin:0 0 25px}
+.profile-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.profile-section-head h3{font-size:19px;line-height:1.2;letter-spacing:-.5px;margin:0}
+.profile-section-head .text-button{min-height:38px;font-size:12px}
+.profile-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.profile-photo-grid button{aspect-ratio:1.15;padding:0;border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#dfe3d3}
+.profile-photo-grid img{display:block;width:100%;height:100%;object-fit:cover}
+.profile-photo-grid .exp-no-photo{min-height:100%}
+.profile-actions{display:flex;flex-direction:column;gap:8px}
+.profile-actions .button{justify-content:flex-start;padding-left:16px}
+.profile-view>.exp-local-note{margin-top:16px}
+@media(max-width:760px){
+ .profile-view{padding:0 0 30px}
+ .profile-avatar{width:76px;height:76px}
+ .profile-head h2{font-size:32px}
+ .profile-head{padding-top:4px}
+ .profile-stats button{padding:11px 10px}
+ .profile-stats strong{font-size:23px}
+}
 
 /* A real-photo viewer: no stock people, social counters or invented authors. */
 body.gallery-open{overflow:hidden}

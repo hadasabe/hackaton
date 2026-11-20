@@ -193,7 +193,7 @@ $('expand-map').addEventListener('click',()=>state.fullMap?setTab('nearby'):setW
 $('walk-feed').addEventListener('click',()=>{setTab('nearby',false);document.querySelector('.discoveries').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.fullMap)setTab('nearby',false);});
 $('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(map){if(state.fix)map.setView([state.fix.lat,state.fix.lng],17);else{map.setView([51.5305,46.0375],15);toast('Включите GPS, чтобы показать ваше положение.');}}});
-$('help-button').addEventListener('click',()=>$('settings-dialog').showModal());$('close-settings').addEventListener('click',()=>$('settings-dialog').close());
+$('close-settings').addEventListener('click',()=>$('settings-dialog').close());
 $('audio-policy').addEventListener('change',e=>{audioPolicy=e.target.value;try{localStorage.setItem('ryadom-audio-policy',audioPolicy);}catch(_e){}stopNarration();voiceState.message='Настройка озвучки изменена. Нажмите воспроизведение.';audioUI();});
 function networkStatus(){$('network-note').hidden=navigator.onLine;}
 window.addEventListener('online',networkStatus);window.addEventListener('offline',networkStatus);
