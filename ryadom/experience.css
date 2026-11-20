@@ -172,8 +172,8 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 }
 
 /* User routes */
-.exp-routes-switch{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:15px;background:#e6e8dc;margin:18px 0}
-.exp-routes-switch button{flex:1;min-height:42px;border:0;border-radius:11px;background:none;color:#555d48;font-size:12px;font-weight:800;padding:8px 6px}
+.exp-routes-switch{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.exp-routes-switch button{min-height:38px;padding:7px 13px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:12px;font-weight:800}
 .exp-routes-switch button.active{background:var(--ink);color:var(--surface)}
 .exp-routes-list{display:flex;flex-direction:column;gap:16px}
 .exp-route-card{border:1px solid var(--line);border-radius:22px;background:var(--surface);overflow:hidden}
