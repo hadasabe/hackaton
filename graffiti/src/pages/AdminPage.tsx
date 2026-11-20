@@ -1,0 +1,467 @@
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import {
+  Check,
+  Clock3,
+  MapPin,
+  Pencil,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react';
+import { api } from '../lib/api';
+import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
+import type { AdminCounts, AiCheck, Graffiti, Status, StatusReport, Style } from '../lib/types';
+import { formatDate } from '../lib/format';
+import { Tags } from '../components/GraffitiCard';
+
+type Tab = 'pending' | 'published' | 'rejected' | 'status';
+type ReportTab = 'pending' | 'approved' | 'rejected';
+
+const TAB_LABEL: Record<Tab, string> = {
+  pending: 'На модерации',
+  published: 'Опубликованные',
+  rejected: 'Отклонённые',
+  status: 'Статусы',
+};
+
+const REPORT_TAB_LABEL: Record<ReportTab, string> = {
+  pending: 'На проверке',
+  approved: 'Подтверждённые',
+  rejected: 'Отклонённые',
+};
+
+export function AdminPage() {
+  const [tab, setTab] = useState<Tab>('pending');
+  const [reportTab, setReportTab] = useState<ReportTab>('pending');
+  const [items, setItems] = useState<Graffiti[]>([]);
+  const [reports, setReports] = useState<StatusReport[]>([]);
+  const [reportCounts, setReportCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [counts, setCounts] = useState<AdminCounts>({
+    pending: 0,
+    published: 0,
+    rejected: 0,
+    status: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [editing, setEditing] = useState<Graffiti | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (tab === 'status') {
+        const data = await api.adminStatusReports(reportTab);
+        setReports(data.items);
+        setReportCounts(data.counts);
+        setCounts((current) => ({ ...current, status: data.counts.pending }));
+      } else {
+        const data = await api.adminList(tab);
+        setItems(data.items);
+        setCounts(data.counts);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось загрузить заявки');
+    } finally {
+      setLoading(false);
+    }
+  }, [tab, reportTab]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function approve(id: number) {
+    try {
+      await api.approve(id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось опубликовать');
+    }
+  }
+
+  async function reject(id: number) {
+    const reason = window.prompt(
+      'Причина отклонения (увидит только редакция):',
+      'Не соответствует правилам публикации.',
+    );
+    if (reason == null) return;
+    try {
+      await api.reject(id, reason);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить');
+    }
+  }
+
+  async function remove(item: Graffiti) {
+    if (!window.confirm(`Удалить работу «${item.address}»? Это действие необратимо.`)) return;
+    try {
+      await api.remove(item.id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось удалить');
+    }
+  }
+
+  async function approveReport(id: number) {
+    try {
+      await api.approveStatusReport(id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось подтвердить статус');
+    }
+  }
+
+  async function rejectReport(id: number) {
+    const reason = window.prompt(
+      'Почему статус не подтверждён?',
+      'Не удалось подтвердить изменения по фото.',
+    );
+    if (reason == null) return;
+    try {
+      await api.rejectStatusReport(id, reason);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отклонить статус');
+    }
+  }
+
+  return (
+    <main className="page admin-page">
+      <div className="admin-head">
+        <div>
+          <span className="section-kicker"><ShieldCheck size={14} /> Редакция</span>
+          <h1>Заявки и публикации</h1>
+          <p>Проверяйте фото, адреса и теги. AI уже оценил заявку — подтвердите её или отклоните. Всё, что опубликовано, сразу появляется в ленте.</p>
+        </div>
+        <button type="button" className="button button-outline" onClick={() => void load()}>
+          <RefreshCw size={15} /> Обновить
+        </button>
+      </div>
+
+      <div className="admin-tabs">
+        {(Object.keys(TAB_LABEL) as Tab[]).map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`admin-tab ${tab === value ? 'active' : ''}`}
+            onClick={() => setTab(value)}
+          >
+            {TAB_LABEL[value]}
+            <span>{counts[value]}</span>
+          </button>
+        ))}
+      </div>
+
+      {error ? <div className="notice error">{error}</div> : null}
+
+      {tab === 'status' ? (
+        <StatusReportsPanel
+          reports={reports}
+          reportTab={reportTab}
+          counts={reportCounts}
+          loading={loading}
+          onTab={setReportTab}
+          onApprove={(id) => void approveReport(id)}
+          onReject={(id) => void rejectReport(id)}
+        />
+      ) : loading ? (
+        <div className="admin-list">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div className="admin-skeleton" key={index} />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="empty-admin">
+          <Clock3 size={32} />
+          <h3>Здесь пусто</h3>
+          <p>{tab === 'pending' ? 'Новых заявок пока нет.' : 'В этой вкладке пока нет работ.'}</p>
+        </div>
+      ) : (
+        <div className="admin-list">
+          {items.map((item) => (
+            <article className="admin-card" key={item.id}>
+              <img src={item.image_path} alt={`Заявка: ${item.address}`} loading="lazy" />
+              <div className="admin-card-body">
+                <div className="admin-card-top">
+                  <span className="admin-id">#{item.id}</span>
+                  <Tags item={item} />
+                  <span className={`moderation-badge ${item.moderation_status}`}>
+                    {item.moderation_status === 'pending' ? 'на проверке' : item.moderation_status === 'published' ? 'опубликовано' : 'отклонено'}
+                  </span>
+                </div>
+                <h3><MapPin size={15} /> {item.address}</h3>
+                <p className="admin-description">{item.description || 'Без описания'}</p>
+                {item.ai ? <AiCheckBadge check={item.ai} /> : null}
+                <div className="admin-meta">
+                  <span>{item.author_name || 'автор не указан'}</span>
+                  <span>{formatDate(item.created_at)}</span>
+                  <span>❤ {item.likes} · 👎 {item.dislikes} · 💬 {item.comments_count}</span>
+                </div>
+                {item.reject_reason ? <p className="reject-reason">Причина: {item.reject_reason}</p> : null}
+                <div className="admin-actions">
+                  {item.moderation_status !== 'published' ? (
+                    <button type="button" className="button button-lime" onClick={() => void approve(item.id)}>
+                      <Check size={15} /> Опубликовать
+                    </button>
+                  ) : null}
+                  {item.moderation_status !== 'rejected' ? (
+                    <button type="button" className="button button-outline" onClick={() => void reject(item.id)}>
+                      <X size={15} /> Отклонить
+                    </button>
+                  ) : null}
+                  <button type="button" className="button button-outline" onClick={() => setEditing(item)}>
+                    <Pencil size={15} /> Редактировать
+                  </button>
+                  <button type="button" className="button button-danger" onClick={() => void remove(item)}>
+                    <Trash2 size={15} /> Удалить
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {editing ? (
+        <EditModal
+          item={editing}
+          onClose={() => setEditing(null)}
+          onSaved={async () => {
+            setEditing(null);
+            await load();
+          }}
+        />
+      ) : null}
+    </main>
+  );
+}
+
+function AiCheckBadge({ check }: { check: AiCheck }) {
+  const flags = [
+    check.verdict.nsfw ? 'NSFW' : '',
+    check.verdict.violence ? 'насилие' : '',
+    check.verdict.extremism ? 'экстремизм' : '',
+    check.verdict.personalData ? 'персональные данные' : '',
+    check.verdict.isGraffiti === false ? 'не граффити' : '',
+    check.verdict.duplicate ? `дубль #${check.verdict.duplicateOf ?? '?'}` : '',
+    check.verdict.isScreenshot ? 'скриншот' : '',
+    check.verdict.hasWatermark ? 'водяной знак' : '',
+    check.verdict.likelyRepost ? 'похоже на репост' : '',
+    check.verdict.sameAsReference ? 'та же работа с другого ракурса' : '',
+  ].filter(Boolean);
+  const warn = flags.length > 0;
+  return (
+    <div className={`ai-check ${warn ? 'warn' : ''}`}>
+      <div className="ai-check-head">
+        <strong>AI {Math.round(check.confidence * 100)}%</strong>
+        <span>{check.provider}/{check.model}</span>
+      </div>
+      <p>{check.summary || 'Без комментария'}</p>
+      {flags.length > 0 ? <small>Флаги: {flags.join(', ')}</small> : null}
+    </div>
+  );
+}
+
+function StatusReportsPanel({
+  reports,
+  reportTab,
+  counts,
+  loading,
+  onTab,
+  onApprove,
+  onReject,
+}: {
+  reports: StatusReport[];
+  reportTab: ReportTab;
+  counts: { pending: number; approved: number; rejected: number };
+  loading: boolean;
+  onTab: (tab: ReportTab) => void;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  return (
+    <>
+      <div className="report-tabs">
+        {(Object.keys(REPORT_TAB_LABEL) as ReportTab[]).map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`chip ${reportTab === value ? 'active' : ''}`}
+            onClick={() => onTab(value)}
+          >
+            {REPORT_TAB_LABEL[value]} <span>{counts[value]}</span>
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="admin-list">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div className="admin-skeleton" key={index} />
+          ))}
+        </div>
+      ) : reports.length === 0 ? (
+        <div className="empty-admin">
+          <Clock3 size={32} />
+          <h3>Здесь пусто</h3>
+          <p>
+            {reportTab === 'pending'
+              ? 'Новых сообщений о статусе пока нет.'
+              : 'В этой вкладке пока нет заявок.'}
+          </p>
+        </div>
+      ) : (
+        <div className="admin-list">
+          {reports.map((report) => {
+            const current = STATUS_META[report.current_status];
+            const proposed = STATUS_META[report.status];
+            return (
+              <article className="admin-card status-report-card" key={report.id}>
+                <img src={report.image_path} alt={`Работа: ${report.address}`} loading="lazy" />
+                <div className="admin-card-body">
+                  <div className="admin-card-top">
+                    <span className="admin-id">#{report.id}</span>
+                    <span className={`moderation-badge ${report.moderation_status}`}>
+                      {report.moderation_status === 'pending'
+                        ? 'на проверке'
+                        : report.moderation_status === 'approved'
+                          ? 'подтверждено'
+                          : 'отклонено'}
+                    </span>
+                  </div>
+                  <h3><MapPin size={15} /> {report.address}</h3>
+                  <div className="status-diff">
+                    <span className="tag" style={{ color: current.color, background: current.background }}>
+                      {current.label}
+                    </span>
+                    <span className="status-arrow">→</span>
+                    <span className="tag" style={{ color: proposed.color, background: proposed.background }}>
+                      {proposed.label}
+                    </span>
+                  </div>
+                  <p className="admin-description">
+                    {report.comment || 'Без комментария'}
+                  </p>
+                  <div className="admin-meta">
+                    <span>сообщил: {report.user_name}</span>
+                    <span>{formatDate(report.created_at)}</span>
+                    {report.reviewed_by ? <span>проверил: {report.reviewed_by}</span> : null}
+                  </div>
+                  {report.reject_reason ? (
+                    <p className="reject-reason">Причина: {report.reject_reason}</p>
+                  ) : null}
+                  {report.moderation_status === 'pending' ? (
+                    <div className="admin-actions">
+                      <button type="button" className="button button-lime" onClick={() => onApprove(report.id)}>
+                        <Check size={15} /> Подтвердить статус
+                      </button>
+                      <button type="button" className="button button-outline" onClick={() => onReject(report.id)}>
+                        <X size={15} /> Отклонить
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+function EditModal({
+  item,
+  onClose,
+  onSaved,
+}: {
+  item: Graffiti;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [address, setAddress] = useState(item.address);
+  const [status, setStatus] = useState<Status>(item.status);
+  const [style, setStyle] = useState<Style>(item.style);
+  const [author, setAuthor] = useState(item.author_name);
+  const [description, setDescription] = useState(item.description);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await api.update(item.id, {
+        address,
+        status,
+        style,
+        author_name: author,
+        description,
+      });
+      await onSaved();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось сохранить');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Редактировать работу">
+      <form className="modal-card" onSubmit={(event) => void save(event)}>
+        <div className="modal-head">
+          <div>
+            <span className="section-kicker">Редактирование #{item.id}</span>
+            <h2>Параметры работы</h2>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose} aria-label="Закрыть">
+            <X size={18} />
+          </button>
+        </div>
+
+        <label className="field">
+          <span>Адрес</span>
+          <input className="input" value={address} onChange={(event) => setAddress(event.target.value)} required />
+        </label>
+        <div className="form-grid">
+          <label className="field">
+            <span>Статус</span>
+            <select className="input" value={status} onChange={(event) => setStatus(event.target.value as Status)}>
+              {STATUS_OPTIONS.map((value) => (
+                <option key={value} value={value}>{STATUS_META[value].label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Стиль</span>
+            <select className="input" value={style} onChange={(event) => setStyle(event.target.value as Style)}>
+              {STYLE_OPTIONS.map((value) => (
+                <option key={value} value={value}>{STYLE_META[value].label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="field">
+          <span>Автор</span>
+          <input className="input" value={author} onChange={(event) => setAuthor(event.target.value)} />
+        </label>
+        <label className="field">
+          <span>Описание</span>
+          <textarea className="textarea" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} />
+        </label>
+
+        {error ? <div className="notice error">{error}</div> : null}
+        <div className="modal-actions">
+          <button type="button" className="button button-outline" onClick={onClose}>Отмена</button>
+          <button type="submit" className="button button-dark" disabled={saving}>
+            {saving ? 'Сохраняем…' : 'Сохранить'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

@@ -1,0 +1,72 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowLeftRight,
+  Banknote,
+  Bus,
+  Car,
+  Circle,
+  Droplets,
+  Flame,
+  Gavel,
+  Gift,
+  GraduationCap,
+  HeartPulse,
+  Home,
+  Landmark,
+  PawPrint,
+  Pill,
+  Plane,
+  Plus,
+  Repeat,
+  Shirt,
+  ShoppingBasket,
+  Thermometer,
+  Ticket,
+  Trash2,
+  Utensils,
+  WalletCards,
+  Wifi,
+  Wrench,
+  Zap,
+} from 'lucide-react';
+
+const ICONS: Record<string, LucideIcon> = {
+  basket: ShoppingBasket,
+  utensils: Utensils,
+  home: Home,
+  zap: Zap,
+  droplets: Droplets,
+  flame: Flame,
+  trash: Trash2,
+  thermometer: Thermometer,
+  wrench: Wrench,
+  wifi: Wifi,
+  bus: Bus,
+  car: Car,
+  heart: HeartPulse,
+  'heart-pulse': HeartPulse,
+  pill: Pill,
+  shirt: Shirt,
+  ticket: Ticket,
+  repeat: Repeat,
+  landmark: Landmark,
+  gavel: Gavel,
+  graduation: GraduationCap,
+  paw: PawPrint,
+  'paw-print': PawPrint,
+  gift: Gift,
+  plane: Plane,
+  circle: Circle,
+  banknote: Banknote,
+  'arrow-down': ArrowDown,
+  'arrow-left-right': ArrowLeftRight,
+  plus: Plus,
+};
+
+export function CategoryIcon({ icon, size = 16 }: { icon: string; size?: number }) {
+  const Icon = ICONS[icon] ?? Circle;
+  return <Icon size={size} strokeWidth={2} />;
+}
+
+export { WalletCards };

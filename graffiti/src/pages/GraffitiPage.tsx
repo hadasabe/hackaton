@@ -1,0 +1,347 @@
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  MapPin,
+  MessageCircle,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+} from 'lucide-react';
+import { api, ApiError } from '../lib/api';
+import { STATUS_META, STATUS_OPTIONS } from '../lib/constants';
+import type { Comment, Graffiti, ReactionValue, Status } from '../lib/types';
+import { formatDate, timeAgo } from '../lib/format';
+import { Tags } from '../components/GraffitiCard';
+import { useAuth } from '../context/AuthContext';
+import { NotFoundPage } from './NotFoundPage';
+
+export function GraffitiPage() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const numericId = Number(id);
+  const [item, setItem] = useState<Graffiti | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState('');
+  const [commentBody, setCommentBody] = useState('');
+  const [sending, setSending] = useState(false);
+  const [reportStatus, setReportStatus] = useState<Status>('alive');
+  const [reportComment, setReportComment] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+  const [reportError, setReportError] = useState('');
+
+  useEffect(() => {
+    if (!Number.isInteger(numericId)) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    api
+      .graffiti(numericId)
+      .then((data) => {
+        setItem(data.item);
+        setComments(data.comments);
+        setReportStatus(data.item.status);
+        setNotFound(false);
+      })
+      .catch((caught) => {
+        if (caught instanceof ApiError && caught.status === 404) setNotFound(true);
+        else setError(caught instanceof Error ? caught.message : 'Не удалось загрузить работу');
+      })
+      .finally(() => setLoading(false));
+  }, [numericId]);
+
+  async function handleReact(value: ReactionValue) {
+    if (!user) {
+      navigate('/login', { state: { from: `/g/${numericId}` } });
+      return;
+    }
+    if (!item) return;
+    const previous = item;
+    let likes = item.likes;
+    let dislikes = item.dislikes;
+    let myReaction = item.my_reaction;
+    if (myReaction === value) {
+      if (value === 'like') likes -= 1;
+      else dislikes -= 1;
+      myReaction = null;
+    } else {
+      if (myReaction === 'like') likes -= 1;
+      if (myReaction === 'dislike') dislikes -= 1;
+      if (value === 'like') likes += 1;
+      else dislikes += 1;
+      myReaction = value;
+    }
+    setItem({ ...item, likes, dislikes, my_reaction: myReaction });
+    try {
+      const result = await api.react(item.id, value);
+      setItem((current) => (current ? { ...current, ...result } : current));
+    } catch {
+      setItem(previous);
+    }
+  }
+
+  async function submitComment(event: FormEvent) {
+    event.preventDefault();
+    if (!item || !commentBody.trim()) return;
+    setSending(true);
+    setError('');
+    try {
+      const comment = await api.addComment(item.id, commentBody.trim());
+      setComments((current) => [...current, comment]);
+      setCommentBody('');
+      setItem((current) =>
+        current ? { ...current, comments_count: current.comments_count + 1 } : current,
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отправить комментарий');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function removeComment(commentId: number) {
+    if (!window.confirm('Удалить комментарий?')) return;
+    try {
+      await api.deleteComment(commentId);
+      setComments((current) => current.filter((comment) => comment.id !== commentId));
+      setItem((current) =>
+        current ? { ...current, comments_count: Math.max(0, current.comments_count - 1) } : current,
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось удалить комментарий');
+    }
+  }
+
+  async function submitStatusReport() {
+    if (!item || !user) return;
+    setReportSending(true);
+    setReportError('');
+    try {
+      await api.reportStatus(item.id, reportStatus, reportComment.trim());
+      setReportDone(true);
+      setReportComment('');
+    } catch (caught) {
+      setReportError(caught instanceof Error ? caught.message : 'Не удалось отправить заявку');
+    } finally {
+      setReportSending(false);
+    }
+  }
+
+  if (notFound) return <NotFoundPage />;
+
+  if (loading) {
+    return (
+      <main className="page">
+        <div className="detail-skeleton" />
+      </main>
+    );
+  }
+
+  if (!item) {
+    return (
+      <main className="page page-narrow">
+        <div className="notice error">{error || 'Работа не найдена'}</div>
+        <Link to="/" className="button button-outline"><ArrowLeft size={16} /> В ленту</Link>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page detail-page">
+      <Link to="/" className="back-link"><ArrowLeft size={16} /> В ленту</Link>
+
+      <div className="detail-layout">
+        <div className="detail-image">
+          <img src={item.image_path} alt={`Граффити: ${item.address}`} />
+        </div>
+
+        <div className="detail-info">
+          <div className="detail-head">
+            <div>
+              <span className="section-kicker">Работа #{item.id}</span>
+              <h1>{item.address}</h1>
+            </div>
+            <Tags item={item} />
+          </div>
+
+          <div className="detail-meta">
+            <span><MapPin size={15} /> {item.address}</span>
+            <span><Clock3 size={15} /> {formatDate(item.published_at || item.created_at)}</span>
+            {item.author_name ? <span>Автор: <strong>{item.author_name}</strong></span> : null}
+          </div>
+
+          {item.description ? <p className="detail-description">{item.description}</p> : null}
+
+          <div className="detail-actions">
+            <button
+              type="button"
+              className={`reaction big ${item.my_reaction === 'like' ? 'active like' : ''}`}
+              onClick={() => void handleReact('like')}
+            >
+              <ThumbsUp size={18} /> {item.likes}
+            </button>
+            <button
+              type="button"
+              className={`reaction big ${item.my_reaction === 'dislike' ? 'active dislike' : ''}`}
+              onClick={() => void handleReact('dislike')}
+            >
+              <ThumbsDown size={18} /> {item.dislikes}
+            </button>
+            <span className="comments-count">
+              <MessageCircle size={17} /> {comments.length}
+            </span>
+          </div>
+
+          <section className="status-report-box">
+            <div className="status-report-head">
+              <div>
+                <span className="section-kicker">Статус работы</span>
+                <h2>Что с работой сейчас?</h2>
+              </div>
+              <span
+                className="tag"
+                style={{
+                  color: STATUS_META[item.status].color,
+                  background: STATUS_META[item.status].background,
+                }}
+              >
+                {STATUS_META[item.status].label}
+              </span>
+            </div>
+            <p className="muted small">
+              Если граффити закрасили, оно осыпалось или, наоборот, всё ещё на месте —
+              сообщите. Редакция проверит и обновит статус.
+            </p>
+
+            {!user ? (
+              <div className="auth-inline">
+                <p>Войдите, чтобы сообщить об изменении статуса.</p>
+                <div className="row gap-10 wrap">
+                  <Link to="/login" state={{ from: `/g/${numericId}` }} className="button button-dark">
+                    Войти
+                  </Link>
+                  <Link to="/register" state={{ from: `/g/${numericId}` }} className="button button-outline">
+                    Регистрация
+                  </Link>
+                </div>
+              </div>
+            ) : reportDone ? (
+              <div className="status-report-done">
+                <CheckCircle2 size={20} />
+                <div>
+                  <strong>Спасибо, заявка на проверке</strong>
+                  <span>Редакция обновит статус после подтверждения.</span>
+                </div>
+              </div>
+            ) : (
+              <div className="status-report-form">
+                <div className="status-choice">
+                  {STATUS_OPTIONS.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`chip ${reportStatus === value ? 'active' : ''}`}
+                      onClick={() => setReportStatus(value)}
+                    >
+                      {STATUS_META[value].label}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  className="textarea"
+                  rows={2}
+                  value={reportComment}
+                  onChange={(event) => setReportComment(event.target.value)}
+                  placeholder="Комментарий для редакции: что изменилось?"
+                  maxLength={400}
+                />
+                {reportError ? <div className="notice error">{reportError}</div> : null}
+                <button
+                  type="button"
+                  className="button button-dark"
+                  onClick={() => void submitStatusReport()}
+                  disabled={reportSending}
+                >
+                  {reportSending ? 'Отправляем…' : 'Отправить на проверку'}
+                </button>
+              </div>
+            )}
+          </section>
+
+          <section className="comments">
+            <h2>Комментарии</h2>
+            {error ? <div className="notice error">{error}</div> : null}
+
+            {comments.length === 0 ? (
+              <p className="muted">Пока никто не оставил комментарий. Будьте первым.</p>
+            ) : (
+              <div className="comment-list">
+                {comments.map((comment) => (
+                  <article className="comment" key={comment.id}>
+                    <div className="comment-head">
+                      <strong>{comment.author_name}</strong>
+                      <span>{timeAgo(comment.created_at)}</span>
+                      {comment.can_delete ? (
+                        <button
+                          type="button"
+                          className="icon-button"
+                          onClick={() => void removeComment(comment.id)}
+                          aria-label="Удалить комментарий"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      ) : null}
+                    </div>
+                    <p>{comment.body}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {user ? (
+              <form className="comment-form" onSubmit={(event) => void submitComment(event)}>
+                <p className="comment-as">Комментарий от <strong>{user.name}</strong></p>
+                <textarea
+                  className="textarea"
+                  value={commentBody}
+                  onChange={(event) => setCommentBody(event.target.value)}
+                  placeholder="Что думаете об этой работе?"
+                  maxLength={1000}
+                  rows={3}
+                />
+                <button
+                  type="submit"
+                  className="button button-dark"
+                  disabled={sending || !commentBody.trim()}
+                >
+                  <Send size={15} /> {sending ? 'Отправляем…' : 'Отправить'}
+                </button>
+              </form>
+            ) : (
+              <div className="auth-inline">
+                <p>Войдите, чтобы оставить комментарий.</p>
+                <div className="row gap-10 wrap">
+                  <Link to="/login" state={{ from: `/g/${numericId}` }} className="button button-dark">
+                    Войти
+                  </Link>
+                  <Link to="/register" state={{ from: `/g/${numericId}` }} className="button button-outline">
+                    Регистрация
+                  </Link>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
