@@ -42,7 +42,9 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 h1,h2,h3{color:var(--ink);font-family:"Arial Black","Segoe UI",Arial,sans-serif;font-weight:900}
 h1{font-size:43px;line-height:1.13;letter-spacing:-2.3px;margin:17px 0 16px}
 .title-line{position:relative;z-index:1}
-h1 em,.catalog-intro h2 em{position:relative;z-index:0;display:inline-block;font-style:normal;line-height:1;vertical-align:baseline;box-decoration-break:clone;-webkit-box-decoration-break:clone;background:var(--lime);box-shadow:0 -6px 0 var(--lime);padding:0 4px;margin-left:-4px}
+h1 em,.catalog-intro h2 em{position:relative;z-index:0;display:inline-block;font-style:normal;line-height:1;vertical-align:baseline;box-decoration-break:clone;-webkit-box-decoration-break:clone;background:var(--lime);padding:0 4px;margin-left:-4px}
+h1 em{box-shadow:0 -17px 0 var(--lime)}
+.catalog-intro h2 em{box-shadow:0 -15px 0 var(--lime)}
 .intro>p{font-size:16px;line-height:1.65;color:var(--muted);margin:0 0 22px}
 .mode-switch{display:flex;gap:4px;background:#e6e8dc;border-radius:16px;padding:4px}
 .mode-switch button{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-height:46px;padding:10px 9px;border:0;border-radius:12px;background:none;color:#52564b;font-size:13px;font-weight:700;white-space:nowrap}
