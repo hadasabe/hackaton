@@ -18,7 +18,7 @@ import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 import { useConfirm } from '../components/ConfirmDialog';
 
-type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'status' | 'users';
+type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'buildings' | 'status' | 'users';
 type ReportTab = 'pending' | 'approved' | 'rejected';
 type ReasonKind = 'graffiti' | 'wall' | 'report';
 
@@ -34,7 +34,8 @@ const TAB_LABEL: Record<Tab, string> = {
   pending: 'На модерации',
   published: 'Опубликованные',
   rejected: 'Отклонённые',
-  walls: 'Стены и здания',
+  walls: 'Стены',
+  buildings: 'Здания',
   status: 'Статусы',
   users: 'Пользователи',
 };
@@ -51,6 +52,7 @@ export function AdminPage() {
   const [reportTab, setReportTab] = useState<ReportTab>('pending');
   const [items, setItems] = useState<Graffiti[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
+  const [buildings, setBuildings] = useState<Wall[]>([]);
   const [reports, setReports] = useState<StatusReport[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [reportCounts, setReportCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -59,6 +61,7 @@ export function AdminPage() {
     published: 0,
     rejected: 0,
     walls: 0,
+    buildings: 0,
     status: 0,
     users: 0,
   });
@@ -78,6 +81,9 @@ export function AdminPage() {
       if (tab === 'walls') {
         const data = await api.adminWalls();
         setWalls(data.items);
+      } else if (tab === 'buildings') {
+        const data = await api.adminBuildings();
+        setBuildings(data.items);
       } else if (tab === 'users') {
         const data = await api.adminUsers();
         setUsers(data.items);
@@ -239,6 +245,15 @@ export function AdminPage() {
       ) : tab === 'walls' ? (
         <WallsPanel
           walls={walls}
+          kind="wall"
+          loading={loading}
+          onApprove={(id) => void approveWall(id)}
+          onReject={(id) => void rejectWall(id)}
+        />
+      ) : tab === 'buildings' ? (
+        <WallsPanel
+          walls={buildings}
+          kind="building"
           loading={loading}
           onApprove={(id) => void approveWall(id)}
           onReject={(id) => void rejectWall(id)}
@@ -372,11 +387,13 @@ function AiCheckBadge({ check }: { check: AiCheck }) {
 
 function WallsPanel({
   walls,
+  kind,
   loading,
   onApprove,
   onReject,
 }: {
   walls: Wall[];
+  kind: 'wall' | 'building';
   loading: boolean;
   onApprove: (id: number) => void;
   onReject: (id: number) => void;
@@ -394,8 +411,8 @@ function WallsPanel({
     return (
       <div className="empty-admin">
         <Clock3 size={32} />
-        <h3>Объектов пока нет</h3>
-        <p>Когда пользователь добавит стену или здание, заявка появится здесь на проверке.</p>
+        <h3>{kind === 'building' ? 'Зданий пока нет' : 'Стен пока нет'}</h3>
+        <p>{kind === 'building' ? 'Когда пользователь добавит здание, заявка появится здесь на проверке.' : 'Когда владелец добавит стену, она появится здесь на проверке.'}</p>
       </div>
     );
   }
@@ -403,7 +420,7 @@ function WallsPanel({
     <div className="admin-list">
       {walls.map((wall) => (
         <article className="admin-card" key={wall.id}>
-          <img src={wall.image_path} alt={`Стена: ${wall.title}`} loading="lazy" />
+          <img src={wall.image_path} alt={`${kind === 'building' ? 'Здание' : 'Стена'}: ${wall.title}`} loading="lazy" />
           <div className="admin-card-body">
             <div className="admin-card-top">
               <span className="admin-id">#{wall.id}</span>
@@ -411,26 +428,26 @@ function WallsPanel({
                 {wall.moderation_status === 'pending'
                   ? 'на проверке'
                   : wall.moderation_status === 'published'
-                    ? 'опубликована'
-                    : 'отклонена'}
+                    ? (kind === 'building' ? 'опубликовано' : 'опубликована')
+                    : (kind === 'building' ? 'отклонено' : 'отклонена')}
               </span>
             </div>
             <h3><MapPin size={15} /> {wall.title}</h3>
             <p className="admin-description">{wall.address}</p>
-            {wall.kind === 'building' ? (
-              <p className="admin-description">
+            {kind === 'building' ? (
+              <div className="admin-building-meta">
                 <span className="moderation-badge published">здание</span>
-                {wall.category ? ` · ${wall.category}` : ''}
+                {wall.category ? <span>{wall.category}</span> : null}
                 {Number.isFinite(wall.lat) && Number.isFinite(wall.lng)
-                  ? ` · ${Number(wall.lat).toFixed(5)}, ${Number(wall.lng).toFixed(5)}`
-                  : ''}
-              </p>
+                  ? <span>{Number(wall.lat).toFixed(5)}, {Number(wall.lng).toFixed(5)}</span>
+                  : null}
+              </div>
             ) : null}
             <p className="admin-description">{wall.description}</p>
             <div className="admin-meta">
               <span>{wall.owner_name}</span>
               <span>{formatDate(wall.created_at)}</span>
-              <span>Контакт: {wall.contact || 'не указан'}</span>
+              {kind === 'wall' ? <span>Контакт: {wall.contact || 'не указан'}</span> : null}
             </div>
             {wall.reject_reason ? <p className="reject-reason">Причина: {wall.reject_reason}</p> : null}
             <div className="admin-actions">

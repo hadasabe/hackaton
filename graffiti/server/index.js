@@ -1745,6 +1745,7 @@ app.get('/api/admin/walls', requireAdmin, (_req, res) => {
       SELECT w.*, u.name AS owner_name
       FROM walls w
       JOIN users u ON u.id = w.owner_id
+      WHERE w.kind = 'wall'
       ORDER BY
         CASE w.moderation_status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END,
         datetime(w.created_at) DESC
@@ -1755,9 +1756,10 @@ app.get('/api/admin/walls', requireAdmin, (_req, res) => {
   const counts = db
     .prepare(`
       SELECT
-        SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending,
-        SUM(CASE WHEN moderation_status = 'published' THEN 1 ELSE 0 END) AS published,
-        SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
+        SUM(CASE WHEN moderation_status = 'pending' AND kind = 'wall' THEN 1 ELSE 0 END) AS pending,
+        SUM(CASE WHEN moderation_status = 'published' AND kind = 'wall' THEN 1 ELSE 0 END) AS published,
+        SUM(CASE WHEN moderation_status = 'rejected' AND kind = 'wall' THEN 1 ELSE 0 END) AS rejected,
+        (SELECT COUNT(*) FROM walls WHERE moderation_status = 'pending' AND kind = 'building') AS buildings,
         (SELECT COUNT(*) FROM status_reports WHERE moderation_status = 'pending') AS status_pending
       FROM walls
     `)
@@ -1768,6 +1770,7 @@ app.get('/api/admin/walls', requireAdmin, (_req, res) => {
       ...counts,
       status: counts.status_pending || 0,
       walls: counts.pending || 0,
+      buildings: counts.buildings || 0,
     },
   });
 });
@@ -1802,6 +1805,22 @@ app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/buildings', requireAdmin, (_req, res) => {
+  const items = db
+    .prepare(`
+      SELECT w.*, u.name AS owner_name
+      FROM walls w
+      JOIN users u ON u.id = w.owner_id
+      WHERE w.kind = 'building'
+      ORDER BY
+        CASE w.moderation_status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END,
+        datetime(w.created_at) DESC
+      LIMIT 300
+    `)
+    .all();
+  res.json({ items });
+});
+
 app.get('/api/admin/counts', requireAdmin, (_req, res) => {
   const graffiti = db
     .prepare(`
@@ -1816,7 +1835,10 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     .prepare("SELECT COUNT(*) AS count FROM status_reports WHERE moderation_status = 'pending'")
     .get().count;
   const walls = db
-    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending'")
+    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'wall'")
+    .get().count;
+  const buildings = db
+    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'building'")
     .get().count;
   const users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
   res.json({
@@ -1825,6 +1847,7 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     rejected: graffiti.rejected || 0,
     status,
     walls,
+    buildings,
     users,
   });
 });

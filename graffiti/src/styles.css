@@ -3862,3 +3862,18 @@ button.profile-stat {
     margin-bottom: 92px;
   }
 }
+
+.admin-building-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: visible;
+}
+
+.admin-building-meta .moderation-badge {
+  margin-left: 0;
+  flex: none;
+}

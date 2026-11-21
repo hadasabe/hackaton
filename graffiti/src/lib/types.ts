@@ -124,6 +124,7 @@ export interface AdminCounts {
   rejected: number;
   status: number;
   walls: number;
+  buildings: number;
   users: number;
 }
 

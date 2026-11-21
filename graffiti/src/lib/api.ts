@@ -235,6 +235,10 @@ export const api = {
     return request<{ items: Wall[]; counts: AdminCounts }>('/api/admin/walls');
   },
 
+  adminBuildings() {
+    return request<{ items: Wall[] }>('/api/admin/buildings');
+  },
+
   adminCounts() {
     return request<AdminCounts>('/api/admin/counts');
   },
