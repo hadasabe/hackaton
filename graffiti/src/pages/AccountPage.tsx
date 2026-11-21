@@ -197,11 +197,6 @@ export function AccountPage() {
             </div>
           </div>
         </div>
-        <div className="profile-actions">
-          <Link to="/walls/new" className="button button-dark"><Plus size={16} /> Выложить стену</Link>
-          <Link to="/account?tab=favorites" className="button button-outline"><Heart size={16} /> Избранное</Link>
-          <Link to="/map" className="button button-outline"><MapIcon size={16} /> Карта</Link>
-        </div>
       </header>
 
       {location.state?.wallSubmitted ? (
