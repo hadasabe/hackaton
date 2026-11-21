@@ -6,6 +6,7 @@ import { formatDate } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm } from './ConfirmDialog';
 import { CommentAvatar } from './CommentAvatar';
+import { ReportButton, type ReportTargetType } from './ReportButton';
 
 interface CommentNode extends Comment {
   replies: CommentNode[];
@@ -27,12 +28,14 @@ export function CommentThread({
   onReact,
   onReply,
   onDelete,
+  reportType,
   emptyText = 'Пока нет комментариев.',
 }: {
   comments: Comment[];
   onReact: (comment: Comment, value: ReactionValue) => Promise<void> | void;
   onReply: (comment: Comment, body: string) => Promise<void> | void;
   onDelete: (comment: Comment) => Promise<void> | void;
+  reportType?: ReportTargetType;
   emptyText?: string;
 }) {
   const { user } = useAuth();
@@ -147,6 +150,14 @@ export function CommentThread({
             >
               <Reply size={13} /> Ответить
             </button>
+            {reportType ? (
+              <ReportButton
+                targetType={reportType}
+                targetId={comment.id}
+                title={`Комментарий ${comment.author_name}`}
+                className="comment-report-link"
+              />
+            ) : null}
           </div>
         ) : null}
 

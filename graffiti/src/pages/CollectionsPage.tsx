@@ -4,6 +4,7 @@ import { Images } from 'lucide-react';
 import { api } from '../lib/api';
 import type { CollectionSummary } from '../lib/types';
 import { FeedControls } from '../components/FeedControls';
+import { ReportButton } from '../components/ReportButton';
 import { formatDate } from '../lib/format';
 
 export function CollectionsPage() {
@@ -56,26 +57,31 @@ export function CollectionsPage() {
         ) : (
           <div className="collections-grid">
             {visibleItems.map((collection) => (
-              <Link to={`/collections/${collection.id}`} className="collection-card" key={collection.id}>
-                <div className={`collection-cover count-${Math.min(3, collection.covers.length)}`}>
-                  {collection.covers.length > 0 ? (
-                    collection.covers.map((cover, index) => (
-                      <img key={`${cover}-${index}`} src={cover} alt="" loading="lazy" />
-                    ))
-                  ) : (
-                    <span className="collection-cover-empty"><Images size={26} /></span>
-                  )}
-                </div>
-                <div className="collection-card-body">
-                  <span className="section-kicker">Подборка · {collection.item_count}</span>
-                  <h3>{collection.title}</h3>
-                  {collection.description ? <p>{collection.description}</p> : null}
-                  <div className="collection-card-meta">
-                    <span>{collection.owner_name}</span>
-                    <span>{formatDate(collection.created_at)}</span>
+              <article className="collection-card" key={collection.id}>
+                <Link to={`/collections/${collection.id}`} className="collection-card-link">
+                  <div className={`collection-cover count-${Math.min(3, collection.covers.length)}`}>
+                    {collection.covers.length > 0 ? (
+                      collection.covers.map((cover, index) => (
+                        <img key={`${cover}-${index}`} src={cover} alt="" loading="lazy" />
+                      ))
+                    ) : (
+                      <span className="collection-cover-empty"><Images size={26} /></span>
+                    )}
                   </div>
+                  <div className="collection-card-body">
+                    <span className="section-kicker">Подборка · {collection.item_count}</span>
+                    <h3>{collection.title}</h3>
+                    {collection.description ? <p>{collection.description}</p> : null}
+                    <div className="collection-card-meta">
+                      <span>{collection.owner_name}</span>
+                      <span>{formatDate(collection.created_at)}</span>
+                    </div>
+                  </div>
+                </Link>
+                <div className="collection-card-report">
+                  <ReportButton targetType="collection" targetId={collection.id} title={collection.title} className="card-report-link" />
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         )}

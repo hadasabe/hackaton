@@ -146,6 +146,18 @@ export const api = {
     );
   },
 
+  reportContent(payload: {
+    target_type: 'comment' | 'route_comment' | 'graffiti_comment' | 'place_comment' | 'place' | 'building' | 'route' | 'wall' | 'collection';
+    target_id: string;
+    reason: string;
+    details?: string;
+  }) {
+    return request<{ id: number }>('/api/reports', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
   adminStatusReports(tab: 'pending' | 'approved' | 'rejected') {
     return request<{
       items: StatusReport[];

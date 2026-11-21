@@ -280,6 +280,7 @@ export function ObjectPage() {
             onReact={(comment, value) => void reactComment(comment, value)}
             onReply={(comment, body) => void replyComment(comment, body)}
             onDelete={(comment) => void deleteComment(comment)}
+            reportType="place_comment"
             emptyText="Пока нет комментариев."
           />
           <form className="route-comment-form" onSubmit={(event) => void submitComment(event)}>

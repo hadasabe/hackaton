@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { AtSign, MapPin, Ruler, UserRound } from 'lucide-react';
 import { WALL_TERMS_META, WALL_TYPE_META } from '../lib/constants';
 import type { Wall } from '../lib/types';
+import { ReportButton } from './ReportButton';
 
 export function WallCard({ wall }: { wall: Wall }) {
   const terms = WALL_TERMS_META[wall.terms];
@@ -42,6 +43,10 @@ export function WallCard({ wall }: { wall: Wall }) {
           <Link to={`/walls/${wall.id}`} className="reaction comments-link">
             Подробнее →
           </Link>
+        </div>
+
+        <div className="card-report-row">
+          <ReportButton targetType="wall" targetId={wall.id} title={wall.title} className="card-report-link" />
         </div>
       </div>
     </article>

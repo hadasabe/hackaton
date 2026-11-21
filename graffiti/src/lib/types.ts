@@ -162,7 +162,7 @@ export interface AdminCounts {
 
 export interface ContentReport {
   id: number;
-  target_type: 'comment' | 'route_comment' | 'graffiti_comment' | 'place' | 'building';
+  target_type: 'comment' | 'route_comment' | 'graffiti_comment' | 'place_comment' | 'place' | 'building' | 'route' | 'wall' | 'collection';
   target_id: string;
   target_title: string;
   target_excerpt: string;

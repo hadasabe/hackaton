@@ -424,6 +424,7 @@ export function GraffitiPage() {
               onReact={(comment, value) => void reactComment(comment, value)}
               onReply={(comment, body) => void replyComment(comment, body)}
               onDelete={(comment) => void removeComment(comment.id)}
+              reportType="graffiti_comment"
               emptyText="Пока никто не оставил комментарий. Будьте первым."
             />
 

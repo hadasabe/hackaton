@@ -5801,3 +5801,144 @@ a.people-row:hover {
 .comment-author-link:hover strong {
   color: var(--muted);
 }
+
+/* Content reports */
+.card-report-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.card-report-link,
+.comment-report-link,
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.card-report-link:hover,
+.comment-report-link:hover,
+.report-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.comment-report-link {
+  margin-left: auto;
+  font-size: 10px;
+}
+
+.collection-card-link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
+.collection-card-report {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 18px 12px;
+}
+
+.report-backdrop {
+  z-index: 95;
+}
+
+.report-dialog {
+  width: min(480px, 100%);
+}
+
+.report-target {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.report-dialog-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.report-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-reason-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.report-reason-option.active {
+  border-color: var(--ink);
+  background: var(--lime);
+}
+
+.report-reason-option input {
+  accent-color: var(--ink);
+}
+
+.report-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-details .textarea {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.report-sent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--lime);
+}
+
+.report-sent div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-sent strong {
+  font-size: 13px;
+}
+
+.report-sent span {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+}

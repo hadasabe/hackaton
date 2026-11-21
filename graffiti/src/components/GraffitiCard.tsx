@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Heart, MapPin, Map as MapIcon, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import type { Graffiti, ReactionValue } from '../lib/types';
+import { ReportButton } from './ReportButton';
 
 export function Tags({ item }: { item: Graffiti }) {
   const status = STATUS_META[item.status];
@@ -89,6 +90,10 @@ export function GraffitiCard({
             <MapIcon size={16} />
             На карте
           </Link>
+        </div>
+
+        <div className="card-report-row">
+          <ReportButton targetType="place" targetId={`stena-${item.id}`} title={item.address} className="card-report-link" />
         </div>
       </div>
     </article>

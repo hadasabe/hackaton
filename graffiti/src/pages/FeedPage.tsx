@@ -10,6 +10,7 @@ import { plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
 import { FeedControls } from '../components/FeedControls';
 import { GraffitiCard } from '../components/GraffitiCard';
+import { ReportButton } from '../components/ReportButton';
 import { useAuth } from '../context/AuthContext';
 
 
@@ -112,6 +113,10 @@ function PlaceCard({
             <MapIcon size={16} />
             На карте
           </Link>
+        </div>
+
+        <div className="card-report-row">
+          <ReportButton targetType="place" targetId={place?.id || object.id} title={object.name} className="card-report-link" />
         </div>
       </div>
     </article>

@@ -7,6 +7,7 @@ import { useCityObjects } from '../lib/cityObjects';
 import { formatDate, formatDuration, plural } from '../lib/format';
 import { readPlan, writePlan } from '../lib/plan';
 import { useAuth } from '../context/AuthContext';
+import { ReportButton } from '../components/ReportButton';
 
 export function RoutesPage() {
   const { objects } = useCityObjects();
@@ -233,6 +234,9 @@ export function RoutesPage() {
                     <button type="button" className="reaction comments-link" onClick={() => showRouteOnMap(route)}>
                       <MapIcon size={16} /> На карте
                     </button>
+                  </div>
+                  <div className="card-report-row">
+                    <ReportButton targetType="route" targetId={route.id} title={route.title} className="card-report-link" />
                   </div>
                 </div>
               </article>

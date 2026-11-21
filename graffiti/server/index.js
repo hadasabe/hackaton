@@ -2261,6 +2261,37 @@ function deriveReportTarget(type, id) {
       excerpt: String(comment.body || '').slice(0, 400),
     };
   }
+  if (type === 'place_comment') {
+    const commentId = Number(targetId);
+    if (!Number.isInteger(commentId)) return null;
+    const comment = db
+      .prepare('SELECT id, place_id, author_name, body, deleted_at FROM walk_place_comments WHERE id = ?')
+      .get(commentId);
+    if (!comment) return null;
+    return {
+      type: 'place_comment',
+      id: targetId,
+      title: comment.author_name || 'Комментарий',
+      excerpt: String(comment.body || '').slice(0, 400),
+    };
+  }
+  if (type === 'route' || type === 'wall' || type === 'collection') {
+    const numericId = Number(targetId);
+    if (!Number.isInteger(numericId)) return null;
+    if (type === 'route') {
+      const route = db.prepare('SELECT id, title, description FROM walk_routes WHERE id = ?').get(numericId);
+      if (!route) return null;
+      return { type: 'route', id: targetId, title: route.title, excerpt: String(route.description || '').slice(0, 400) };
+    }
+    if (type === 'wall') {
+      const wall = db.prepare("SELECT id, title, address FROM walls WHERE id = ? AND kind = 'wall'").get(numericId);
+      if (!wall) return null;
+      return { type: 'wall', id: targetId, title: wall.title, excerpt: wall.address || '' };
+    }
+    const collection = db.prepare('SELECT id, title, description FROM collections WHERE id = ?').get(numericId);
+    if (!collection) return null;
+    return { type: 'collection', id: targetId, title: collection.title, excerpt: String(collection.description || '').slice(0, 400) };
+  }
   if (type === 'place' || type === 'building') {
     if (targetId.startsWith('building-')) {
       const buildingId = Number(targetId.slice('building-'.length));
@@ -2376,28 +2407,55 @@ app.post('/api/admin/reports/:id/resolve', requireAdmin, (req, res) => {
     return;
   }
   const now = nowIso();
-  if (report.target_type === 'route_comment' || report.target_type === 'graffiti_comment' || report.target_type === 'comment') {
+  if (report.target_type === 'route_comment' || report.target_type === 'graffiti_comment' || report.target_type === 'comment' || report.target_type === 'place_comment') {
     const commentId = Number(report.target_id);
     if (!Number.isInteger(commentId)) {
       res.status(400).json({ error: 'Некорректный комментарий' });
       return;
     }
-    const routeCandidate = report.target_type !== 'graffiti_comment'
+    const placeCandidate = report.target_type === 'place_comment'
+      ? db.prepare('SELECT id FROM walk_place_comments WHERE id = ? AND deleted_at IS NULL').get(commentId)
+      : null;
+    const routeCandidate = report.target_type !== 'graffiti_comment' && report.target_type !== 'place_comment'
       ? db.prepare('SELECT id FROM walk_route_comments WHERE id = ? AND deleted_at IS NULL').get(commentId)
       : null;
-    const graffitiCandidate = report.target_type !== 'route_comment'
+    const graffitiCandidate = report.target_type !== 'route_comment' && report.target_type !== 'place_comment'
       ? db.prepare('SELECT id FROM comments WHERE id = ? AND deleted_at IS NULL').get(commentId)
       : null;
     if (report.target_type === 'comment' && routeCandidate && graffitiCandidate) {
       res.status(409).json({ error: 'Неоднозначная жалоба: комментарий с таким ID есть и в маршрутах, и в граффити' });
       return;
     }
-    const table = routeCandidate ? 'walk_route_comments' : graffitiCandidate ? 'comments' : null;
+    const table = placeCandidate ? 'walk_place_comments'
+      : routeCandidate ? 'walk_route_comments'
+        : graffitiCandidate ? 'comments'
+          : null;
     if (!table) {
       res.status(404).json({ error: 'Комментарий уже удалён или не найден' });
       return;
     }
     db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, commentId);
+  } else if (report.target_type === 'route') {
+    const routeId = Number(report.target_id);
+    if (!Number.isInteger(routeId)) {
+      res.status(400).json({ error: 'Некорректный маршрут' });
+      return;
+    }
+    db.prepare("UPDATE walk_routes SET visibility = 'link', updated_at = ? WHERE id = ?").run(now, routeId);
+  } else if (report.target_type === 'wall') {
+    const wallId = Number(report.target_id);
+    if (!Number.isInteger(wallId)) {
+      res.status(400).json({ error: 'Некорректная стена' });
+      return;
+    }
+    db.prepare("UPDATE walls SET status = 'closed' WHERE id = ? AND kind = 'wall'").run(wallId);
+  } else if (report.target_type === 'collection') {
+    const collectionId = Number(report.target_id);
+    if (!Number.isInteger(collectionId)) {
+      res.status(400).json({ error: 'Некорректная коллекция' });
+      return;
+    }
+    db.prepare('DELETE FROM collections WHERE id = ?').run(collectionId);
   } else if (['place', 'building'].includes(report.target_type)) {
     db.prepare('INSERT OR IGNORE INTO hidden_places (place_id, reason, created_at) VALUES (?, ?, ?)')
       .run(report.target_id, report.reason || 'Жалоба принята', now);
