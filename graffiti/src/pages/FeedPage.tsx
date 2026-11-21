@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Heart, MapPin, Map as MapIcon, MessageCircle, Plus, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRight, Heart, MapPin, Map as MapIcon, MessageCircle, Plus, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { api } from '../lib/api';
 import type { CityObject } from '../lib/cityObjects';
 import { useCityObjects } from '../lib/cityObjects';
@@ -8,7 +8,7 @@ import type { Graffiti, ReactionValue } from '../lib/types';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import { plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
-import { ContentTabs } from '../components/ContentTabs';
+import { FeedControls } from '../components/FeedControls';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { useAuth } from '../context/AuthContext';
 
@@ -122,8 +122,9 @@ export function FeedPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { objects, places, graffiti, stats, loading, error, updatePlace, updateGraffiti } = useCityObjects();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
   const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
 
   useEffect(() => {
@@ -253,56 +254,9 @@ export function FeedPage() {
 
   return (
     <main className="page">
-      <section className="feed-hero">
-        <div className="hero-copy">
-          <span className="eyebrow">Саратов · места и стрит-арт</span>
-          <h1>
-            Лента
-            <br />
-            города
-          </h1>
-          <p className="hero-add-copy">Добавьте свой объект: граффити, здание или место.</p>
-          <div className="hero-actions">
-            <Link to="/add" className="button button-outline">
-              <Plus size={17} />
-              Добавить объект
-            </Link>
-          </div>
-        </div>
-        <div className="hero-stats">
-          <div className="hero-stat hero-stat-main">
-            <strong>{totalObjects}</strong>
-            <span>{plural(totalObjects, 'объект', 'объекта', 'объектов')}</span>
-          </div>
-          <div className="hero-stat">
-            <strong>{places.length}</strong>
-            <span>{plural(places.length, 'место', 'места', 'мест')}</span>
-          </div>
-          <div className="hero-stat">
-            <strong>{graffiti.length}</strong>
-            <span>{plural(graffiti.length, 'граффити', 'граффити', 'граффити')}</span>
-          </div>
-          <div className="hero-stat">
-            <strong>{graffitiAlive}</strong>
-            <span>работ на месте</span>
-          </div>
-        </div>
-      </section>
-
-      <ContentTabs active="feed" />
+      <FeedControls active="objects" />
 
       <section id="feed" className="feed-section">
-        <div className="feed-toolbar feed-toolbar-compact">
-          <label className="search-box">
-            <Search size={16} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Название, адрес, автор или описание"
-            />
-          </label>
-        </div>
-
         <div className="tag-filters">
           <span className="tag-filters-label">Теги</span>
           <div className="chip-row tag-filter-row" role="group" aria-label="Фильтр по тегам">

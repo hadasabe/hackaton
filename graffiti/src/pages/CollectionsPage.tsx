@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Images, Plus } from 'lucide-react';
 import { api } from '../lib/api';
 import type { CollectionSummary } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 import { CollectionFormDialog } from '../components/CollectionFormDialog';
-import { ContentTabs } from '../components/ContentTabs';
+import { FeedControls } from '../components/FeedControls';
 import { formatDate } from '../lib/format';
 
 export function CollectionsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get('q') || '').trim().toLowerCase();
   const [items, setItems] = useState<CollectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,44 +41,24 @@ export function CollectionsPage() {
     navigate(`/collections/${collection.id}`);
   }
 
+  const visibleItems = query
+    ? items.filter((item) => [item.title, item.description, item.owner_name].some((value) => String(value || '').toLowerCase().includes(query)))
+    : items;
+
   return (
     <main className="page">
-      <section className="collections-hero">
-        <div>
-          <span className="eyebrow">Подборки работ</span>
-          <h1>Коллекции<br />Саратова</h1>
-          <p>
-            Собирайте граффити по темам: улыбки, портреты, надписи, любимые дворы.
-            В одну подборку можно добавить работы из разных районов города.
-          </p>
-          <div className="hero-actions">
-            {user ? (
-              <button type="button" className="button button-dark" onClick={() => setCreating(true)}>
-                <Plus size={17} /> Создать коллекцию
-              </button>
-            ) : (
-              <Link to="/login" className="button button-dark">
-                <Plus size={17} /> Создать коллекцию
-              </Link>
-            )}
-          </div>
-        </div>
-        <div className="collections-hero-art">
-          <Images size={54} />
-          <strong>Соберите свою<br />историю города</strong>
-          <span>Тема · район · настроение</span>
-        </div>
-      </section>
-
-      <ContentTabs active="collections" />
+      <FeedControls active="collections" />
 
       <section className="collections-section">
-        <div className="feed-toolbar">
-          <div className="feed-title">
-            <span className="section-kicker">Подборки</span>
-            <h2>Коллекции</h2>
-          </div>
-          <span className="collections-count">{items.length} подборок</span>
+        <div className="collections-toolbar">
+          <span className="collections-count">{query ? `${items.filter((item) => [item.title, item.description, item.owner_name].some((value) => String(value || '').toLowerCase().includes(query))).length} найдено` : `${items.length} подборок`}</span>
+          {user ? (
+            <button type="button" className="button button-dark" onClick={() => setCreating(true)}>
+              <Plus size={16} /> Создать коллекцию
+            </button>
+          ) : (
+            <Link to="/login" className="button button-dark"><Plus size={16} /> Создать коллекцию</Link>
+          )}
         </div>
 
         {error ? <div className="notice error">{error}</div> : null}
@@ -87,7 +69,7 @@ export function CollectionsPage() {
               <div className="collection-card-skeleton" key={index} />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : visibleItems.length === 0 ? (
           <div className="empty-state collections-empty">
             <span className="empty-icon"><Images size={26} /></span>
             <h3>Пока ни одной коллекции</h3>
@@ -95,7 +77,7 @@ export function CollectionsPage() {
           </div>
         ) : (
           <div className="collections-grid">
-            {items.map((collection) => (
+            {visibleItems.map((collection) => (
               <Link to={`/collections/${collection.id}`} className="collection-card" key={collection.id}>
                 <div className={`collection-cover count-${Math.min(3, collection.covers.length)}`}>
                   {collection.covers.length > 0 ? (
