@@ -99,6 +99,7 @@ export function MapPage() {
       zoomControl: false,
       attributionControl: false,
       scrollWheelZoom: true,
+      doubleClickZoom: !window.matchMedia('(pointer: coarse)').matches,
     }).setView([51.5305, 46.0375], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
       subdomains: 'abc',
@@ -120,6 +121,11 @@ export function MapPage() {
       }),
     }).addTo(map);
     mapRef.current = map;
+    const updateZoom = () => {
+      if (mapNode.current) mapNode.current.dataset.zoom = String(map.getZoom());
+    };
+    map.on('zoomend', updateZoom);
+    updateZoom();
 
     const resize = new ResizeObserver(() => map.invalidateSize({ pan: false }));
     resize.observe(mapNode.current);
@@ -128,6 +134,113 @@ export function MapPage() {
       map.remove();
       mapRef.current = null;
       markerLayer.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const node = mapNode.current;
+    const map: L.Map | null = mapRef.current;
+    if (!map || !node) return;
+    const activeMap: L.Map = map;
+    const activeNode: HTMLDivElement = node;
+
+    let lastTapAt = 0;
+    let lastTapPoint: L.Point | null = null;
+    let gesture: { startY: number; startZoom: number; anchor: L.LatLng; moved: boolean } | null = null;
+
+    function pointFor(touch: Touch) {
+      const rect = activeNode.getBoundingClientRect();
+      return L.point(touch.clientX - rect.left, touch.clientY - rect.top);
+    }
+
+    function cancelGesture() {
+      if (!gesture) return;
+      gesture = null;
+      activeMap.dragging.enable();
+    }
+
+    function onTouchStart(event: TouchEvent) {
+      if (event.touches.length !== 1) {
+        cancelGesture();
+        lastTapAt = 0;
+        lastTapPoint = null;
+        return;
+      }
+      if (event.target instanceof Element && event.target.closest('.leaflet-control')) return;
+      if (gesture) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      const point = pointFor(event.touches[0]);
+      const now = Date.now();
+      if (lastTapPoint && now - lastTapAt < 320 && point.distanceTo(lastTapPoint) < 32) {
+        event.preventDefault();
+        event.stopPropagation();
+        activeMap.dragging.disable();
+        gesture = {
+          startY: point.y,
+          startZoom: activeMap.getZoom(),
+          anchor: activeMap.containerPointToLatLng(point),
+          moved: false,
+        };
+        lastTapAt = 0;
+        lastTapPoint = null;
+        return;
+      }
+      lastTapAt = now;
+      lastTapPoint = point;
+    }
+
+    function onTouchMove(event: TouchEvent) {
+      if (!gesture) return;
+      if (event.touches.length !== 1) {
+        cancelGesture();
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const point = pointFor(event.touches[0]);
+      if (Math.abs(point.y - gesture.startY) > 6) gesture.moved = true;
+      const delta = (gesture.startY - point.y) / 100;
+      const nextZoom = Math.max(
+        activeMap.getMinZoom(),
+        Math.min(activeMap.getMaxZoom(), Math.round(gesture.startZoom + delta)),
+      );
+      if (nextZoom !== activeMap.getZoom()) {
+        activeMap.setZoomAround(gesture.anchor, nextZoom, { animate: false });
+      }
+    }
+
+    function onTouchEnd(event: TouchEvent) {
+      if (!gesture) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const finished = gesture;
+      gesture = null;
+      activeMap.dragging.enable();
+      if (!finished.moved) {
+        activeMap.setZoomAround(
+          finished.anchor,
+          Math.min(activeMap.getMaxZoom(), finished.startZoom + 1),
+          { animate: true },
+        );
+      }
+    }
+
+    function onTouchCancel() {
+      cancelGesture();
+    }
+
+    node.addEventListener('touchstart', onTouchStart, { passive: false, capture: true });
+    node.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    node.addEventListener('touchend', onTouchEnd, { passive: false, capture: true });
+    node.addEventListener('touchcancel', onTouchCancel, { capture: true });
+    return () => {
+      node.removeEventListener('touchstart', onTouchStart, { capture: true });
+      node.removeEventListener('touchmove', onTouchMove, { capture: true });
+      node.removeEventListener('touchend', onTouchEnd, { capture: true });
+      node.removeEventListener('touchcancel', onTouchCancel, { capture: true });
     };
   }, []);
 
@@ -188,10 +301,11 @@ export function MapPage() {
   const selected = objects.find((object) => object.id === selectedId) || null;
 
   useEffect(() => {
-    if (selectedId && !visibleObjects.some((object) => object.id === selectedId)) {
+    if (loading || !selectedId) return;
+    if (!visibleObjects.some((object) => object.id === selectedId)) {
       setSelectedId(null);
     }
-  }, [selectedId, visibleObjects]);
+  }, [loading, selectedId, visibleObjects]);
 
   function selectTag(tag: string | null) {
     const next = new URLSearchParams(searchParams);
@@ -398,7 +512,7 @@ export function MapPage() {
           )}
         </aside>
 
-        <section className={`map-canvas-wrap${fullscreen ? ' is-fullscreen' : ''}`} aria-label="Карта объектов">
+        <section className={`map-canvas-wrap${fullscreen ? ' is-fullscreen' : ''}${selected ? ' has-selection' : ''}`} aria-label="Карта объектов">
           <div className="map-canvas" ref={mapNode} />
           <button
             type="button"

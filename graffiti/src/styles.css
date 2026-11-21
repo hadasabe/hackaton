@@ -5222,7 +5222,7 @@ button.profile-stat {
 .map-fullscreen-toggle {
   position: absolute;
   top: auto;
-  right: 52px;
+  right: 64px;
   bottom: 10px;
   z-index: 900;
   display: grid;
@@ -5280,7 +5280,7 @@ body.map-is-fullscreen {
 @media (max-width: 560px) {
   .map-fullscreen-toggle {
     top: auto;
-    right: 48px;
+    right: 60px;
     bottom: 10px;
     width: 38px;
     height: 38px;
@@ -6062,5 +6062,71 @@ a.people-row:hover {
   .auth-link {
     padding: 5px 8px;
     font-size: 11px;
+  }
+}
+
+/* Zoom buttons match the fullscreen control */
+.map-canvas-wrap .leaflet-control-zoom {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a {
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 38px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a + a {
+  margin-top: 8px;
+}
+
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a:first-child,
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a:last-child {
+  border-radius: 12px;
+}
+
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a:hover {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.map-canvas-wrap .leaflet-bar.leaflet-control-zoom a.leaflet-disabled {
+  opacity: 0.45;
+  background: var(--card);
+}
+
+@media (max-width: 560px) {
+  .map-canvas-wrap .leaflet-bar.leaflet-control-zoom a {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+    line-height: 34px;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-canvas-wrap .leaflet-bottom.leaflet-right {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .map-fullscreen-toggle {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .map-canvas-wrap.has-selection:not(.is-fullscreen) .leaflet-bottom.leaflet-right,
+  .map-canvas-wrap.has-selection:not(.is-fullscreen) .map-fullscreen-toggle {
+    opacity: 0;
+    pointer-events: none;
   }
 }
