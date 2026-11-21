@@ -5,13 +5,31 @@ import { api } from '../lib/api';
 import type { CityObject } from '../lib/cityObjects';
 import { useCityObjects } from '../lib/cityObjects';
 import type { Graffiti, ReactionValue } from '../lib/types';
+import { STATUS_META, STYLE_META } from '../lib/constants';
 import { plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
 import { ContentTabs } from '../components/ContentTabs';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { useAuth } from '../context/AuthContext';
 
-type FeedKind = 'all' | 'places' | 'graffiti';
+
+const TAG_ORDER = [
+  'Архитектура', 'История', 'Искусство', 'Природа', 'Стрит-арт',
+  'Мурал', 'Граффити', 'Трафарет', 'Стикер', 'Надпись', 'Другое',
+  'На месте', 'Стёрто', 'Частично', 'Неизвестно',
+];
+
+function tagsForObject(object: CityObject): Set<string> {
+  const tags = new Set<string>();
+  if (object.category) tags.add(object.category);
+  if (object.graffiti) {
+    const style = STYLE_META[object.graffiti.style];
+    const status = STATUS_META[object.graffiti.status];
+    if (style?.label) tags.add(style.label);
+    if (status?.label) tags.add(status.label);
+  }
+  return tags;
+}
 
 function PlaceCard({
   object,
@@ -76,7 +94,7 @@ export function FeedPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { objects, places, graffiti, stats, loading, error, updateGraffiti } = useCityObjects();
-  const [kind, setKind] = useState<FeedKind>('all');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
 
@@ -131,8 +149,7 @@ export function FeedPage() {
 
   const needle = query.trim().toLowerCase();
   const visibleObjects = objects.filter((object) => {
-    if (kind === 'places' && object.kind === 'graffiti') return false;
-    if (kind === 'graffiti' && object.kind !== 'graffiti') return false;
+    if (activeTag && !tagsForObject(object).has(activeTag)) return false;
     if (!needle) return true;
     return [
       object.name,
@@ -144,6 +161,19 @@ export function FeedPage() {
       object.artist,
     ].some((value) => String(value || '').toLowerCase().includes(needle));
   });
+
+  const tagCounts = new Map<string, number>();
+  for (const object of objects) {
+    for (const tag of tagsForObject(object)) {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+  const tagOptions = [...tagCounts.entries()]
+    .sort(([a], [b]) => {
+      const ai = TAG_ORDER.indexOf(a);
+      const bi = TAG_ORDER.indexOf(b);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
 
   const totalObjects = objects.length;
   const graffitiAlive = stats?.alive ?? 0;
@@ -203,29 +233,26 @@ export function FeedPage() {
           </label>
         </div>
 
-        <div className="filters-row">
-          <div className="chip-row" role="group" aria-label="Тип объекта">
+        <div className="tag-filters">
+          <span className="tag-filters-label">Теги</span>
+          <div className="chip-row tag-filter-row" role="group" aria-label="Фильтр по тегам">
             <button
               type="button"
-              className={`chip ${kind === 'all' ? 'active' : ''}`}
-              onClick={() => setKind('all')}
+              className={`chip ${activeTag === null ? 'active' : ''}`}
+              onClick={() => setActiveTag(null)}
             >
               Все · {totalObjects}
             </button>
-            <button
-              type="button"
-              className={`chip ${kind === 'places' ? 'active' : ''}`}
-              onClick={() => setKind('places')}
-            >
-              Места · {places.length}
-            </button>
-            <button
-              type="button"
-              className={`chip ${kind === 'graffiti' ? 'active' : ''}`}
-              onClick={() => setKind('graffiti')}
-            >
-              Граффити · {graffiti.length}
-            </button>
+            {tagOptions.map(([tag, count]) => (
+              <button
+                key={tag}
+                type="button"
+                className={`chip ${activeTag === tag ? 'active' : ''}`}
+                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+              >
+                {tag} · {count}
+              </button>
+            ))}
           </div>
         </div>
 

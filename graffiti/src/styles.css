@@ -5018,3 +5018,49 @@ button.profile-stat {
   height: 100%;
   object-fit: cover;
 }
+
+.tag-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  min-width: 0;
+}
+
+.tag-filters-label {
+  flex: none;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tag-filter-row {
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 2px 2px 7px;
+  scrollbar-width: none;
+}
+
+.tag-filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-filter-row .chip {
+  flex: none;
+}
+
+@media (max-width: 560px) {
+  .tag-filters {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .tag-filter-row {
+    width: 100%;
+  }
+}
