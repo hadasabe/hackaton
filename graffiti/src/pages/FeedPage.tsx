@@ -189,10 +189,6 @@ export function FeedPage() {
             города
           </h1>
           <div className="hero-actions">
-            <Link to="/map" className="button button-dark">
-              <MapIcon size={17} />
-              Открыть карту
-            </Link>
             <Link to="/add" className="button button-outline">
               <Plus size={17} />
               Добавить объект

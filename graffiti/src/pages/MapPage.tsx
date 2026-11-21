@@ -6,6 +6,8 @@ import {
   Heart,
   HeartOff,
   MapPin,
+  Maximize2,
+  Minimize2,
   Navigation,
   Plus,
   Route,
@@ -79,6 +81,7 @@ export function MapPage() {
   const [showPlan, setShowPlan] = useState(() => searchParams.get('plan') === '1');
   const [locating, setLocating] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const mapNode = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.LayerGroup | null>(null);
@@ -89,7 +92,7 @@ export function MapPage() {
     if (!mapNode.current || mapRef.current) return;
     const map = L.map(mapNode.current, {
       zoomControl: false,
-      attributionControl: true,
+      attributionControl: false,
       scrollWheelZoom: true,
     }).setView([51.5305, 46.0375], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
@@ -112,6 +115,20 @@ export function MapPage() {
       markerLayer.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('map-is-fullscreen', fullscreen);
+    const timer = window.setTimeout(() => mapRef.current?.invalidateSize({ pan: false }), 120);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.classList.remove('map-is-fullscreen');
+    };
+  }, [fullscreen]);
 
   useEffect(() => {
     const sync = () => setFavoriteIds(readFavoritePlaceIds());
@@ -343,8 +360,17 @@ export function MapPage() {
           )}
         </aside>
 
-        <section className="map-canvas-wrap" aria-label="Карта объектов">
+        <section className={`map-canvas-wrap${fullscreen ? ' is-fullscreen' : ''}`} aria-label="Карта объектов">
           <div className="map-canvas" ref={mapNode} />
+          <button
+            type="button"
+            className="map-fullscreen-toggle"
+            onClick={() => setFullscreen((value) => !value)}
+            aria-label={fullscreen ? 'Закрыть полноэкранную карту' : 'Открыть карту на весь экран'}
+            title={fullscreen ? 'Выйти из полноэкранного режима' : 'На весь экран'}
+          >
+            {fullscreen ? <Minimize2 size={19} /> : <Maximize2 size={19} />}
+          </button>
           {selected ? (
             <article className="map-selected-card">
               <button type="button" className="map-selected-close icon-button" onClick={() => setSelectedId(null)} aria-label="Закрыть карточку">
@@ -383,6 +409,9 @@ export function MapPage() {
           ) : null}
         </section>
       </div>
+      <p className="map-attribution">
+        Карта: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+      </p>
     </main>
   );
 }

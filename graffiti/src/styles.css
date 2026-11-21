@@ -5181,3 +5181,69 @@ button.profile-stat {
     height: 260px;
   }
 }
+
+.map-fullscreen-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+}
+
+.map-fullscreen-toggle:hover {
+  background: var(--lime);
+}
+
+.map-canvas-wrap.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  width: 100vw;
+  height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.map-canvas-wrap.is-fullscreen .map-canvas {
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+.map-canvas-wrap.is-fullscreen .map-selected-card {
+  bottom: 16px;
+}
+
+body.map-is-fullscreen {
+  overflow: hidden;
+}
+
+.map-attribution {
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.map-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .map-fullscreen-toggle {
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+  }
+}
