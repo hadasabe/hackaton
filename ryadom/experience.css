@@ -299,15 +299,15 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .route-duration-row{display:flex;align-items:center;gap:8px}
 .route-duration-row .route-input{flex:1;min-width:0}
 .route-duration-row span{font-size:13px;font-weight:750;color:var(--muted)}
-.exp-route-filters{display:flex;flex-direction:column;gap:12px;margin:18px 0 22px;padding:16px;border:2px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:5px 5px 0 var(--ink)}
+.exp-route-filters{display:flex;flex-direction:column;gap:12px;margin:18px 0 22px;padding:12px 8px;border:2px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:5px 5px 0 var(--ink)}
 .exp-route-search{display:flex;align-items:center;gap:9px;min-height:46px;padding:0 13px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--muted)}
 .exp-route-search input{border:0;outline:0;min-width:0;width:100%;padding:11px 0;background:none;color:var(--ink);font-size:14px}
 .exp-route-search svg{width:18px;height:18px;flex:none}
 .exp-route-scope{display:flex;flex-wrap:wrap;gap:6px}
 .exp-route-scope button{min-height:36px;padding:7px 13px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:12px;font-weight:800}
 .exp-route-scope button.active{background:var(--ink);color:var(--lime)}
-.exp-route-chips{display:flex;flex-wrap:wrap;gap:5px;padding:0}
-.exp-route-chips button{flex:none;min-height:32px;padding:5px 9px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:10.5px;font-weight:750;white-space:nowrap}
+.exp-route-chips{display:flex;flex-wrap:wrap;gap:2px;padding:0}
+.exp-route-chips button{flex:none;min-height:32px;padding:4px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:9.5px;font-weight:750;white-space:nowrap}
 .exp-route-chips button.active{background:var(--lime);border-color:var(--ink);color:var(--ink)}
 .exp-route-selects{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .exp-route-selects label{display:flex;flex-direction:column;gap:4px;font-size:9px;font-weight:850;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
@@ -347,8 +347,7 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .card-actions .exp-add-plan.in-plan{background:var(--lime);border-color:var(--lime)}
 
 /* Nearest routes are shown as a route feed, sorted by distance to the walker. */
-.exp-route-nearby{display:inline-flex;align-self:flex-start;align-items:center;gap:5px;width:auto;min-height:30px;padding:4px 9px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:10.5px;font-weight:800;line-height:1.2;text-align:center;white-space:nowrap}
-.exp-route-nearby svg{width:13px;height:13px;stroke-width:2.2}
-.exp-route-nearby.active{background:var(--lime)}
+.exp-route-nearby{display:inline-flex;align-items:center;gap:3px}
+.exp-route-nearby svg{width:12px;height:12px;stroke-width:2.2}
 .exp-route-distance{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;background:#e9edde;color:var(--ink);font-size:9px;font-weight:850;letter-spacing:.2px;text-transform:none;white-space:nowrap}
 .exp-route-distance svg{width:11px;height:11px}
