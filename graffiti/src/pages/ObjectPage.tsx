@@ -14,6 +14,7 @@ export function ObjectPage() {
   const { id = '' } = useParams();
   const { objects, loading } = useCityObjects();
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
     const sync = () => setFavoriteIds(readFavoritePlaceIds());
@@ -33,6 +34,8 @@ export function ObjectPage() {
 
   const objectId = object.id;
   const place = object.place;
+  const image = activeImage || object.image;
+  const gallery = (place?.gallery || []).filter((photo) => photo.src !== object.image);
   const isFavorite = favoriteIds.includes(objectId);
   const audio = getPlaceAudio(objectId);
   const mapHref = `/map?place=${encodeURIComponent(objectId)}`;
@@ -51,11 +54,30 @@ export function ObjectPage() {
 
       <article className="object-detail">
         <div className="object-detail-media">
-          {object.image ? (
-            <img src={object.image} alt={object.name} />
+          {image ? (
+            <img src={image} alt={object.name} />
           ) : (
             <span className="object-detail-placeholder"><MapPin size={42} /></span>
           )}
+          {gallery.length ? (
+            <div className="object-thumbs">
+              {object.image ? (
+                <button type="button" className={image === object.image ? 'active' : ''} onClick={() => setActiveImage(object.image)}>
+                  <img src={object.image} alt="" />
+                </button>
+              ) : null}
+              {gallery.map((photo) => (
+                <button
+                  type="button"
+                  key={photo.src}
+                  className={image === photo.src ? 'active' : ''}
+                  onClick={() => setActiveImage(photo.src)}
+                >
+                  <img src={photo.src} alt="" />
+                </button>
+              ))}
+            </div>
+          ) : null}
           {place?.photo?.author ? (
             <small className="object-photo-credit">
               Фото: {place.photo.author} · {place.photo.license}

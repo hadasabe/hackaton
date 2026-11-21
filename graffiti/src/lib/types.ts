@@ -62,6 +62,7 @@ export interface WalkPlace {
   city?: string;
   sources?: SourceLink[];
   photo?: PhotoMeta | null;
+  gallery?: PhotoMeta[];
   image: string;
   lat: number | null;
   lng: number | null;

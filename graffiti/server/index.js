@@ -32,6 +32,13 @@ function loadStaticPlaces() {
 }
 
 const STATIC_PLACES = loadStaticPlaces();
+const PLACE_GALLERIES = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'content', 'galleries.json'), 'utf8'));
+  } catch {
+    return {};
+  }
+})();
 const SESSION_COOKIE = 'stena_session';
 
 function normalizePlaceAddress(value) {
@@ -796,6 +803,10 @@ app.get('/api/walk-places', (_req, res) => {
             src: publicPlaceImage(place.photo.src),
           }
         : null,
+      gallery: (PLACE_GALLERIES[place.id] || []).map((item) => ({
+        ...item,
+        src: publicPlaceImage(item.src),
+      })),
       image: publicPlaceImage(place.image),
       lat: Number.isFinite(place.lat) ? place.lat : null,
       lng: Number.isFinite(place.lng) ? place.lng : null,

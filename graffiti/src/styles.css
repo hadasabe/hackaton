@@ -4970,3 +4970,33 @@ button.profile-stat {
     max-height: 55vh;
   }
 }
+
+.object-thumbs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.object-thumbs button {
+  width: 64px;
+  height: 54px;
+  flex: none;
+  overflow: hidden;
+  padding: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-deep);
+  cursor: pointer;
+}
+
+.object-thumbs button.active {
+  border-color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.object-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
