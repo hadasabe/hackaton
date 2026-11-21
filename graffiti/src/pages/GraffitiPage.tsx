@@ -440,7 +440,7 @@ export function GraffitiPage() {
             </div>
             <p className="muted small">
               Если граффити закрасили, оно осыпалось или, наоборот, всё ещё на месте —
-              сообщите. Редакция проверит и обновит статус.
+              сообщите. Администратор проверит и обновит статус.
             </p>
 
             {!user ? (
@@ -460,7 +460,7 @@ export function GraffitiPage() {
                 <CheckCircle2 size={20} />
                 <div>
                   <strong>Спасибо, заявка на проверке</strong>
-                  <span>Редакция обновит статус после подтверждения.</span>
+                  <span>Администратор обновит статус после подтверждения.</span>
                 </div>
               </div>
             ) : (
@@ -482,7 +482,7 @@ export function GraffitiPage() {
                   rows={2}
                   value={reportComment}
                   onChange={(event) => setReportComment(event.target.value)}
-                  placeholder="Комментарий для редакции: что изменилось?"
+                  placeholder="Комментарий для администратора: что изменилось?"
                   maxLength={400}
                 />
                 {reportError ? <div className="notice error">{reportError}</div> : null}

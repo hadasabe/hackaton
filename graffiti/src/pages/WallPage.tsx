@@ -97,7 +97,7 @@ export function WallPage() {
 
       {wall.moderation_status === 'pending' ? (
         <div className="notice">
-          Стена на проверке. В каталоге она появится после одобрения редакции.
+          Стена на проверке. В каталоге она появится после одобрения администратора.
         </div>
       ) : null}
 

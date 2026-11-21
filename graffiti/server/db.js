@@ -656,7 +656,7 @@ function seedWalls() {
 }
 
 export function seedDatabase() {
-  const name = process.env.ADMIN_NAME || 'Редакция';
+  const name = process.env.ADMIN_NAME || 'Администратор';
   const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
   const configuredPassword = process.env.ADMIN_PASSWORD;
   const existingAdmin = db.prepare('SELECT id, password_hash FROM users WHERE email = ?').get(email);

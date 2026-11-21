@@ -114,7 +114,7 @@ export function AdminPage() {
       kind: 'graffiti',
       id,
       title: 'Отклонить работу?',
-      label: 'Причина отклонения (увидит только редакция)',
+      label: 'Причина отклонения (увидит только администратор)',
       defaultValue: 'Не соответствует правилам публикации.',
     });
   }
@@ -205,7 +205,7 @@ export function AdminPage() {
     <main className="page admin-page">
       <div className="admin-head">
         <div>
-          <span className="section-kicker"><ShieldCheck size={14} /> Редакция</span>
+          <span className="section-kicker"><ShieldCheck size={14} /> Администратор</span>
           <h1>Заявки и публикации</h1>
           <p>Проверяйте работы и стены: фото, адреса, теги и контакты. Одобренные сразу появляются на сайте.</p>
         </div>

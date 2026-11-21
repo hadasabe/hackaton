@@ -204,7 +204,7 @@ export function FeedPage() {
         <div>
           <span className="section-kicker">Архив пополняют люди</span>
           <h2>Знаете работу, которой нет в ленте?</h2>
-          <p>Пришлите фото и адрес. Редакция проверит и опубликует.</p>
+          <p>Пришлите фото и адрес. Администратор проверит и опубликует.</p>
         </div>
         <Link to="/submit" className="button button-lime">
           Предложить работу <ArrowRight size={17} />
