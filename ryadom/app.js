@@ -161,7 +161,7 @@ function renderCards(){
  if(!list.some(p=>p.id===state.selected))state.selected=list[0]?.id||null;
  const active=list.find(p=>p.id===state.selected),voiceOnly=state.mode==='voice'&&!catalog;
  document.querySelectorAll('[data-category]').forEach(button=>{const active=button.dataset.category===category;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
- $('list-heading').textContent=catalog?'Саратов в деталях':'Места в радиусе 200 м';$('nearby-count').textContent=String(list.length);$('radius-label').textContent=catalog?'Фотографии и места':state.fix?'В радиусе 200 м':'Включите GPS';$('catalog-tools').hidden=!catalog;
+ $('list-heading').textContent=catalog?'Саратов в деталях':'Места в радиусе 200 м';$('nearby-count').textContent=String(list.length);$('radius-label').textContent=catalog?'Фотографии и места':state.fix?'В радиусе 200 м':'Включите GPS';$('radius-label').disabled=Boolean(catalog||state.fix);$('catalog-tools').hidden=!catalog;
  $('place-list').hidden=voiceOnly;$('voice-companion').hidden=!voiceOnly;$('empty-state').hidden=!!active||voiceOnly;
  $('empty-message').innerHTML=state.fix?'В радиусе 200 м пока нет мест из каталога.<br>Продолжайте прогулку или откройте список.':catalog?'Попробуйте другое название или категорию.':'Включите GPS, чтобы увидеть места в радиусе 200 метров.';
  if(catalog&&!list.length)$('empty-message').textContent='По вашему запросу ничего не найдено. Попробуйте изменить фильтр.';
@@ -285,7 +285,9 @@ async function toggleAudio(){
  const id=voiceState.id||state.selected||state.near[0]?.id;if(id)startNarration(id);
 }
 
-$('gps-button').addEventListener('click',()=>{if(state.source==='gps'&&locator.active){beginGPS();return;}window.dispatchEvent(new Event('ryadom:open-plan'));});initSheetDrag();
+$('gps-button').addEventListener('click',()=>{if(state.source==='gps'&&locator.active){beginGPS();return;}window.dispatchEvent(new Event('ryadom:open-plan'));});
+$('radius-label').addEventListener('click',()=>{if(!$('radius-label').disabled&&!(state.source==='gps'&&locator.active))beginGPS();});
+initSheetDrag();
 $('toggle-walk').addEventListener('click',()=>{if(state.demoProgress>=100)beginDemo();setRunning(!state.running);});
 $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListener('click',beginDemo);
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});

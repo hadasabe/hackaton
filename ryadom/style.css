@@ -72,7 +72,9 @@ h1 em{box-shadow:0 -17px 0 var(--lime)}
 .section-head>div{display:flex;align-items:center;gap:9px;min-width:0}
 h2{font-size:19px;line-height:1.25;letter-spacing:-.7px;margin:0}
 .nearby-count{font-size:11px;font-weight:800;line-height:1.5;background:var(--ink);color:var(--lime);padding:3px 7px;border-radius:20px}
-.radius-label{font-size:11px;color:var(--muted);text-align:right;line-height:1.45}
+.radius-label{font-size:11px;color:var(--muted);text-align:right;line-height:1.45;border:0;background:none;padding:0;font-family:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.radius-label:hover:not(:disabled){color:var(--ink)}
+.radius-label:disabled{cursor:default;text-decoration:none;opacity:1}
 .catalog-intro{display:none;margin:0 0 27px}
 .catalog-intro .eyebrow{font-size:9px;letter-spacing:1.2px}
 .catalog-intro h2{font-size:38px;line-height:1.10;letter-spacing:-1.8px;margin:16px 0 17px}
