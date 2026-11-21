@@ -518,85 +518,93 @@ export const SAMPLES = [
     moderation: 'published',
   },
   {
-    word: 'РИТМ',
+    image: 'street-art-cat.jpg',
+    word: 'КОТ',
     height: 900,
-    address: 'улица Московская, 42',
-    status: 'alive',
-    style: 'graffiti',
-    author: 'неизвестный художник',
-    description: 'Ритмичный леттеринг на торце дома: крупные буквы и цветные полосы, хорошо читаются с улицы.',
-    moderation: 'published',
-  },
-  {
-    word: 'СВЕТ',
-    height: 900,
-    address: 'улица Рахова, 61',
+    address: 'Советская улица, 42, торец у Вольской улицы',
     status: 'alive',
     style: 'mural',
-    author: 'неизвестный художник',
-    description: 'Светлый мурал во дворе: абстрактные формы и тёплые оттенки на бетонной стене.',
+    author: 'Владимир Куц',
+    description: 'Чёрный кот в цилиндре и с моноклем объединяет купца, мецената и интеллигента. Реальная работа Владимира Куца на торце дома.',
     moderation: 'published',
   },
   {
-    word: 'ГОРОД',
+    image: 'street-art-yankovsky.jpg',
+    word: 'МЮНХГАУЗЕН',
     height: 900,
-    address: 'улица Соборная, 12',
-    status: 'partial',
-    style: 'text',
-    author: 'неизвестный художник',
-    description: 'Надпись «Город» на кирпичной стене. Нижняя часть работы со временем закрашена.',
-    moderation: 'published',
-  },
-  {
-    word: 'ЛЕТО',
-    height: 900,
-    address: 'улица Чапаева, 80',
-    status: 'alive',
-    style: 'graffiti',
-    author: 'неизвестный художник',
-    description: 'Яркая летняя работа на стене гаража: цветы, солнце и свободный леттеринг.',
-    moderation: 'published',
-  },
-  {
-    word: 'ВОЛГА',
-    height: 900,
-    address: 'набережная Космонавтов, 7',
+    address: 'Московская улица, 66, фасад у улицы Радищева',
     status: 'alive',
     style: 'mural',
-    author: 'неизвестный художник',
-    description: 'Мурал с волжскими мотивами у набережной: вода, чайки и широкие цветные плоскости.',
+    author: 'Дмитрий Жумаев',
+    description: 'Янковский в образе барона Мюнхгаузена смотрит с фасада на Московской. После ремонта здания рисунок восстановили в мае 2025 года.',
     moderation: 'published',
   },
   {
-    word: 'ШУМ',
+    image: 'street-art-time-face.jpg',
+    word: 'ВРЕМЯ',
     height: 900,
-    address: 'улица Киселёва, 12',
-    status: 'alive',
-    style: 'stencil',
-    author: 'неизвестный художник',
-    description: 'Трафаретная композиция на воротах двора: ритм из знаков и графичных силуэтов.',
-    moderation: 'published',
-  },
-  {
-    word: 'ДОМ',
-    height: 900,
-    address: 'улица Мичурина, 55',
-    status: 'alive',
-    style: 'graffiti',
-    author: 'неизвестный художник',
-    description: 'Домашний двор с новой работой: тёплые буквы и небольшой персонаж у входа.',
-    moderation: 'published',
-  },
-  {
-    word: 'ИСКРА',
-    height: 900,
-    address: 'улица Радищева, 22',
+    address: 'Комсомольская улица, 28/30, торец со стороны Волжской',
     status: 'alive',
     style: 'mural',
-    author: 'неизвестный художник',
-    description: 'Небольшой мурал в центре: контрастный рисунок на глухой стене между окнами.',
+    author: 'Владимир Куц',
+    description: 'Две половины одного лица: человек и цифровой интерфейс. Работа создана для фестиваля «ФормАРТ» в 2021 году.',
     moderation: 'published',
   },
+  {
+    image: 'street-art-flowers.jpg',
+    word: 'ЦВЕТЫ',
+    height: 900,
+    address: 'Советская улица, 72/82, торец у улицы Рахова',
+    status: 'alive',
+    style: 'mural',
+    author: 'Юрий Быков',
+    description: 'Девушка в медицинской маске держит цветок. Юрий Быков связал её образ с переживанием пандемии и красотой обычной жизни.',
+    moderation: 'published',
+  },
+  {
+    image: 'street-art-prince-vladimir.jpg',
+    word: 'МОЗАИКА',
+    height: 900,
+    address: 'Детский парк, стена храма Владимира Равноапостольного',
+    status: 'alive',
+    style: 'other',
+    author: 'неизвестный художник',
+    description: 'Узкая арочная мозаика на белой стене храма. Фотография документирует работу, автор и дата создания не указаны.',
+    moderation: 'published',
+  },
+  {
+    image: 'street-art-lenin-print.jpg',
+    word: 'ПЕЧАТЬ',
+    height: 900,
+    address: 'Улица Вавилова, 1а, торец у Мирного переулка',
+    status: 'alive',
+    style: 'other',
+    author: 'Юрий Вальков',
+    description: 'Панно на бывшей телефонной станции долго скрывал рекламный баннер. В 2017 году мозаику Юрия Валькова снова открыли взгляду прохожих.',
+    moderation: 'published',
+  },
+  {
+    image: 'street-art-greetings.jpg',
+    word: 'ПРИВЕТ',
+    height: 900,
+    address: 'Проспект Столыпина, 11, дворовый фасад центра культуры «Пионер»',
+    status: 'alive',
+    style: 'mural',
+    author: 'Александра Жернова, команда «Морфа»',
+    description: 'Открытка из прошлого на фасаде «Пионера»: мурал соединяет историю католического собора с чугунным кружевом саратовских мастеров.',
+    moderation: 'published',
+  },
+  {
+    image: 'street-art-liberated-labor.jpg',
+    word: 'ТРУД',
+    height: 900,
+    address: 'Московская улица, 72, торцевой фасад здания правительства',
+    status: 'alive',
+    style: 'other',
+    author: 'Юрий Вальков',
+    description: 'Мозаика «Освобождённый труд» на торце здания правительства: мирная жизнь, люди разных профессий и память о погибших.',
+    moderation: 'published',
+  }
 ];
 
 const COMMENTS = [
@@ -764,6 +772,29 @@ const COLLECTION_SAMPLES = [
   },
 ];
 
+function refreshSeedImages() {
+  const select = db.prepare('SELECT id, image_path FROM graffiti WHERE created_by = ?');
+  const getMedia = db.prepare('SELECT mime FROM media WHERE id = ?');
+  const update = db.prepare(
+    'UPDATE graffiti SET image_path = ?, address = ?, status = ?, style = ?, author_name = ?, description = ? WHERE id = ?',
+  );
+  const removeMedia = db.prepare('DELETE FROM media WHERE id = ?');
+  SAMPLES.forEach((sample, index) => {
+    if (!sample.image) return;
+    const filePath = path.join(__dirname, 'seed-images', sample.image);
+    if (!fs.existsSync(filePath)) return;
+    const row = select.get(`seed:${index}`);
+    if (!row) return;
+    const match = String(row.image_path).match(/^\/api\/media\/(\d+)$/);
+    if (!match) return;
+    const media = getMedia.get(Number(match[1]));
+    if (media?.mime === 'image/jpeg') return;
+    const mediaId = insertMedia(mimeFromPath(filePath), fs.readFileSync(filePath));
+    update.run(`/api/media/${mediaId}`, sample.address, sample.status, sample.style, sample.author, sample.description, row.id);
+    if (media) removeMedia.run(Number(match[1]));
+  });
+}
+
 function seedCollections() {
   const admin = db.prepare("SELECT id FROM users WHERE role = 'admin' ORDER BY id LIMIT 1").get();
   if (!admin) return;
@@ -899,6 +930,7 @@ export function seedDatabase() {
     }
   });
 
+  refreshSeedImages();
   seedCollections();
   console.log(`[stena] seeded ${inserted} graffiti`);
 }
