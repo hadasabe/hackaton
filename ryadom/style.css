@@ -424,7 +424,7 @@ body.map-fullscreen .map-region{position:fixed;inset:0;width:100vw;height:100dvh
 body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right))}
 
 /* Compact place card over the map, so the map stays visible. */
-.map-preview{display:flex;position:absolute;left:24px;bottom:64px;z-index:850;width:min(380px,calc(100% - 48px));gap:11px;align-items:stretch;padding:10px;border:2px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:5px 5px 0 var(--ink);transform:translateY(calc(100% + 40px));opacity:0;transition:transform .22s ease,opacity .22s ease;pointer-events:none}
+.map-preview{display:flex;position:absolute;left:24px;bottom:100px;z-index:850;width:min(380px,calc(100% - 48px));gap:11px;align-items:stretch;padding:10px;border:2px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:5px 5px 0 var(--ink);transform:translateY(calc(100% + 40px));opacity:0;transition:transform .22s ease,opacity .22s ease;pointer-events:none}
 .map-preview.open{transform:translateY(0);opacity:1;pointer-events:auto}
 .map-preview[hidden]{display:none!important}
 .map-preview-photo{width:84px;height:84px;flex:none;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#dfe3d3;display:grid;place-items:center;padding:0;color:var(--ink)}
@@ -450,6 +450,12 @@ body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(
 .back-to-top{display:none}
 @media(max-width:760px){
   .back-to-top{display:grid;place-items:center;position:fixed;right:16px;bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom));z-index:1200;width:48px;height:48px;padding:0;border:2px solid var(--ink);border-radius:50%;background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
+  .back-to-top.visible{opacity:1;pointer-events:auto;transform:none}
+  .back-to-top svg{width:22px;height:22px;stroke-width:2.4}
+  body.map-fullscreen .back-to-top{display:none}
+}
+@media(min-width:761px){
+  .back-to-top{display:grid;place-items:center;position:fixed;right:24px;bottom:100px;z-index:1200;width:48px;height:48px;padding:0;border:2px solid var(--ink);border-radius:50%;background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
   .back-to-top.visible{opacity:1;pointer-events:auto;transform:none}
   .back-to-top svg{width:22px;height:22px;stroke-width:2.4}
   body.map-fullscreen .back-to-top{display:none}
