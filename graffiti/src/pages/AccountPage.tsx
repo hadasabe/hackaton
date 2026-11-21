@@ -180,12 +180,14 @@ export function AccountPage() {
                 <div className="account-row-main">
                   <div className="row gap-8 wrap">
                     <strong>{building.title}</strong>
-                    <span className={`moderation-badge ${building.moderation_status}`}>
-                      {building.moderation_status === 'pending'
-                        ? 'на проверке'
-                        : building.moderation_status === 'published'
-                          ? 'опубликовано'
-                          : 'отклонено'}
+                    <span className={`moderation-badge ${building.status === 'closed' ? 'rejected' : building.moderation_status}`}>
+                      {building.status === 'closed'
+                        ? 'удалено'
+                        : building.moderation_status === 'pending'
+                          ? 'на проверке'
+                          : building.moderation_status === 'published'
+                            ? 'опубликовано'
+                            : 'отклонено'}
                     </span>
                     <span className="tag">{building.category}</span>
                   </div>

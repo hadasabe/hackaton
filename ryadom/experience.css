@@ -394,3 +394,6 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-comment-deleted{font-size:12px;font-style:italic;color:var(--muted);margin:4px 0}
 .report-form-error{color:#a52a43!important}
 .report-dialog .route-form-note{color:var(--ink)}
+
+.profile-building.deleted{opacity:.7}
+.profile-building.deleted .section-kicker{color:#8f1237}

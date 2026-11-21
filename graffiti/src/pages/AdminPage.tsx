@@ -455,24 +455,33 @@ function WallsPanel({
           <div className="admin-card-body">
             <div className="admin-card-top">
               <span className="admin-id">#{wall.id}</span>
-              <span className={`moderation-badge ${wall.moderation_status}`}>
-                {wall.moderation_status === 'pending'
-                  ? 'на проверке'
-                  : wall.moderation_status === 'published'
-                    ? (kind === 'building' ? 'опубликовано' : 'опубликована')
-                    : (kind === 'building' ? 'отклонено' : 'отклонена')}
-              </span>
+              {kind === 'building' && wall.status === 'closed' ? (
+                <span className="moderation-badge rejected">удалено</span>
+              ) : (
+                <span className={`moderation-badge ${wall.moderation_status}`}>
+                  {wall.moderation_status === 'pending'
+                    ? 'на проверке'
+                    : wall.moderation_status === 'published'
+                      ? (kind === 'building' ? 'опубликовано' : 'опубликована')
+                      : (kind === 'building' ? 'отклонено' : 'отклонена')}
+                </span>
+              )}
             </div>
             <h3><MapPin size={15} /> {wall.title}</h3>
             <p className="admin-description">{wall.address}</p>
             {kind === 'building' ? (
-              <div className="admin-building-meta">
-                <span className="moderation-badge published">здание</span>
-                {wall.category ? <span>{wall.category}</span> : null}
-                {Number.isFinite(wall.lat) && Number.isFinite(wall.lng)
-                  ? <span>{Number(wall.lat).toFixed(5)}, {Number(wall.lng).toFixed(5)}</span>
-                  : null}
-              </div>
+              <>
+                <div className="admin-building-meta">
+                  <span className="moderation-badge published">здание</span>
+                  {wall.category ? <span>{wall.category}</span> : null}
+                  {Number.isFinite(wall.lat) && Number.isFinite(wall.lng)
+                    ? <span>{Number(wall.lat).toFixed(5)}, {Number(wall.lng).toFixed(5)}</span>
+                    : null}
+                </div>
+                {wall.status === 'closed' ? (
+                  <p className="report-reason">Удалено после жалобы{wall.hidden_reason ? `: ${wall.hidden_reason}` : ''}</p>
+                ) : null}
+              </>
             ) : null}
             <p className="admin-description">{wall.description}</p>
             <div className="admin-meta">
@@ -481,18 +490,20 @@ function WallsPanel({
               {kind === 'wall' ? <span>Контакт: {wall.contact || 'не указан'}</span> : null}
             </div>
             {wall.reject_reason ? <p className="reject-reason">Причина: {wall.reject_reason}</p> : null}
-            <div className="admin-actions">
-              {wall.moderation_status !== 'published' ? (
-                <button type="button" className="button button-lime" onClick={() => onApprove(wall.id)}>
-                  <Check size={15} /> Опубликовать
-                </button>
-              ) : null}
-              {wall.moderation_status !== 'rejected' ? (
-                <button type="button" className="button button-outline" onClick={() => onReject(wall.id)}>
-                  <X size={15} /> Отклонить
-                </button>
-              ) : null}
-            </div>
+            {kind === 'building' && wall.status === 'closed' ? null : (
+              <div className="admin-actions">
+                {wall.moderation_status !== 'published' ? (
+                  <button type="button" className="button button-lime" onClick={() => onApprove(wall.id)}>
+                    <Check size={15} /> Опубликовать
+                  </button>
+                ) : null}
+                {wall.moderation_status !== 'rejected' ? (
+                  <button type="button" className="button button-outline" onClick={() => onReject(wall.id)}>
+                    <X size={15} /> Отклонить
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
         </article>
       ))}

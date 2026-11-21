@@ -28,6 +28,7 @@ export interface Wall {
   category?: string;
   lat?: number | null;
   lng?: number | null;
+  hidden_reason?: string | null;
 }
 
 export interface WalkBuilding {
@@ -39,6 +40,7 @@ export interface WalkBuilding {
   lat: number | null;
   lng: number | null;
   image_path: string;
+  status: 'open' | 'closed';
   moderation_status: 'pending' | 'published' | 'rejected';
   reject_reason: string;
   published_at?: string | null;

@@ -1758,7 +1758,7 @@ app.get('/api/my/walk-buildings', requireUser, (req, res) => {
   const items = db
     .prepare(`
       SELECT w.id, w.title, w.address, w.category, w.description,
-             w.lat, w.lng, w.image_path, w.moderation_status,
+             w.lat, w.lng, w.image_path, w.status, w.moderation_status,
              w.reject_reason, w.published_at, w.created_at
       FROM walls w
       WHERE w.owner_id = ? AND w.kind = 'building'
@@ -1788,7 +1788,7 @@ app.get('/api/admin/walls', requireAdmin, (_req, res) => {
         SUM(CASE WHEN moderation_status = 'pending' AND kind = 'wall' THEN 1 ELSE 0 END) AS pending,
         SUM(CASE WHEN moderation_status = 'published' AND kind = 'wall' THEN 1 ELSE 0 END) AS published,
         SUM(CASE WHEN moderation_status = 'rejected' AND kind = 'wall' THEN 1 ELSE 0 END) AS rejected,
-        (SELECT COUNT(*) FROM walls WHERE moderation_status = 'pending' AND kind = 'building') AS buildings,
+        (SELECT COUNT(*) FROM walls WHERE moderation_status = 'pending' AND kind = 'building' AND status != 'closed') AS buildings,
         (SELECT COUNT(*) FROM status_reports WHERE moderation_status = 'pending') AS status_pending
       FROM walls
     `)
@@ -1952,9 +1952,10 @@ app.post('/api/admin/reports/:id/reject', requireAdmin, (req, res) => {
 app.get('/api/admin/buildings', requireAdmin, (_req, res) => {
   const items = db
     .prepare(`
-      SELECT w.*, u.name AS owner_name
+      SELECT w.*, u.name AS owner_name, hp.reason AS hidden_reason
       FROM walls w
       JOIN users u ON u.id = w.owner_id
+      LEFT JOIN hidden_places hp ON hp.place_id = 'building-' || w.id
       WHERE w.kind = 'building'
       ORDER BY
         CASE w.moderation_status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END,
@@ -1982,7 +1983,7 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'wall'")
     .get().count;
   const buildings = db
-    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'building'")
+    .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'building' AND status != 'closed'")
     .get().count;
   const reports = db
     .prepare("SELECT COUNT(*) AS count FROM content_reports WHERE status = 'pending'")
