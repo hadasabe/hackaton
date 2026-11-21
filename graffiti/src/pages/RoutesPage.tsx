@@ -123,7 +123,7 @@ export function RoutesPage() {
         <div className="routes-toolbar-actions">
           {plan.length >= 2 ? (
             <button type="button" className="button button-dark" onClick={() => setShowCreate((value) => !value)}>
-              <Plus size={16} /> Опубликовать прогулку
+              <Plus size={16} /> Опубликовать маршрут
             </button>
           ) : null}
           <Link to="/map" className="button button-outline"><MapIcon size={16} /> Собрать на карте</Link>
@@ -135,7 +135,7 @@ export function RoutesPage() {
           <div className="route-create-head">
             <div>
               <span className="section-kicker">Новый маршрут · {plan.length} {plural(plan.length, 'остановка', 'остановки', 'остановок')}</span>
-              <h2>Опубликовать мою прогулку</h2>
+              <h2>Опубликовать мой маршрут</h2>
             </div>
             <button type="button" className="button button-outline" onClick={() => setShowCreate(false)}>Отмена</button>
           </div>
@@ -181,7 +181,7 @@ export function RoutesPage() {
       ) : visible.length === 0 ? (
         <div className="empty-feed">
           <h3>Маршрутов пока нет</h3>
-          <p>Соберите прогулку на карте — она появится здесь.</p>
+          <p>Соберите маршрут на карте — он появится здесь.</p>
           <Link to="/map" className="button button-dark"><RouteIcon size={16} /> Открыть карту</Link>
         </div>
       ) : (

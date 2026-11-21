@@ -37,7 +37,7 @@ function Footer() {
     <footer className="site-footer">
       <div>
         <strong>Туристический Саратов</strong>
-        <span>граффити и прогулки</span>
+        <span>граффити и маршруты</span>
       </div>
       <p>
         Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.

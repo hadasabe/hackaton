@@ -735,7 +735,7 @@ export function MapPage() {
         <div className="map-head-actions">
           <Link to="/routes" className="button button-outline"><Route size={16} /> Маршруты</Link>
           <button type="button" className="button button-dark" onClick={() => setShowPlan(true)}>
-            Моя прогулка · {plan.length}
+            Мой маршрут · {plan.length}
           </button>
         </div>
       </div>
@@ -747,7 +747,7 @@ export function MapPage() {
       <div className="map-layout">
         <aside className="map-sidebar">
           <div className="map-sidebar-head">
-            <strong>{showPlan ? 'Моя прогулка' : 'Объекты'}</strong>
+            <strong>{showPlan ? 'Мой маршрут' : 'Объекты'}</strong>
             <div className="map-sidebar-head-right">
               <span>{showPlan ? planObjects.length : sortedObjects.length}</span>
               {showPlan ? (
@@ -789,7 +789,7 @@ export function MapPage() {
                     >
                       <MoreVertical size={17} />
                     </button>
-                    <button type="button" className="icon-button map-plan-remove" onClick={() => togglePlan(object.id)} aria-label={`Убрать из прогулки: ${object.name}`}>
+                    <button type="button" className="icon-button map-plan-remove" onClick={() => togglePlan(object.id)} aria-label={`Убрать из маршрута: ${object.name}`}>
                       <X size={15} />
                     </button>
                   </div>
@@ -820,14 +820,14 @@ export function MapPage() {
                     setPlan([]);
                     setWalkStarted(false);
                   }}>
-                    Очистить прогулку
+                    Очистить маршрут
                   </button>
                 </div>
               </div>
             ) : (
               <div className="map-empty">
                 <Route size={28} />
-                <p>Добавляйте объекты в прогулку кнопкой на карточке.</p>
+                <p>Добавляйте объекты в маршрут кнопкой на карточке.</p>
               </div>
             )
           ) : (

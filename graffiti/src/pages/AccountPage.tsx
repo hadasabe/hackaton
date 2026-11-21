@@ -343,7 +343,7 @@ export function AccountPage() {
         routes.length === 0 ? (
           <div className="empty-feed">
             <h3>Маршрутов пока нет</h3>
-            <p>Соберите прогулку в разделе «Прогулка» и опубликуйте её — она появится здесь.</p>
+            <p>Соберите маршрут на карте и опубликуйте его — он появится здесь.</p>
             <Link to="/map" className="button button-dark"><MapIcon size={16} /> Перейти на карту</Link>
           </div>
         ) : (
