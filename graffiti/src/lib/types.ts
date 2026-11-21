@@ -135,6 +135,7 @@ export interface ContentReport {
   target_type: 'comment' | 'place';
   target_id: string;
   target_title: string;
+  target_excerpt: string;
   reporter_name: string;
   reason: string;
   details: string;

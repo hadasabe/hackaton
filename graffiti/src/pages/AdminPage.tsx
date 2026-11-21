@@ -538,7 +538,8 @@ function ReportsPanel({
                 {report.status === 'pending' ? 'на проверке' : report.status === 'resolved' ? 'решена' : 'отклонена'}
               </span>
             </div>
-            <h3>{report.target_type === 'comment' ? 'Комментарий' : 'Объект'}: {report.target_title || report.target_id}</h3>
+            <h3>{report.target_type === 'place' ? 'Объект' : 'Комментарий'}: {report.target_title || report.target_id}</h3>
+            {report.target_excerpt ? <blockquote className="report-excerpt">{report.target_excerpt}</blockquote> : null}
             <p className="report-reason">Причина: {report.reason}</p>
             {report.details ? <p className="admin-description">{report.details}</p> : null}
             <div className="admin-meta">
@@ -549,7 +550,7 @@ function ReportsPanel({
               {report.status === 'pending' ? (
                 <>
                   <button type="button" className="button button-lime" onClick={() => onResolve(report.id)}>
-                    <Check size={15} /> Решить
+                    <Check size={15} /> Принять и удалить
                   </button>
                   <button type="button" className="button button-outline" onClick={() => onReject(report.id)}>
                     <X size={15} /> Отклонить

@@ -131,11 +131,18 @@ db.exec(`
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS hidden_places (
+    place_id TEXT PRIMARY KEY,
+    reason TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS content_reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     target_type TEXT NOT NULL,
     target_id TEXT NOT NULL,
     target_title TEXT NOT NULL DEFAULT '',
+    target_excerpt TEXT NOT NULL DEFAULT '',
     reporter_id INTEGER NOT NULL,
     reporter_name TEXT NOT NULL,
     reason TEXT NOT NULL,
@@ -282,6 +289,7 @@ ensureColumn('walls', 'kind', "TEXT NOT NULL DEFAULT 'wall'");
 ensureColumn('walls', 'category', "TEXT NOT NULL DEFAULT ''");
 ensureColumn('walls', 'lat', 'REAL');
 ensureColumn('walls', 'lng', 'REAL');
+ensureColumn('content_reports', 'target_excerpt', "TEXT NOT NULL DEFAULT ''");
 {
   const wallColumns = db.prepare('PRAGMA table_info(walls)').all();
   const hadModeration = wallColumns.some((column) => column.name === 'moderation_status');

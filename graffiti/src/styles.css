@@ -3914,3 +3914,15 @@ button.profile-stat {
   font-weight: 750;
   color: var(--ink-soft);
 }
+
+.report-excerpt {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--ink);
+  border-radius: 0 10px 10px 0;
+  background: #f1ecdf;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}

@@ -1838,9 +1838,10 @@ app.post('/api/reports', requireUser, (req, res) => {
   const targetType = String(req.body?.target_type || '');
   const targetId = cleanText(req.body?.target_id, 120);
   const targetTitle = cleanUserText(req.body?.target_title, 160);
+  const targetExcerpt = cleanUserText(req.body?.target_excerpt, 400);
   const reason = cleanUserText(req.body?.reason, 120);
   const details = cleanUserText(req.body?.details, 800);
-  if (!['comment', 'place'].includes(targetType) || !targetId || !reason) {
+  if (!['comment', 'route_comment', 'place'].includes(targetType) || !targetId || !reason) {
     res.status(400).json({ error: 'Укажите объект и причину жалобы' });
     return;
   }
@@ -1851,11 +1852,11 @@ app.post('/api/reports', requireUser, (req, res) => {
   const info = db
     .prepare(`
       INSERT INTO content_reports (
-        target_type, target_id, target_title, reporter_id, reporter_name,
+        target_type, target_id, target_title, target_excerpt, reporter_id, reporter_name,
         reason, details, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
     `)
-    .run(targetType, targetId, targetTitle, req.user.id, req.user.name, reason, details, nowIso());
+    .run(targetType, targetId, targetTitle, targetExcerpt, req.user.id, req.user.name, reason, details, nowIso());
   res.status(201).json({ id: Number(info.lastInsertRowid) });
 });
 
@@ -1878,9 +1879,45 @@ app.get('/api/admin/reports', requireAdmin, (_req, res) => {
 
 app.post('/api/admin/reports/:id/resolve', requireAdmin, (req, res) => {
   const id = Number(req.params.id);
+  const report = db.prepare("SELECT * FROM content_reports WHERE id = ? AND status = 'pending'").get(id);
+  if (!report) {
+    res.status(404).json({ error: 'Жалоба не найдена' });
+    return;
+  }
+  const now = nowIso();
+  if (report.target_type === 'comment' || report.target_type === 'route_comment') {
+    const commentId = Number(report.target_id);
+    let changed = 0;
+    if (Number.isInteger(commentId)) {
+      changed = db.prepare('UPDATE walk_route_comments SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL')
+        .run(now, commentId).changes;
+      if (!changed) {
+        changed = db.prepare('UPDATE comments SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL')
+          .run(now, commentId).changes;
+      }
+    }
+    if (!changed) {
+      res.status(404).json({ error: 'Комментарий уже удалён или не найден' });
+      return;
+    }
+  } else if (report.target_type === 'place') {
+    db.prepare('INSERT OR IGNORE INTO hidden_places (place_id, reason, created_at) VALUES (?, ?, ?)')
+      .run(report.target_id, report.reason || 'Жалоба принята', now);
+    if (report.target_id.startsWith('building-')) {
+      const buildingId = Number(report.target_id.slice('building-'.length));
+      if (Number.isInteger(buildingId)) {
+        db.prepare("UPDATE walls SET status = 'closed' WHERE id = ? AND kind = 'building'").run(buildingId);
+      }
+    }
+  }
   db.prepare("UPDATE content_reports SET status = 'resolved', reviewed_at = ?, reviewed_by = ? WHERE id = ?")
-    .run(nowIso(), req.user.id, id);
+    .run(now, req.user.id, id);
   res.json({ ok: true });
+});
+
+app.get('/api/hidden-places', (_req, res) => {
+  const items = db.prepare('SELECT place_id, reason, created_at FROM hidden_places').all();
+  res.json({ items });
 });
 
 app.post('/api/admin/reports/:id/reject', requireAdmin, (req, res) => {
