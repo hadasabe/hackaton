@@ -594,9 +594,6 @@ export function MapPage() {
           <button type="button" className="button button-dark" onClick={() => setShowPlan(true)}>
             Моя прогулка · {plan.length}
           </button>
-          <button type="button" className="button button-outline" onClick={locate} disabled={locating}>
-            <Navigation size={16} /> {locating ? 'Ищу…' : 'Рядом'}
-          </button>
         </div>
       </div>
 
