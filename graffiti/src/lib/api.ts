@@ -9,6 +9,8 @@ import type {
   ReactionValue,
   Status,
   StatusReport,
+  UserProfileResponse,
+  WalkRouteSummary,
   Wall,
 } from './types';
 
@@ -206,6 +208,18 @@ export const api = {
 
   myWalls() {
     return request<{ items: Wall[] }>('/api/my/walls');
+  },
+
+  myWalkRoutes() {
+    return request<{ items: WalkRouteSummary[] }>('/api/walk-routes?scope=mine');
+  },
+
+  favoriteWalkRoutes() {
+    return request<{ items: WalkRouteSummary[] }>('/api/walk-routes/favorites');
+  },
+
+  userProfile(id: number) {
+    return request<UserProfileResponse>(`/api/users/${id}`);
   },
 
   adminList(tab: 'pending' | 'published' | 'rejected') {

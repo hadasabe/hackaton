@@ -1,13 +1,38 @@
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogOut, Map, ShieldCheck, SprayCan } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const location = useLocation();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    setHidden(false);
+    if (location.pathname !== '/') return;
+    let lastY = window.scrollY;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y > 120 && y > lastY + 4) setHidden(true);
+        else if (y < lastY - 4 || y < 40) setHidden(false);
+        lastY = y;
+        frame = 0;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [location.pathname]);
 
   return (
-    <header className="site-header">
+    <header className={`site-header${hidden ? ' header-hidden' : ''}`}>
       <Link to="/" className="logo" aria-label="Стена — на главную">
         <span className="logo-mark"><SprayCan size={20} strokeWidth={2.4} /></span>
         <span className="logo-text">

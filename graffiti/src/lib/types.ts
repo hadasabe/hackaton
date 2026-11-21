@@ -142,6 +142,36 @@ export interface PublicUserProfile {
   email?: string;
 }
 
+export interface WalkRouteSummary {
+  id: number;
+  owner_id: number;
+  slug: string;
+  title: string;
+  description: string;
+  duration_minutes: number;
+  visibility: 'public' | 'link';
+  created_at: string;
+  updated_at: string;
+  owner_name: string;
+  likes: number;
+  dislikes: number;
+  comments_count: number;
+  my_reaction: ReactionValue | null;
+  favorite: boolean;
+  can_edit: boolean;
+  is_mine: boolean;
+  stops: string[];
+}
+
+export interface UserProfileResponse {
+  user: PublicUserProfile;
+  routes: WalkRouteSummary[];
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  is_me: boolean;
+}
+
 export interface StatusReport {
   id: number;
   graffiti_id: number;

@@ -2,6 +2,8 @@ import { HashRouter, Link, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import { Header } from './components/Header';
+import { BottomNav } from './components/BottomNav';
+import { ScrollToTop } from './components/ScrollToTop';
 import { AdminGate } from './components/AdminGate';
 import { RequireAuth } from './components/RequireAuth';
 import { FeedPage } from './pages/FeedPage';
@@ -41,6 +43,7 @@ export default function App() {
       <AuthProvider>
         <ConfirmProvider>
           <div className="app-shell">
+          <ScrollToTop />
           <Header />
           <Routes>
             <Route path="/" element={<FeedPage />} />
@@ -88,6 +91,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
+          <BottomNav />
           </div>
         </ConfirmProvider>
       </AuthProvider>

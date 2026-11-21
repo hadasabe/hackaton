@@ -8,8 +8,15 @@ export function formatDate(iso: string): string {
   }).format(date);
 }
 
-export function timeAgo(iso: string): string {
-  const date = new Date(iso).getTime();
+export function formatDuration(minutes: number): string {
+  if (!minutes || minutes < 1) return '';
+  if (minutes < 60) return `${minutes} мин`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours} ч ${rest} мин` : `${hours} ч`;
+}
+
+export function timeAgo(iso: string): string {  const date = new Date(iso).getTime();
   if (Number.isNaN(date)) return '';
   const seconds = Math.max(1, Math.floor((Date.now() - date) / 1000));
   if (seconds < 60) return 'только что';
