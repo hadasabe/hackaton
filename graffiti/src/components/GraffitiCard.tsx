@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Heart, MapPin, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import type { Graffiti, ReactionValue } from '../lib/types';
 
@@ -22,15 +22,32 @@ export function Tags({ item }: { item: Graffiti }) {
 export function GraffitiCard({
   item,
   onReact,
+  isFavorite = false,
+  onToggleFavorite,
 }: {
   item: Graffiti;
   onReact: (value: ReactionValue) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
   return (
     <article className="graffiti-card">
-      <Link to={`/g/${item.id}`} className="card-image-link" aria-label={`Открыть работу: ${item.address}`}>
-        <img src={item.image_path} alt={`Граффити: ${item.address}`} loading="lazy" />
-      </Link>
+      <div className="place-card-media">
+        <Link to={`/g/${item.id}`} className="card-image-link" aria-label={`Открыть работу: ${item.address}`}>
+          <img src={item.image_path} alt={`Граффити: ${item.address}`} loading="lazy" />
+        </Link>
+        {onToggleFavorite ? (
+          <button
+            type="button"
+            className={`place-card-heart${isFavorite ? ' active' : ''}`}
+            onClick={onToggleFavorite}
+            aria-pressed={isFavorite}
+            aria-label={`${isFavorite ? 'Убрать из избранного' : 'Сохранить в избранное'}: ${item.address}`}
+          >
+            <Heart size={18} />
+          </button>
+        ) : null}
+      </div>
 
       <div className="card-body">
         <div className="card-topline">

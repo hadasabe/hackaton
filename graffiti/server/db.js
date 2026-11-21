@@ -50,6 +50,14 @@ db.exec(`
     FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS graffiti_favorites (
+    graffiti_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (graffiti_id, actor_id),
+    FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     graffiti_id INTEGER NOT NULL,

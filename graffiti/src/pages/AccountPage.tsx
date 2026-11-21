@@ -3,7 +3,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META } from '../lib/constants';
-import type { UserProfileResponse, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
+import type { Graffiti, UserProfileResponse, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
 import { formatDate, formatDuration, plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, removeFavoritePlace } from '../lib/placeFavorites';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +34,32 @@ function RouteRow({ route, showAuthor = false }: { route: WalkRouteSummary; show
       </div>
       <ArrowRight size={18} />
     </Link>
+  );
+}
+
+function GraffitiRow({ item, onRemove }: { item: Graffiti; onRemove: (item: Graffiti) => void }) {
+  return (
+    <article className="account-row account-place-row">
+      <img src={item.image_path} alt={item.address} />
+      <div className="account-row-main">
+        <div className="row gap-8 wrap">
+          <strong>{item.address}</strong>
+          <span className="tag">Граффити</span>
+        </div>
+        {item.description ? <small>{item.description}</small> : null}
+        <small>{item.likes} ♥ · {item.comments_count} 💬</small>
+      </div>
+      <Link to={`/g/${item.id}`} className="button button-outline">Открыть</Link>
+      <button
+        type="button"
+        className="text-button account-remove"
+        onClick={() => onRemove(item)}
+        aria-label={`Убрать из избранного: ${item.address}`}
+      >
+        <HeartOff size={16} />
+        Убрать
+      </button>
+    </article>
   );
 }
 
@@ -74,6 +100,7 @@ export function AccountPage() {
   const [buildings, setBuildings] = useState<WalkBuilding[]>([]);
   const [routes, setRoutes] = useState<WalkRouteSummary[]>([]);
   const [favorites, setFavorites] = useState<WalkRouteSummary[]>([]);
+  const [favoriteGraffiti, setFavoriteGraffiti] = useState<Graffiti[]>([]);
   const [places, setPlaces] = useState<WalkPlace[]>([]);
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -103,11 +130,12 @@ export function AccountPage() {
     if (!user) return;
     setLoading(true);
     setError('');
-    const [wallsResult, buildingsResult, routesResult, favoritesResult, profileResult, placesResult] = await Promise.allSettled([
+    const [wallsResult, buildingsResult, routesResult, favoritesResult, favoriteGraffitiResult, profileResult, placesResult] = await Promise.allSettled([
       api.myWalls(),
       api.myWalkBuildings(),
       api.myWalkRoutes(),
       api.favoriteWalkRoutes(),
+      api.favoriteGraffiti(),
       api.userProfile(user.id),
       api.walkPlaces(),
     ]);
@@ -116,6 +144,7 @@ export function AccountPage() {
     if (buildingsResult.status === 'fulfilled') setBuildings(buildingsResult.value.items);
     if (routesResult.status === 'fulfilled') setRoutes(routesResult.value.items);
     if (favoritesResult.status === 'fulfilled') setFavorites(favoritesResult.value.items);
+    if (favoriteGraffitiResult.status === 'fulfilled') setFavoriteGraffiti(favoriteGraffitiResult.value.items);
     if (profileResult.status === 'fulfilled') setProfile(profileResult.value);
     if (placesResult.status === 'fulfilled') setPlaces(placesResult.value.items);
     setLoading(false);
@@ -142,6 +171,15 @@ export function AccountPage() {
 
   function forgetPlace(id: string) {
     setFavoritePlaceIds(removeFavoritePlace(id));
+  }
+
+  async function forgetGraffiti(item: Graffiti) {
+    setFavoriteGraffiti((current) => current.filter((entry) => entry.id !== item.id));
+    try {
+      await api.toggleGraffitiFavorite(item.id);
+    } catch {
+      setFavoriteGraffiti((current) => [...current, item]);
+    }
   }
 
   return (
@@ -185,7 +223,7 @@ export function AccountPage() {
           Маршруты <span>{routes.length}</span>
         </button>
         <button type="button" className={`chip${tab === 'favorites' ? ' active' : ''}`} onClick={() => selectTab('favorites')}>
-          Избранное <span>{favoritePlaces.length + favorites.length}</span>
+          Избранное <span>{favoritePlaces.length + favoriteGraffiti.length + favorites.length}</span>
         </button>
       </div>
 
@@ -298,6 +336,19 @@ export function AccountPage() {
               <div className="account-list">
                 {favoritePlaces.map((place) => (
                   <PlaceRow place={place} onRemove={forgetPlace} key={place.id} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {favoriteGraffiti.length ? (
+            <section className="account-favorite-group">
+              <div className="account-favorite-head">
+                <h2>Граффити</h2>
+                <span>{favoriteGraffiti.length}</span>
+              </div>
+              <div className="account-list">
+                {favoriteGraffiti.map((item) => (
+                  <GraffitiRow item={item} onRemove={(entry) => void forgetGraffiti(entry)} key={item.id} />
                 ))}
               </div>
             </section>

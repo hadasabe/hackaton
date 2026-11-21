@@ -7,6 +7,8 @@ import {
   ChevronUp,
   Clock3,
   FolderPlus,
+  Heart,
+  HeartOff,
   MapPin,
   MessageCircle,
   Reply,
@@ -189,6 +191,23 @@ export function GraffitiPage() {
       );
     } catch {
       setComments((current) => current.map((item) => (item.id === comment.id ? comment : item)));
+    }
+  }
+
+  async function toggleFavorite() {
+    if (!user) {
+      navigate('/login', { state: { from: `/g/${numericId}` } });
+      return;
+    }
+    if (!item) return;
+    const next = !item.favorite;
+    setItem({ ...item, favorite: next });
+    try {
+      const result = await api.toggleGraffitiFavorite(item.id);
+      setItem((current) => current ? { ...current, favorite: result.favorite } : current);
+    } catch (caught) {
+      setItem(item);
+      setError(caught instanceof Error ? caught.message : 'Не удалось сохранить работу');
     }
   }
 
@@ -420,6 +439,14 @@ export function GraffitiPage() {
             <span className="comments-count">
               <MessageCircle size={17} /> {comments.length}
             </span>
+            <button
+              type="button"
+              className={`button ${item.favorite ? 'button-dark' : 'button-outline'}`}
+              onClick={() => void toggleFavorite()}
+            >
+              {item.favorite ? <HeartOff size={17} /> : <Heart size={17} />}
+              {item.favorite ? 'В избранном' : 'В избранное'}
+            </button>
             <button
               type="button"
               className="button button-outline"

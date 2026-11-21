@@ -106,6 +106,7 @@ export interface Graffiti {
   dislikes: number;
   comments_count: number;
   my_reaction: ReactionValue | null;
+  favorite?: boolean;
   lat?: number | null;
   lng?: number | null;
   submitted_by?: { id: number; name: string; email: string } | null;

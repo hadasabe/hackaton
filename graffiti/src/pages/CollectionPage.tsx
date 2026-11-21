@@ -76,6 +76,21 @@ export function CollectionPage() {
     }
   }
 
+  async function toggleFavorite(item: Graffiti) {
+    if (!user) {
+      navigate('/login', { state: { from: `/collections/${numericId}` } });
+      return;
+    }
+    const next = !item.favorite;
+    setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, favorite: next } : entry));
+    try {
+      const result = await api.toggleGraffitiFavorite(item.id);
+      setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, favorite: result.favorite } : entry));
+    } catch {
+      await load();
+    }
+  }
+
   async function removeItem(item: Graffiti) {
     const confirmed = await confirm({
       title: 'Убрать работу из коллекции?',
@@ -205,7 +220,7 @@ export function CollectionPage() {
           <div className="collection-grid">
             {items.map((item) => (
               <div className="collection-item" key={item.id}>
-                <GraffitiCard item={item} onReact={(value) => void react(item, value)} />
+                <GraffitiCard item={item} onReact={(value) => void react(item, value)} isFavorite={Boolean(item.favorite)} onToggleFavorite={() => void toggleFavorite(item)} />
                 {collection.can_edit ? (
                   <button
                     type="button"

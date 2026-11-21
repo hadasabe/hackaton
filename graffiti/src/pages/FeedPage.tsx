@@ -167,6 +167,21 @@ export function FeedPage() {
     }
   }
 
+  async function handleGraffitiFavorite(item: Graffiti) {
+    if (!user) {
+      navigate('/login', { state: { from: '/' } });
+      return;
+    }
+    const next = !item.favorite;
+    updateGraffiti(item.id, { favorite: next });
+    try {
+      const result = await api.toggleGraffitiFavorite(item.id);
+      updateGraffiti(item.id, { favorite: result.favorite });
+    } catch {
+      updateGraffiti(item.id, { favorite: item.favorite });
+    }
+  }
+
   function toggleFavoritePlace(id: string) {
     const next = favoritePlaceIds.includes(id)
       ? favoritePlaceIds.filter((placeId) => placeId !== id)
@@ -336,6 +351,8 @@ export function FeedPage() {
                   key={object.key}
                   item={object.graffiti}
                   onReact={(value) => void handleReact(object.graffiti!, value)}
+                  isFavorite={Boolean(object.graffiti.favorite)}
+                  onToggleFavorite={() => void handleGraffitiFavorite(object.graffiti!)}
                 />
               ) : (
                 <PlaceCard

@@ -404,7 +404,8 @@ const GRAFFITI_SELECT = `
     (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'like' AND r.actor_id NOT IN (SELECT 'user:' || u.id FROM users u WHERE u.shadow_banned = 1)) AS likes,
     (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'dislike' AND r.actor_id NOT IN (SELECT 'user:' || u.id FROM users u WHERE u.shadow_banned = 1)) AS dislikes,
     (SELECT COUNT(*) FROM comments c WHERE c.graffiti_id = g.id AND c.deleted_at IS NULL AND c.hidden = 0) AS comments_count,
-    (SELECT r.value FROM reactions r WHERE r.graffiti_id = g.id AND r.actor_id = ?) AS my_reaction
+    (SELECT r.value FROM reactions r WHERE r.graffiti_id = g.id AND r.actor_id = ?) AS my_reaction,
+    (SELECT 1 FROM graffiti_favorites f WHERE f.graffiti_id = g.id AND f.actor_id = ?) AS favorite
   FROM graffiti g
 `;
 
@@ -486,7 +487,7 @@ app.get('/api/feed', (req, res) => {
   const style = STYLES.has(req.query.style) ? req.query.style : null;
   const query = cleanText(req.query.q, 80);
   const where = ["g.moderation_status = 'published'"];
-  const params = [req.actorId];
+  const params = [req.actorId, req.actorId];
 
   if (status) {
     where.push('g.status = ?');
@@ -510,6 +511,7 @@ app.get('/api/feed', (req, res) => {
     const place = findPlaceByAddress(item.address, matchPlaces);
     return {
       ...item,
+      favorite: Boolean(item.favorite),
       lat: place?.lat ?? null,
       lng: place?.lng ?? null,
     };
@@ -612,8 +614,8 @@ app.get('/api/collections/:id', (req, res) => {
       WHERE ci.collection_id = ? AND g.moderation_status = 'published'
       ORDER BY datetime(ci.created_at) DESC
     `)
-    .all(req.actorId, id);
-  res.json({ collection: collectionSummary(row, req), items });
+    .all(req.actorId, req.actorId, id);
+  res.json({ collection: collectionSummary(row, req), items: items.map((item) => ({ ...item, favorite: Boolean(item.favorite) })) });
 });
 
 app.post('/api/collections', requireUser, (req, res) => {
@@ -1435,6 +1437,44 @@ app.post('/api/users/:id/follow', requireUser, (req, res) => {
   res.json({ following: !existing, followers_count: Number(followers || 0) });
 });
 
+app.get('/api/graffiti/favorites', requireUser, (req, res) => {
+  const items = db
+    .prepare(`
+      ${GRAFFITI_SELECT}
+      WHERE g.moderation_status = 'published'
+        AND EXISTS (
+          SELECT 1 FROM graffiti_favorites f
+          WHERE f.graffiti_id = g.id AND f.actor_id = ?
+        )
+      ORDER BY datetime(g.published_at) DESC
+    `)
+    .all(req.actorId, req.actorId, req.actorId);
+  res.json({ items: items.map((item) => ({ ...item, favorite: true })) });
+});
+
+app.post('/api/graffiti/:id/favorite', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ error: 'Некорректный id' });
+    return;
+  }
+  const item = db.prepare("SELECT id FROM graffiti WHERE id = ? AND moderation_status = 'published'").get(id);
+  if (!item) {
+    res.status(404).json({ error: 'Работа не найдена' });
+    return;
+  }
+  const existing = db
+    .prepare('SELECT 1 FROM graffiti_favorites WHERE graffiti_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (existing) {
+    db.prepare('DELETE FROM graffiti_favorites WHERE graffiti_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else {
+    db.prepare('INSERT INTO graffiti_favorites (graffiti_id, actor_id, created_at) VALUES (?, ?, ?)')
+      .run(id, req.actorId, nowIso());
+  }
+  res.json({ favorite: !existing });
+});
+
 app.get('/api/graffiti/:id', (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -1443,7 +1483,7 @@ app.get('/api/graffiti/:id', (req, res) => {
   }
   const item = db
     .prepare(`${GRAFFITI_SELECT} WHERE g.id = ? AND g.moderation_status = 'published'`)
-    .get(req.actorId, id);
+    .get(req.actorId, req.actorId, id);
   if (!item) {
     res.status(404).json({ error: 'Работа не найдена' });
     return;
@@ -1479,7 +1519,7 @@ app.get('/api/graffiti/:id', (req, res) => {
       can_delete: !deleted && (comment.actor_id === req.actorId || req.user?.role === 'admin'),
     };
   });
-  res.json({ item, comments });
+  res.json({ item: { ...item, favorite: Boolean(item.favorite) }, comments });
 });
 
 app.post('/api/graffiti/:id/reaction', requireUser, (req, res) => {
@@ -2355,7 +2395,7 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
     : 'pending';
   const items = db
     .prepare(`${GRAFFITI_SELECT} WHERE g.moderation_status = ? ORDER BY datetime(g.created_at) DESC LIMIT 300`)
-    .all(req.actorId, tab);
+    .all(req.actorId, req.actorId, tab);
   const submitterIds = [
     ...new Set(
       items

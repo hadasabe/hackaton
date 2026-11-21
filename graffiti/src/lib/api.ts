@@ -111,6 +111,14 @@ export const api = {
     );
   },
 
+  toggleGraffitiFavorite(id: number) {
+    return request<{ favorite: boolean }>(`/api/graffiti/${id}/favorite`, { method: 'POST' });
+  },
+
+  favoriteGraffiti() {
+    return request<{ items: Graffiti[] }>('/api/graffiti/favorites');
+  },
+
   addComment(id: number, body: string, parentId?: number | null) {
     return request<Comment>(`/api/graffiti/${id}/comments`, {
       method: 'POST',
