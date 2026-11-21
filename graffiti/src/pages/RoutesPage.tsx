@@ -108,13 +108,17 @@ export function RoutesPage() {
 
   return (
     <main className="page routes-page">
-      <header className="routes-head">
-        <div>
-          <span className="eyebrow">Маршруты горожан</span>
-          <h1>Прогулки<br />по Саратову</h1>
-          <p>Готовые маршруты с остановками. Соберите свой на карте или пройдите чужой.</p>
-        </div>
-        <div className="routes-head-actions">
+      <div className="routes-toolbar">
+        <label className="search-box routes-search">
+          <Search size={16} />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Поиск"
+            aria-label="Поиск маршрутов"
+          />
+        </label>
+        <div className="routes-toolbar-actions">
           {plan.length >= 2 ? (
             <button type="button" className="button button-dark" onClick={() => setShowCreate((value) => !value)}>
               <Plus size={16} /> Опубликовать прогулку
@@ -122,7 +126,7 @@ export function RoutesPage() {
           ) : null}
           <Link to="/map" className="button button-outline"><MapIcon size={16} /> Собрать на карте</Link>
         </div>
-      </header>
+      </div>
 
       {showCreate ? (
         <form className="route-create-form" onSubmit={(event) => void createRoute(event)}>
@@ -160,18 +164,6 @@ export function RoutesPage() {
           </button>
         </form>
       ) : null}
-
-      <div className="routes-toolbar">
-        <label className="search-box">
-          <Search size={16} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Название, автор или описание"
-          />
-        </label>
-        <span>{visible.length} {plural(visible.length, 'маршрут', 'маршрута', 'маршрутов')}</span>
-      </div>
 
       {error ? <div className="notice error">{error}</div> : null}
 

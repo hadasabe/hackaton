@@ -4577,17 +4577,22 @@ button.profile-stat {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
 .routes-toolbar .search-box {
-  flex: 1;
+  flex: 1 1 260px;
+  max-width: 480px;
 }
 
-.routes-toolbar > span {
-  color: var(--muted);
-  font-size: 12px;
-  white-space: nowrap;
+.routes-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .routes-grid {
@@ -4892,8 +4897,19 @@ button.profile-stat {
   }
 
   .routes-toolbar {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
+  }
+
+  .routes-toolbar .search-box {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: none;
+  }
+
+  .routes-toolbar-actions {
+    justify-content: flex-end;
+    margin-left: 0;
   }
 
   .route-comment-form {
