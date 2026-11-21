@@ -75,7 +75,7 @@ export function Header() {
         {isAdmin ? (
           <NavLink to="/admin" className="nav-admin header-admin">
             <ShieldCheck size={15} />
-            Модерация
+            <span className="header-admin-label">Модерация</span>
           </NavLink>
         ) : null}
         {user ? (

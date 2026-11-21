@@ -6031,3 +6031,33 @@ a.people-row:hover {
     height: 14px;
   }
 }
+
+.user-chip-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .header-admin {
+    padding: 8px;
+  }
+
+  .header-admin-label {
+    display: none;
+  }
+
+  .user-chip-name {
+    max-width: 92px;
+  }
+
+  .header-side {
+    max-width: 100%;
+  }
+
+  .auth-link {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}
