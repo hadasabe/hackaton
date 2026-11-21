@@ -100,6 +100,8 @@ export function MapPage() {
       zoomControl: false,
       attributionControl: false,
       scrollWheelZoom: true,
+      zoomSnap: 0.25,
+      zoomDelta: 0.5,
       doubleClickZoom: !window.matchMedia('(pointer: coarse)').matches,
     }).setView([51.5305, 46.0375], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
@@ -203,12 +205,12 @@ export function MapPage() {
       event.stopPropagation();
       const point = pointFor(event.touches[0]);
       if (Math.abs(point.y - gesture.startY) > 6) gesture.moved = true;
-      const delta = (gesture.startY - point.y) / 100;
+      const delta = (gesture.startY - point.y) / 80;
       const nextZoom = Math.max(
         activeMap.getMinZoom(),
-        Math.min(activeMap.getMaxZoom(), Math.round(gesture.startZoom + delta)),
+        Math.min(activeMap.getMaxZoom(), gesture.startZoom + delta),
       );
-      if (nextZoom !== activeMap.getZoom()) {
+      if (Math.abs(nextZoom - activeMap.getZoom()) > 0.01) {
         activeMap.setZoomAround(gesture.anchor, nextZoom, { animate: false });
       }
     }

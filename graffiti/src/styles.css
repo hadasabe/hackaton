@@ -6066,8 +6066,9 @@ a.people-row:hover {
 }
 
 /* Zoom buttons match the fullscreen control */
-.map-canvas-wrap .leaflet-control-zoom {
-  border: 0;
+.map-canvas-wrap .leaflet-control-zoom.leaflet-bar {
+  border: 0 !important;
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
