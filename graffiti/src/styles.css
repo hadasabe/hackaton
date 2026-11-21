@@ -3620,6 +3620,13 @@ button.profile-stat {
     color: var(--lime);
   }
 
+  .bottom-nav a.bottom-nav-mode {
+    background: var(--lime);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
   .bottom-nav a svg {
     width: 20px;
     height: 20px;

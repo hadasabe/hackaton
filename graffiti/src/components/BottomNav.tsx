@@ -23,13 +23,13 @@ export function BottomNav() {
         <Bookmark size={20} />
         <span>Коллекции</span>
       </NavLink>
+      <NavLink to="/walk" className="bottom-nav-mode">
+        <Map size={20} />
+        <span>Прогулка</span>
+      </NavLink>
       <NavLink to="/walls">
         <SprayCan size={20} />
         <span>Стены</span>
-      </NavLink>
-      <NavLink to="/walk">
-        <Map size={20} />
-        <span>Прогулка</span>
       </NavLink>
       <NavLink to="/account">
         <User size={20} />

@@ -652,7 +652,10 @@ function findWalkRoute(slug, req) {
 function normalizeWalkDuration(value) {
   const minutes = Number(value);
   if (!Number.isFinite(minutes)) return 0;
-  return Math.max(0, Math.min(1440, Math.round(minutes)));
+  return [0, 30, 60, 90, 150, 240].reduce(
+    (best, preset) => (Math.abs(preset - minutes) < Math.abs(best - minutes) ? preset : best),
+    0,
+  );
 }
 
 app.get('/api/walk-routes', (req, res) => {

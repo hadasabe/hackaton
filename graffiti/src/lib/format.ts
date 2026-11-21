@@ -10,10 +10,11 @@ export function formatDate(iso: string): string {
 
 export function formatDuration(minutes: number): string {
   if (!minutes || minutes < 1) return '';
-  if (minutes < 60) return `${minutes} мин`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return rest ? `${hours} ч ${rest} мин` : `${hours} ч`;
+  if (minutes <= 30) return 'до 30 мин';
+  if (minutes <= 60) return '30–60 мин';
+  if (minutes <= 120) return '1–2 ч';
+  if (minutes <= 180) return '2–3 ч';
+  return '3+ ч';
 }
 
 export function timeAgo(iso: string): string {  const date = new Date(iso).getTime();
