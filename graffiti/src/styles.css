@@ -4402,13 +4402,6 @@ button.profile-stat {
   font-family: var(--font-body);
 }
 
-@media (min-width: 901px) {
-  .map-sidebar {
-    max-height: calc(100% - 96px);
-    align-self: start;
-  }
-}
-
 @media (max-width: 900px) {
   .map-page-head {
     align-items: flex-start;
