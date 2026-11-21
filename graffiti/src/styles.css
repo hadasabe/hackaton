@@ -3975,8 +3975,8 @@ button.profile-stat {
   display: grid;
   grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
   gap: 16px;
-  height: min(70vh, 760px);
-  min-height: 560px;
+  height: clamp(420px, calc(100dvh - 410px), 720px);
+  min-height: 0;
 }
 
 .map-sidebar {
@@ -4327,6 +4327,7 @@ button.profile-stat {
 
   .map-sidebar {
     max-height: 52vh;
+    margin-bottom: 84px;
   }
 
   .map-selected-card {
@@ -4958,12 +4959,12 @@ button.profile-stat {
   }
 
   .map-canvas-wrap {
-    height: 46vh;
-    min-height: 330px;
+    height: clamp(220px, calc(100dvh - 490px), 430px);
+    min-height: 0;
   }
 
   .map-canvas {
-    min-height: 330px;
+    min-height: 220px;
   }
 
   .map-sidebar {
