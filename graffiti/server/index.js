@@ -2390,7 +2390,8 @@ app.delete('/api/admin/comments/:id', requireAdmin, (req, res) => {
 
 if (process.env.NODE_ENV === 'production') {
   app.get('/admin', (_req, res) => res.redirect('/#/admin'));
-  app.get(['/walk', '/walk/'], (_req, res) => res.redirect('/#/walk'));
+  app.get(['/walk', '/walk/'], (_req, res) => res.redirect('/#/map'));
+  app.get(/^\/walk-app(?:\/.*)?$/, (_req, res) => res.redirect('/#/map'));
   app.get('/r/:slug', (req, res) => {
     res.redirect(`/#/r/${encodeURIComponent(req.params.slug)}`);
   });
