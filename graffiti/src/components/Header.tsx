@@ -11,7 +11,7 @@ export function Header() {
 
   useEffect(() => {
     setHidden(false);
-    if (location.pathname !== '/') return;
+    if (location.pathname !== '/graffiti') return;
     let lastY = window.scrollY;
     let frame = 0;
     const onScroll = () => {
@@ -33,19 +33,19 @@ export function Header() {
 
   return (
     <header className={`site-header${hidden ? ' header-hidden' : ''}`}>
-      <Link to="/" className="logo" aria-label="Стена — на главную">
+      <Link to="/" className="logo" aria-label="Туристический Саратов — на главную">
         <span className="logo-mark"><SprayCan size={20} strokeWidth={2.4} /></span>
         <span className="logo-text">
-          Стена
+          Туристический
           <small>Саратов</small>
         </span>
       </Link>
 
       <nav className="main-nav" aria-label="Основная навигация">
-        <NavLink to="/" end>Лента</NavLink>
+        <NavLink to="/graffiti" end>Граффити</NavLink>
         <NavLink to="/collections">Коллекции</NavLink>
         <NavLink to="/walls">Стены</NavLink>
-        <NavLink to="/walk" className="nav-walk">
+        <NavLink to="/" end className="nav-walk">
           <Map size={15} />
           Прогулка
         </NavLink>

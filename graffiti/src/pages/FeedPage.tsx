@@ -93,7 +93,7 @@ export function FeedPage() {
             их не закрасили
           </h1>
           <p>
-            Фотографии, адреса и статусы работ. Лента живая: ставьте лайки, обсуждайте
+            Фотографии, адреса и статусы работ. Архив живой: ставьте лайки, обсуждайте
             и отмечайте, если работа ещё на месте.
           </p>
           <div className="hero-actions">
@@ -126,7 +126,7 @@ export function FeedPage() {
       <section id="feed" className="feed-section">
         <div className="feed-toolbar">
           <div className="feed-title">
-            <span className="section-kicker">Лента</span>
+            <span className="section-kicker">Граффити</span>
             <h2>Свежие работы</h2>
           </div>
           <label className="search-box">

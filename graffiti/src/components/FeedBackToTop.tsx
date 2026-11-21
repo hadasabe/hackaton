@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 export function FeedBackToTop() {
   const { pathname } = useLocation();
-  const isFeed = pathname === '/';
+  const isFeed = pathname === '/graffiti';
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

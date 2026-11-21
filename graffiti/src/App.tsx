@@ -28,8 +28,8 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div>
-        <strong>Стена</strong>
-        <span>граффити Саратова</span>
+        <strong>Туристический Саратов</strong>
+        <span>граффити и прогулки</span>
       </div>
       <p>
         Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.
@@ -48,7 +48,8 @@ export default function App() {
           <ScrollToTop />
           <Header />
           <Routes>
-            <Route path="/" element={<FeedPage />} />
+            <Route path="/" element={<WalkPage />} />
+            <Route path="/graffiti" element={<FeedPage />} />
             <Route path="/g/:id" element={<GraffitiPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:id" element={<CollectionPage />} />

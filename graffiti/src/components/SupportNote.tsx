@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 export function SupportNote() {
   const { pathname } = useLocation();
-  if (pathname.startsWith('/walk') || pathname.startsWith('/r/')) return null;
+  if (pathname === '/' || pathname.startsWith('/walk') || pathname.startsWith('/r/')) return null;
 
   return (
     <div className="support-note">

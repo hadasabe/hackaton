@@ -20,14 +20,14 @@ export function WalkPage() {
     };
   }, []);
 
-  const src = `/walk-app/?embed=1&v=78${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
+  const src = `/walk-app/?embed=1&v=79${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
 
   return (
     <main className="walk-embed-page">
       <iframe
         className="walk-embed"
         src={src}
-        title="АРТ-ПРОГУЛКА — маршруты по уличному искусству"
+        title="Туристический Саратов — прогулка"
         allow="geolocation"
       />
     </main>
