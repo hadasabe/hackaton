@@ -652,8 +652,17 @@ export function MapPage() {
                   </div>
                 ))}
                 <div className="map-plan-actions">
-                  {planObjects.length >= 2 ? (
-                    <Link to="/routes?create=1" className="button button-dark">Опубликовать прогулку</Link>
+                  {planObjects.length > 0 ? (
+                    <button
+                      type="button"
+                      className="button button-dark"
+                      onClick={() => {
+                        const first = planObjects.find((object) => object.lat != null && object.lng != null) || planObjects[0];
+                        if (first) setSelectedId(first.id);
+                      }}
+                    >
+                      Начать прогулку
+                    </button>
                   ) : null}
                   <button type="button" className="button button-outline" onClick={() => {
                     writePlan([]);
