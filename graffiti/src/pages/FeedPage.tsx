@@ -5,33 +5,14 @@ import { api } from '../lib/api';
 import type { CityObject } from '../lib/cityObjects';
 import { useCityObjects } from '../lib/cityObjects';
 import type { Graffiti, ReactionValue } from '../lib/types';
-import { STATUS_META, STYLE_META } from '../lib/constants';
-import { plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
 import { FeedControls } from '../components/FeedControls';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { ReportButton } from '../components/ReportButton';
+import { TagFilters } from '../components/TagFilters';
 import { useCardLink } from '../lib/cardLink';
+import { tagsForObject } from '../lib/tags';
 import { useAuth } from '../context/AuthContext';
-
-
-const TAG_ORDER = [
-  'Архитектура', 'История', 'Природа', 'Стрит-арт',
-  'Мурал', 'Граффити', 'Трафарет', 'Стикер', 'Надпись', 'Другое',
-  'На месте', 'Стёрто', 'Частично', 'Неизвестно',
-];
-
-function tagsForObject(object: CityObject): Set<string> {
-  const tags = new Set<string>();
-  if (object.category) tags.add(object.category);
-  if (object.graffiti) {
-    const style = STYLE_META[object.graffiti.style];
-    const status = STATUS_META[object.graffiti.status];
-    if (style?.label) tags.add(style.label);
-    if (status?.label) tags.add(status.label);
-  }
-  return tags;
-}
 
 function PlaceCard({
   object,
@@ -128,10 +109,12 @@ function PlaceCard({
 export function FeedPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { objects, places, graffiti, stats, loading, error, updatePlace, updateGraffiti } = useCityObjects();
-  const [searchParams] = useSearchParams();
+  const { objects, places, graffiti, loading, error, updatePlace, updateGraffiti } = useCityObjects();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const requestedTag = searchParams.get('tag');
+  const availableTags = new Set(objects.flatMap((object) => [...tagsForObject(object)]));
+  const activeTag = requestedTag && availableTags.has(requestedTag) ? requestedTag : null;
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
 
   useEffect(() => {
@@ -228,6 +211,13 @@ export function FeedPage() {
     }
   }
 
+  function selectTag(tag: string | null) {
+    const next = new URLSearchParams(searchParams);
+    if (tag) next.set('tag', tag);
+    else next.delete('tag');
+    setSearchParams(next, { replace: true });
+  }
+
   const needle = query.trim().toLowerCase();
   const visibleObjects = objects.filter((object) => {
     if (activeTag && !tagsForObject(object).has(activeTag)) return false;
@@ -243,49 +233,13 @@ export function FeedPage() {
     ].some((value) => String(value || '').toLowerCase().includes(needle));
   });
 
-  const tagCounts = new Map<string, number>();
-  for (const object of objects) {
-    for (const tag of tagsForObject(object)) {
-      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-    }
-  }
-  const tagOptions = [...tagCounts.entries()]
-    .sort(([a], [b]) => {
-      const ai = TAG_ORDER.indexOf(a);
-      const bi = TAG_ORDER.indexOf(b);
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-    });
-
-  const totalObjects = objects.length;
-  const graffitiAlive = stats?.alive ?? 0;
 
   return (
     <main className="page">
       <FeedControls active="objects" />
 
       <section id="feed" className="feed-section">
-        <div className="tag-filters">
-          <span className="tag-filters-label">Теги</span>
-          <div className="chip-row tag-filter-row" role="group" aria-label="Фильтр по тегам">
-            <button
-              type="button"
-              className={`chip ${activeTag === null ? 'active' : ''}`}
-              onClick={() => setActiveTag(null)}
-            >
-              Все · {totalObjects}
-            </button>
-            {tagOptions.map(([tag, count]) => (
-              <button
-                key={tag}
-                type="button"
-                className={`chip ${activeTag === tag ? 'active' : ''}`}
-                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-              >
-                {tag} · {count}
-              </button>
-            ))}
-          </div>
-        </div>
+        <TagFilters objects={objects} activeTag={activeTag} onSelect={selectTag} />
 
         {error ? <div className="notice error">{error}</div> : null}
 

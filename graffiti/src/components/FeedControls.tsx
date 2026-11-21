@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 export function FeedControls({ active }: { active: 'objects' | 'collections' }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const search = query ? `?q=${encodeURIComponent(query)}` : '';
+  const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
   function changeQuery(value: string) {
     const next = new URLSearchParams(searchParams);

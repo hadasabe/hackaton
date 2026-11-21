@@ -25,6 +25,8 @@ import {
   writeFavoritePlaceIds,
 } from '../lib/placeFavorites';
 import { readPlan, writePlan } from '../lib/plan';
+import { tagsForObject } from '../lib/tags';
+import { TagFilters } from '../components/TagFilters';
 
 
 function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -162,9 +164,14 @@ export function MapPage() {
     setPlan(readPlan());
   }, []);
 
+  const requestedTag = searchParams.get('tag');
+  const availableTags = new Set(objects.flatMap((object) => [...tagsForObject(object)]));
+  const activeTag = requestedTag && availableTags.has(requestedTag) ? requestedTag : null;
+
   const visibleObjects = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return objects.filter((object) => {
+      if (activeTag && !tagsForObject(object).has(activeTag)) return false;
       if (!needle) return true;
       return [
         object.name,
@@ -176,9 +183,24 @@ export function MapPage() {
         object.artist,
       ].some((value) => String(value || '').toLowerCase().includes(needle));
     });
-  }, [objects, query]);
+  }, [activeTag, objects, query]);
 
   const selected = objects.find((object) => object.id === selectedId) || null;
+
+  useEffect(() => {
+    if (selectedId && !visibleObjects.some((object) => object.id === selectedId)) {
+      setSelectedId(null);
+    }
+  }, [selectedId, visibleObjects]);
+
+  function selectTag(tag: string | null) {
+    const next = new URLSearchParams(searchParams);
+    if (tag) next.set('tag', tag);
+    else next.delete('tag');
+    next.delete('place');
+    setSelectedId(null);
+    setSearchParams(next, { replace: true });
+  }
 
   function closeSelected() {
     setSelectedId(null);
@@ -315,6 +337,8 @@ export function MapPage() {
           </button>
         </div>
       </div>
+
+      <TagFilters objects={objects} activeTag={activeTag} onSelect={selectTag} />
 
       {error ? <div className="notice error">{error}</div> : null}
 
