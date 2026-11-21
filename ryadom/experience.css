@@ -151,8 +151,6 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
  .exp-saved-copy{padding:20px}
  .exp-saved-copy h3{font-size:27px}
  .exp-saved-actions .button{font-size:12px}
- .mobile-tabs{gap:4px;padding-left:10px;padding-right:10px}
- .mobile-tabs button{font-size:9px;border-radius:15px;padding-left:5px;padding-right:5px}
  .exp-stop{grid-template-columns:24px 49px minmax(0,1fr);column-gap:8px}
  .exp-stop-photo{width:49px;height:60px}
  .exp-stop-copy strong{font-size:13px}
@@ -323,3 +321,5 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-route-stats svg{width:14px;height:14px;stroke-width:2.2}
 .exp-route-comments>h3{display:flex;align-items:center;gap:6px}
 .exp-route-comments>h3 svg{width:17px;height:17px;stroke-width:2.2}
+
+#gallery-add-plan.in-plan{background:var(--ink);color:var(--lime);border-color:var(--ink)}
