@@ -100,7 +100,7 @@ export function MapPage() {
       zoomControl: false,
       attributionControl: false,
       scrollWheelZoom: true,
-      zoomSnap: 0.25,
+      zoomSnap: 0.05,
       zoomDelta: 0.5,
       doubleClickZoom: !window.matchMedia('(pointer: coarse)').matches,
     }).setView([51.5305, 46.0375], 13);
@@ -150,13 +150,30 @@ export function MapPage() {
     let lastTapAt = 0;
     let lastTapPoint: L.Point | null = null;
     let gesture: { startY: number; startZoom: number; anchor: L.LatLng; moved: boolean } | null = null;
+    let pendingZoom: number | null = null;
+    let zoomFrame = 0;
 
     function pointFor(touch: Touch) {
       const rect = activeNode.getBoundingClientRect();
       return L.point(touch.clientX - rect.left, touch.clientY - rect.top);
     }
 
+    function applyPendingZoom() {
+      zoomFrame = 0;
+      if (!gesture || pendingZoom === null) return;
+      const nextZoom = pendingZoom;
+      pendingZoom = null;
+      if (Math.abs(nextZoom - activeMap.getZoom()) > 0.001) {
+        activeMap.setZoomAround(gesture.anchor, nextZoom, { animate: false });
+      }
+    }
+
     function cancelGesture() {
+      if (zoomFrame) {
+        cancelAnimationFrame(zoomFrame);
+        zoomFrame = 0;
+      }
+      pendingZoom = null;
       if (!gesture) return;
       gesture = null;
       activeMap.dragging.enable();
@@ -205,14 +222,12 @@ export function MapPage() {
       event.stopPropagation();
       const point = pointFor(event.touches[0]);
       if (Math.abs(point.y - gesture.startY) > 6) gesture.moved = true;
-      const delta = (gesture.startY - point.y) / 80;
-      const nextZoom = Math.max(
+      const delta = (gesture.startY - point.y) / 120;
+      pendingZoom = Math.max(
         activeMap.getMinZoom(),
         Math.min(activeMap.getMaxZoom(), gesture.startZoom + delta),
       );
-      if (Math.abs(nextZoom - activeMap.getZoom()) > 0.01) {
-        activeMap.setZoomAround(gesture.anchor, nextZoom, { animate: false });
-      }
+      if (!zoomFrame) zoomFrame = requestAnimationFrame(applyPendingZoom);
     }
 
     function onTouchEnd(event: TouchEvent) {
@@ -221,6 +236,11 @@ export function MapPage() {
       event.stopPropagation();
       const finished = gesture;
       gesture = null;
+      if (zoomFrame) {
+        cancelAnimationFrame(zoomFrame);
+        zoomFrame = 0;
+      }
+      pendingZoom = null;
       activeMap.dragging.enable();
       if (!finished.moved) {
         activeMap.setZoomAround(

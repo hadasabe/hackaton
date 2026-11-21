@@ -5233,8 +5233,8 @@ button.profile-stat {
 .map-fullscreen-toggle {
   position: absolute;
   top: auto;
-  right: 64px;
-  bottom: 10px;
+  right: 10px;
+  bottom: 110px;
   z-index: 900;
   display: grid;
   place-items: center;
@@ -5289,10 +5289,10 @@ body.map-is-fullscreen {
 }
 
 @media (max-width: 560px) {
-  .map-fullscreen-toggle {
+  .map-canvas-wrap .map-fullscreen-toggle {
     top: auto;
-    right: 60px;
-    bottom: 10px;
+    right: 10px;
+    bottom: calc(194px + env(safe-area-inset-bottom));
     width: 38px;
     height: 38px;
   }
@@ -6133,7 +6133,9 @@ a.people-row:hover {
   }
 
   .map-fullscreen-toggle {
-    bottom: calc(92px + env(safe-area-inset-bottom));
+    top: auto;
+    right: 10px;
+    bottom: calc(202px + env(safe-area-inset-bottom));
   }
 
   .map-canvas-wrap.has-selection:not(.is-fullscreen) .leaflet-bottom.leaflet-right,
