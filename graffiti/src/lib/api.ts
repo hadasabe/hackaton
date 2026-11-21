@@ -258,6 +258,10 @@ export const api = {
     return request<{ items: WalkRouteSummary[] }>('/api/walk-routes?scope=mine');
   },
 
+  createWalkBuilding(form: FormData) {
+    return request<{ id: number }>('/api/walk-buildings', { method: 'POST', body: form });
+  },
+
   myWalkBuildings() {
     return request<{ items: WalkBuilding[] }>('/api/my/walk-buildings');
   },

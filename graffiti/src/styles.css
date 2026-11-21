@@ -5064,3 +5064,120 @@ button.profile-stat {
     width: 100%;
   }
 }
+
+/* Add object */
+.add-object-page {
+  padding-bottom: 40px;
+}
+
+.add-object-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.add-object-card {
+  display: flex;
+  gap: 15px;
+  padding: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.add-object-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--ink);
+}
+
+.add-object-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  flex: none;
+  border: 2px solid var(--ink);
+  border-radius: 15px;
+  background: var(--lime);
+}
+
+.add-object-card h2 {
+  margin: 4px 0 7px;
+  font-family: var(--font-display);
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.add-object-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.add-object-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.building-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.building-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.building-picker-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink);
+}
+
+.building-picker-head small {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.building-picker-map {
+  width: 100%;
+  height: 310px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  background: var(--paper-deep);
+}
+
+.building-picker-pin {
+  background: var(--lime);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 rgba(17, 17, 17, 0.35);
+}
+
+@media (max-width: 760px) {
+  .add-object-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .building-picker-map {
+    height: 260px;
+  }
+}

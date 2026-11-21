@@ -17,6 +17,7 @@ import { CollectionPage } from './pages/CollectionPage';
 import { WallPage } from './pages/WallPage';
 import { NewWallPage } from './pages/NewWallPage';
 import { AccountPage } from './pages/AccountPage';
+import { AddObjectPage } from './pages/AddObjectPage';
 import { SubmitPage } from './pages/SubmitPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -27,6 +28,7 @@ const MapPage = lazy(() => import('./pages/MapPage').then((module) => ({ default
 const ObjectPage = lazy(() => import('./pages/ObjectPage').then((module) => ({ default: module.ObjectPage })));
 const RoutePage = lazy(() => import('./pages/RoutePage').then((module) => ({ default: module.RoutePage })));
 const RoutesPage = lazy(() => import('./pages/RoutesPage').then((module) => ({ default: module.RoutesPage })));
+const AddBuildingPage = lazy(() => import('./pages/AddBuildingPage').then((module) => ({ default: module.AddBuildingPage })));
 
 function Footer() {
   const { user } = useAuth();
@@ -81,6 +83,15 @@ export default function App() {
               element={(
                 <RequireAuth>
                   <AccountPage />
+                </RequireAuth>
+              )}
+            />
+            <Route path="/add" element={<AddObjectPage />} />
+            <Route
+              path="/add-building"
+              element={(
+                <RequireAuth>
+                  <AddBuildingPage />
                 </RequireAuth>
               )}
             />

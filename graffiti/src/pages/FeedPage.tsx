@@ -193,9 +193,9 @@ export function FeedPage() {
               <MapIcon size={17} />
               Открыть карту
             </Link>
-            <Link to="/submit" className="button button-outline">
+            <Link to="/add" className="button button-outline">
               <Plus size={17} />
-              Добавить граффити
+              Добавить объект
             </Link>
           </div>
         </div>
