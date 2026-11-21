@@ -3248,6 +3248,210 @@ const data = [
         "height": 1200
       }
     ]
+  },
+  {
+    "id": "drama-theatre",
+    "name": "Саратовский театр драмы имени И. А. Слонова",
+    "category": "Искусство",
+    "address": "Улица Рабочая, 116",
+    "lat": 51.535258,
+    "lng": 46.001816,
+    "description": "Один из старейших драматических театров России. Современное здание на Рабочей улице — главная сцена города.",
+    "story": "Саратовский театр драмы ведёт историю с 1803 года. Современное здание на Рабочей улице стало новым домом театра во второй половине XX века. Сегодня здесь идут драматические спектакли, а театр носит имя актёра и режиссёра Ивана Слонова.",
+    "era": "История с 1803 года",
+    "lookFor": "Обратите внимание на монументальный фасад и театральную площадь перед входом.",
+    "glyph": "building",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D1%82%D0%B5%D0%B0%D1%82%D1%80_%D0%B4%D1%80%D0%B0%D0%BC%D1%8B_9_%D0%BC%D0%B0%D1%8F.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/drama-theatre.jpg",
+    "photo": {
+      "author": "Зимин Василий",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/Commons:Copyright_tags#Public_domain",
+      "title": "Саратов театр драмы 9 мая.jpg",
+      "width": 650,
+      "height": 433,
+      "src": "assets/photos/drama-theatre.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D1%82%D0%B5%D0%B0%D1%82%D1%80_%D0%B4%D1%80%D0%B0%D0%BC%D1%8B_9_%D0%BC%D0%B0%D1%8F.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D1%82%D0%B5%D0%B0%D1%82%D1%80_%D0%B4%D1%80%D0%B0%D0%BC%D1%8B_9_%D0%BC%D0%B0%D1%8F.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
+  },
+  {
+    "id": "opera-theatre",
+    "name": "Саратовский театр оперы и балета",
+    "category": "Искусство",
+    "address": "Театральная площадь, 1",
+    "lat": 51.5304,
+    "lng": 46.0347,
+    "description": "Один из старейших оперных театров России, открытый в 1875 году. Оперные и балетные постановки на Театральной площади.",
+    "story": "Саратовский театр оперы и балета ведёт историю с 1875 года и считается одним из старейших оперных театров России. На Театральной площади проходят оперные и балетные постановки, а само здание является частью исторического центра города.",
+    "era": "Основан в 1875 году",
+    "lookFor": "Театральная площадь и соседние исторические здания складываются в один из главных городских ансамблей.",
+    "glyph": "building",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/opera-theatre.jpg",
+    "photo": {
+      "author": "Зимин Василий",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "title": "Театр оперы и балета.jpg",
+      "width": 1000,
+      "height": 690,
+      "src": "assets/photos/opera-theatre.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
+  },
+  {
+    "id": "philharmonic",
+    "name": "Саратовская областная филармония имени А. Шнитке",
+    "category": "Искусство",
+    "address": "Улица Соборная, 9",
+    "lat": 51.527131,
+    "lng": 46.03459,
+    "description": "Концертный зал в историческом центре, названный в честь композитора Альфреда Шнитке.",
+    "story": "Филармония расположена в историческом центре Саратова, рядом с Соборной площадью. Зал носит имя композитора Альфреда Шнитке, родившегося в Энгельсе. Здесь проходят симфонические и камерные концерты.",
+    "era": "Исторический центр",
+    "lookFor": "Филармония стоит в плотной исторической застройке; рассмотрите её вместе с соседними домами на Соборной.",
+    "glyph": "building",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F_%D1%84%D0%B8%D0%BB%D0%B0%D1%80%D0%BC%D0%BE%D0%BD%D0%B8%D1%8F_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A8%D0%BD%D0%B8%D1%82%D0%BA%D0%B5.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/philharmonic.jpg",
+    "photo": {
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "title": "Саратовская филармония имени Шнитке.jpg",
+      "width": 1400,
+      "height": 1050,
+      "src": "assets/photos/philharmonic.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F_%D1%84%D0%B8%D0%BB%D0%B0%D1%80%D0%BC%D0%BE%D0%BD%D0%B8%D1%8F_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A8%D0%BD%D0%B8%D1%82%D0%BA%D0%B5.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F_%D1%84%D0%B8%D0%BB%D0%B0%D1%80%D0%BC%D0%BE%D0%BD%D0%B8%D1%8F_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A8%D0%BD%D0%B8%D1%82%D0%BA%D0%B5.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
+  },
+  {
+    "id": "sgu",
+    "name": "Саратовский государственный университет имени Н. Г. Чернышевского",
+    "category": "Архитектура",
+    "address": "Улица Астраханская, 83",
+    "lat": 51.538774,
+    "lng": 46.007967,
+    "description": "Один из старейших университетов Поволжья, основанный в 1909 году. Главный корпус на Астраханской улице.",
+    "story": "Саратовский государственный университет основан в 1909 году и стал первым университетом в Поволжье. Главный корпус на Астраханской улице — часть исторической застройки города. Университет носит имя писателя и публициста Николая Чернышевского.",
+    "era": "Основан в 1909 году",
+    "lookFor": "Исторический корпус и университетский двор; это не музей, а действующий учебный кампус.",
+    "glyph": "building",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A3%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/sgu.jpg",
+    "photo": {
+      "author": "Kemal KOZBAEV",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "title": "Университет Саратовский Государственный.jpg",
+      "width": 1400,
+      "height": 1050,
+      "src": "assets/photos/sgu.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A3%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A3%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
+  },
+  {
+    "id": "railway-station",
+    "name": "Железнодорожный вокзал Саратов I",
+    "category": "Архитектура",
+    "address": "Привокзальная площадь, 1",
+    "lat": 51.542208,
+    "lng": 45.998168,
+    "description": "Главный железнодорожный вокзал города с узнаваемой часовой башней и большой привокзальной площадью.",
+    "story": "Саратов I — главный железнодорожный вокзал города. Через него проходят поезда дальнего следования и пригородные направления. Здание с часовой башней хорошо узнаётся с Привокзальной площади и служит одной из точек входа в город.",
+    "era": "Главный вокзал города",
+    "lookFor": "Часовая башня и привокзальная площадь; отсюда удобно начинать маршрут по центру.",
+    "glyph": "building",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D0%92%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB_%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D1%8B%D0%B9.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/railway-station.jpg",
+    "photo": {
+      "author": "ИринаЯ",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "title": "Саратов Вокзал железнодорожный.jpg",
+      "width": 1400,
+      "height": 1126,
+      "src": "assets/photos/railway-station.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D0%92%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB_%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D1%8B%D0%B9.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_%D0%92%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB_%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D1%8B%D0%B9.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
+  },
+  {
+    "id": "gagarin-monument",
+    "name": "Памятник Юрию Гагарину",
+    "category": "История",
+    "address": "Обуховский переулок, набережная Волги",
+    "lat": 51.525838,
+    "lng": 46.051866,
+    "description": "Памятник первому космонавту на набережной Волги. Гагарин учился в Саратове и занимался в местном аэроклубе.",
+    "story": "Юрий Гагарин учился в Саратове: сначала в индустриальном техникуме, затем в Саратовском аэроклубе. Памятник первому космонавту установлен на набережной Волги, рядом с местом прогулок и видом на реку.",
+    "era": "Память о первом космонавте",
+    "lookFor": "Памятник обращён к Волге; рядом открывается широкий вид на набережную и мост.",
+    "glyph": "pin",
+    "city": "САРАТОВ",
+    "sources": [
+      {
+        "title": "Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%AE%D1%80%D0%B8%D1%8E_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D1%83_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg"
+      }
+    ],
+    "verified": "2026-11-21",
+    "image": "assets/photos/gagarin-monument.jpg",
+    "photo": {
+      "author": "Infovarius",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "title": "Памятник Юрию Гагарину (Саратов).jpg",
+      "width": 1054,
+      "height": 1400,
+      "src": "assets/photos/gagarin-monument.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%AE%D1%80%D0%B8%D1%8E_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D1%83_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%AE%D1%80%D0%B8%D1%8E_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D1%83_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg",
+      "modified": "Уменьшено; в интерфейсе кадрировано"
+    }
   }
 ];
 if(typeof module==='object'&&module.exports)module.exports=data;else root.RYADOM_PLACES=data;

@@ -26,3 +26,12 @@
 | `walls/garage.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Гараж_во_дворе_Саратов.jpg) |
 | `walls/stone-wall.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Каменная_стена_%28Саратов%29.jpg) |
 | `walls/concrete-fence.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Бетонная_ограда_в_снегу_Саратов.jpg) |
+| `rotonda-graf.jpg` | Zimin.V.G. | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Saratov_rotonda_graf.JPG) |
+| `garage-2026.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Граффити_на_гараже_Саратов_2026.jpg) |
+| `garage-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Граффити_на_гараже.jpg) |
+| `gorpark-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Граффити_на_стене_в_горпарке.jpg) |
+| `corners-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Граффити_углы_Саратов.jpg) |
+| `razina-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Граффити_ул_Разина_Саратов.jpg) |
+| `embankment-new-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Набережная_Новая_Саратов.jpg) |
+| `old-house-graf.jpg` | ИринаЯ | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Новые_краски_старого_дома.jpg) |
+| `babuskin-7-graf.jpg` | Zimin.V.G. | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Саратов_Бабушкин_взвоз_7.jpg) |
