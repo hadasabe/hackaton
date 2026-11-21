@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Clock3, MapPin, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { MapPin, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import type { Graffiti, ReactionValue } from '../lib/types';
-import { timeAgo } from '../lib/format';
 
 export function Tags({ item }: { item: Graffiti }) {
   const status = STATUS_META[item.status];
@@ -38,10 +37,6 @@ export function GraffitiCard({
           <span className="card-address">
             <MapPin size={13} />
             {item.address}
-          </span>
-          <span className="card-time">
-            <Clock3 size={12} />
-            {timeAgo(item.published_at || item.created_at)}
           </span>
         </div>
 

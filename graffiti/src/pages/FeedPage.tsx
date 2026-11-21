@@ -41,11 +41,9 @@ function PlaceCard({
             <MapPin size={13} />
             {object.address}
           </span>
-          <span className="card-time">{place ? 'место' : 'здание'}</span>
         </div>
 
         <div className="tags">
-          <span className="tag tag-place">МЕСТО</span>
           {object.category ? <span className="tag tag-style">{object.category}</span> : null}
         </div>
 

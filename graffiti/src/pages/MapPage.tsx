@@ -60,7 +60,6 @@ function MapObjectRow({
         <span className="map-object-placeholder"><MapPin size={18} /></span>
       )}
       <span className="map-object-copy">
-        <small>{objectLabel(object)}</small>
         <strong>{object.name}</strong>
         <span>{object.address}</span>
       </span>
@@ -353,7 +352,7 @@ export function MapPage() {
               </button>
               {selected.image ? <img src={selected.image} alt={selected.name} /> : null}
               <div className="map-selected-copy">
-                <span className="section-kicker">{objectLabel(selected)} · {selected.category}</span>
+                <span className="section-kicker">{selected.category}</span>
                 <h2>{selected.name}</h2>
                 <p className="map-selected-address"><MapPin size={14} /> {selected.address}</p>
                 <p>{selected.description}</p>
