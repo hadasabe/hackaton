@@ -1870,7 +1870,29 @@ app.get('/api/admin/reports', requireAdmin, (_req, res) => {
         datetime(created_at) DESC
       LIMIT 300
     `)
-    .all();
+    .all()
+    .map((report) => {
+      if (report.target_excerpt) return report;
+      if (report.target_type === 'place' && report.target_id.startsWith('building-')) {
+        const buildingId = Number(report.target_id.slice('building-'.length));
+        const building = Number.isInteger(buildingId)
+          ? db.prepare("SELECT address FROM walls WHERE id = ? AND kind = 'building'").get(buildingId)
+          : null;
+        return { ...report, target_excerpt: building?.address || '' };
+      }
+      if (report.target_type === 'comment' || report.target_type === 'route_comment') {
+        const commentId = Number(report.target_id);
+        if (!Number.isInteger(commentId)) return report;
+        const routeComment = db
+          .prepare('SELECT body FROM walk_route_comments WHERE id = ?')
+          .get(commentId);
+        const comment = routeComment || db
+          .prepare('SELECT body FROM comments WHERE id = ?')
+          .get(commentId);
+        return { ...report, target_excerpt: String(comment?.body || '').slice(0, 400) };
+      }
+      return report;
+    });
   const pending = db
     .prepare("SELECT COUNT(*) AS count FROM content_reports WHERE status = 'pending'")
     .get().count;
