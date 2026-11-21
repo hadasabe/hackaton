@@ -517,6 +517,86 @@ export const SAMPLES = [
     description: 'Стена Цоя на Арбате: портрет, «Перемен» и автографы. Гостевая работа в ленте.',
     moderation: 'published',
   },
+  {
+    word: 'РИТМ',
+    height: 900,
+    address: 'улица Московская, 42',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Ритмичный леттеринг на торце дома: крупные буквы и цветные полосы, хорошо читаются с улицы.',
+    moderation: 'published',
+  },
+  {
+    word: 'СВЕТ',
+    height: 900,
+    address: 'улица Рахова, 61',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Светлый мурал во дворе: абстрактные формы и тёплые оттенки на бетонной стене.',
+    moderation: 'published',
+  },
+  {
+    word: 'ГОРОД',
+    height: 900,
+    address: 'улица Соборная, 12',
+    status: 'partial',
+    style: 'text',
+    author: 'неизвестный художник',
+    description: 'Надпись «Город» на кирпичной стене. Нижняя часть работы со временем закрашена.',
+    moderation: 'published',
+  },
+  {
+    word: 'ЛЕТО',
+    height: 900,
+    address: 'улица Чапаева, 80',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Яркая летняя работа на стене гаража: цветы, солнце и свободный леттеринг.',
+    moderation: 'published',
+  },
+  {
+    word: 'ВОЛГА',
+    height: 900,
+    address: 'набережная Космонавтов, 7',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Мурал с волжскими мотивами у набережной: вода, чайки и широкие цветные плоскости.',
+    moderation: 'published',
+  },
+  {
+    word: 'ШУМ',
+    height: 900,
+    address: 'улица Киселёва, 12',
+    status: 'alive',
+    style: 'stencil',
+    author: 'неизвестный художник',
+    description: 'Трафаретная композиция на воротах двора: ритм из знаков и графичных силуэтов.',
+    moderation: 'published',
+  },
+  {
+    word: 'ДОМ',
+    height: 900,
+    address: 'улица Мичурина, 55',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'неизвестный художник',
+    description: 'Домашний двор с новой работой: тёплые буквы и небольшой персонаж у входа.',
+    moderation: 'published',
+  },
+  {
+    word: 'ИСКРА',
+    height: 900,
+    address: 'улица Радищева, 22',
+    status: 'alive',
+    style: 'mural',
+    author: 'неизвестный художник',
+    description: 'Небольшой мурал в центре: контрастный рисунок на глухой стене между окнами.',
+    moderation: 'published',
+  },
 ];
 
 const COMMENTS = [
@@ -656,6 +736,63 @@ function seedWalls() {
   console.log(`[stena] seeded ${WALL_SAMPLES.length} walls`);
 }
 
+const COLLECTION_SAMPLES = [
+  {
+    title: 'Дворы и лица',
+    description: 'Камерные работы во дворах: персонажи, портреты и небольшие истории на стенах.',
+    indices: [0, 2, 6, 9, 20, 23],
+  },
+  {
+    title: 'Бетон и цвет',
+    description: 'Яркие заливки и графика на бетоне, гаражах и заборах.',
+    indices: [1, 3, 4, 5, 7, 17, 18, 21, 24],
+  },
+  {
+    title: 'Набережная и Волга',
+    description: 'Работы у воды: набережная, волжские мотивы и широкие городские виды.',
+    indices: [1, 4, 11, 21],
+  },
+  {
+    title: 'Муралы Саратова',
+    description: 'Большие настенные работы, которые стоит увидеть целиком.',
+    indices: [1, 6, 10, 11, 18, 21, 24],
+  },
+  {
+    title: 'Тексты и знаки',
+    description: 'Леттеринг, трафареты и надписи, из которых складывается голос улицы.',
+    indices: [2, 5, 9, 19, 22],
+  },
+];
+
+function seedCollections() {
+  const admin = db.prepare("SELECT id FROM users WHERE role = 'admin' ORDER BY id LIMIT 1").get();
+  if (!admin) return;
+  const findCollection = db.prepare('SELECT id FROM collections WHERE owner_id = ? AND title = ?');
+  const insertCollection = db.prepare(
+    'INSERT INTO collections (owner_id, title, description, created_at) VALUES (?, ?, ?, ?)',
+  );
+  const findGraffiti = db.prepare(
+    "SELECT id FROM graffiti WHERE created_by = ? AND moderation_status = 'published'",
+  );
+  const addItem = db.prepare(
+    'INSERT OR IGNORE INTO collection_items (collection_id, graffiti_id, created_at) VALUES (?, ?, ?)',
+  );
+
+  COLLECTION_SAMPLES.forEach((sample, collectionIndex) => {
+    let collection = findCollection.get(admin.id, sample.title);
+    if (!collection) {
+      const createdAt = new Date(Date.now() - (collectionIndex + 2) * 86400000).toISOString();
+      const info = insertCollection.run(admin.id, sample.title, sample.description, createdAt);
+      collection = { id: Number(info.lastInsertRowid) };
+    }
+    sample.indices.forEach((index) => {
+      const item = findGraffiti.get(`seed:${index}`);
+      if (item) addItem.run(collection.id, item.id, new Date().toISOString());
+    });
+  });
+  console.log(`[stena] checked ${COLLECTION_SAMPLES.length} sample collections`);
+}
+
 export function seedDatabase() {
   const name = process.env.ADMIN_NAME || 'Администратор';
   const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
@@ -695,9 +832,6 @@ export function seedDatabase() {
   seedWalls();
   migrateUploadsToMedia();
 
-  const graffitiCount = db.prepare('SELECT COUNT(*) AS count FROM graffiti').get().count;
-  if (graffitiCount > 0) return;
-
   const insertGraffiti = db.prepare(`
     INSERT INTO graffiti (
       image_path, address, status, style, author_name, description,
@@ -712,7 +846,10 @@ export function seedDatabase() {
   );
 
   const now = Date.now();
+  let inserted = 0;
   SAMPLES.forEach((sample, index) => {
+    const sourceKey = `seed:${index}`;
+    if (db.prepare('SELECT 1 FROM graffiti WHERE created_by = ?').get(sourceKey)) return;
     const createdAt = new Date(now - (SAMPLES.length - index) * 86400000).toISOString();
     const publishedAt = sample.moderation === 'published' ? createdAt : null;
     const imagePath = sample.image ? path.join(__dirname, 'seed-images', sample.image) : null;
@@ -732,11 +869,12 @@ export function seedDatabase() {
       sample.description,
       sample.moderation,
       sample.reject_reason || '',
-      `seed:${index}`,
+      sourceKey,
       createdAt,
       publishedAt,
     );
     const id = Number(info.lastInsertRowid);
+    inserted += 1;
 
     if (sample.moderation !== 'published') return;
 
@@ -761,5 +899,6 @@ export function seedDatabase() {
     }
   });
 
-  console.log(`[stena] seeded ${SAMPLES.length} graffiti`);
+  seedCollections();
+  console.log(`[stena] seeded ${inserted} graffiti`);
 }

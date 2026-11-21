@@ -172,15 +172,19 @@ function renderCards(){
  if(newVoiceKey!==voiceRenderKey){const transcriptOpen=!!$('voice-companion').querySelector('details[open]');$('voice-companion').innerHTML=`<div class="voice-orbit">${icon('headphones')}</div><div class="eyebrow">АУДИОГИД ВКЛЮЧАЕТСЯ ПО ПУТИ</div><h3>${narrator?esc(narrator.name):'Слушайте город'}</h3><p>${narrator?esc(narrator.description):'Начните прогулку с GPS или выберите место в каталоге.'}</p>${narrator?`<details ${transcriptOpen?'open':''}><summary>Прочитать текст рассказа</summary><div class="story-text">${storyParagraphs(narrator.story)}<div class="story-sources">${storySources(narrator)}</div></div></details>`:''}`;voiceRenderKey=newVoiceKey;}
 }
 function updateProximity(){state.near=geo.nearby(places,state.fix,200);if(allowedNarration())state.near.forEach(p=>state.found.add(p.id));if(!state.exploring&&!state.near.some(p=>p.id===state.selected)&&state.view!=='catalog')state.selected=state.near[0]?.id||null;state.queue.discover(state.near.filter(p=>p.historyStatus!=='pending'),allowedNarration());renderCards();updateMap();updateLocationUI();$('discovered').textContent=`${state.found.size} ${state.found.size%10===1&&state.found.size%100!==11?'место':state.found.size%10>=2&&state.found.size%10<=4&&(state.found.size%100<12||state.found.size%100>14)?'места':'мест'}`;maybeNarrate();}
+function renderMapPreview(id){const el=$('map-preview'),p=find(id);if(!el)return;if(!p){hideMapPreview();return;}const photo=p.image?`<img src="${esc(p.image)}" alt="">`:`<span class="exp-no-photo">${icon(p.glyph||'pin')}</span>`;const subtitle=state.fix?`${displayDistance(distance(p))} от вас`:p.address;el.innerHTML=`<button type="button" class="map-preview-photo" data-exp-action="gallery" data-exp-id="${p.id}" aria-label="${esc('Открыть фото: '+p.name)}">${photo}</button><div class="map-preview-copy"><span class="eyebrow">${esc(p.artType||p.category)}</span><strong>${esc(p.name)}</strong><small>${esc(subtitle)}</small><div class="map-preview-actions"><button type="button" data-exp-action="open-card" data-exp-id="${p.id}">Подробнее</button></div></div><button type="button" class="map-preview-close" data-exp-action="close-preview" aria-label="Закрыть карточку">${icon('close')}</button>`;el.hidden=false;requestAnimationFrame(()=>el.classList.add('open'));}
+function hideMapPreview(){const el=$('map-preview');if(!el)return;el.classList.remove('open');setTimeout(()=>{if(!el.classList.contains('open'))el.hidden=true;},240);}
 function selectPlace(id,fromMap=false){
  window.dispatchEvent(new CustomEvent('ryadom:place-selected',{detail:{id,fromMap}}));
- if(fromMap&&innerWidth<=760)setTab('nearby',false);
  state.selected=id;state.exploring=true;renderCards();updateMap();
  if(state.mode==='voice')startNarration(id);
- if(fromMap){const card=state.mode==='voice'?$('voice-companion'):$('place-list').querySelector(`[data-place-id="${id}"]`);(card||document.querySelector('.discoveries')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}
+ if(fromMap){
+  if(innerWidth<=760){renderMapPreview(id);}
+  else{const card=state.mode==='voice'?$('voice-companion'):$('place-list').querySelector(`[data-place-id="${id}"]`);(card||document.querySelector('.discoveries')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});}
+ }else hideMapPreview();
 }
 function updateSheetHandle(){const handle=$('sheet-handle');if(!handle)return;const peek=document.body.classList.contains('sheet-peek');const icon=peek?'arrow-up-icon':'arrow-down-icon';if(handle.dataset.icon!==icon){handle.innerHTML=`<svg aria-hidden="true"><use href="#${icon}"/></svg>`;handle.dataset.icon=icon;}handle.setAttribute('aria-label',peek?'Развернуть панель':'Свернуть панель');}
-function setTab(tab,scroll=true){state.view=tab;document.body.classList.toggle('sheet-peek',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');updateSheetHandle();if(tab!=='map'){const explorer=$('explorer');if(explorer){explorer.style.transition='';explorer.style.transform='';}}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='nearby'?'map':tab)));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
+function setTab(tab,scroll=true){if(tab==='catalog')hideMapPreview();state.view=tab;document.body.classList.toggle('sheet-peek',tab==='map');document.body.classList.toggle('mobile-catalog',tab==='catalog');updateSheetHandle();if(tab!=='map'){const explorer=$('explorer');if(explorer){explorer.style.transition='';explorer.style.transform='';}}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='nearby'?'map':tab)));if(tab==='nearby'){state.exploring=false;state.selected=state.near[0]?.id||null;}renderCards();updateLocationUI();if(map){map.invalidateSize({pan:false});if(tab==='catalog')map.fitBounds(places.filter(geo.validPosition).map(p=>[p.lat,p.lng]),{padding:[60,60],maxZoom:14});}if(scroll&&innerWidth<=760)window.scrollTo({top:0,behavior:'instant'});}
 function initSheetDrag(){
  const handle=$('sheet-handle'),explorer=$('explorer');
  if(!handle||!explorer)return;
@@ -293,7 +297,7 @@ $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListe
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});
 $('card-mode').addEventListener('click',()=>setMode('cards'));$('voice-mode').addEventListener('click',()=>setMode('voice'));
 $('audio-play').addEventListener('click',toggleAudio);$('audio-close').addEventListener('click',()=>setMode('cards'));
-$('place-list').addEventListener('click',e=>{const listen=e.target.closest('[data-listen]');if(listen){state.selected=listen.dataset.listen;setMode('voice');return;}const card=e.target.closest('[data-place]');if(card){selectPlace(card.dataset.place);if(map){state.follow=false;const p=find(card.dataset.place);map.setView([p.lat,p.lng],17);}setTab('map',false);}});
+$('place-list').addEventListener('click',e=>{const listen=e.target.closest('[data-listen]');if(listen){state.selected=listen.dataset.listen;setMode('voice');return;}const card=e.target.closest('[data-place]');if(card){selectPlace(card.dataset.place,true);if(map){state.follow=false;const p=find(card.dataset.place);map.setView([p.lat,p.lng],17);}setTab('map',false);}});
 for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('sheet-peek')){setTab('nearby');return;}setTab(tab);});
 for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
 $('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
@@ -328,7 +332,9 @@ window.RyadomApp={
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;updateMap();}else beginGPS();},
  toast,
  showRoute:ids=>showPlannedRoute(ids),
- clearRoute:()=>{routeDrawRequest++;clearPlannedRoute();}
+ clearRoute:()=>{routeDrawRequest++;clearPlannedRoute();},
+ hidePreview:hideMapPreview,
+ exitFullscreen:()=>setMapFullscreen(false)
 };
 loadStenaGraffiti().finally(()=>{
  initMap();networkStatus();updateProximity();
