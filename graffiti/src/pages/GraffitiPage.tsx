@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   FolderPlus,
   MapPin,
@@ -62,6 +64,7 @@ export function GraffitiPage() {
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
   const [replyBody, setReplyBody] = useState('');
   const [replySending, setReplySending] = useState(false);
+  const [collapsedThreads, setCollapsedThreads] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!Number.isInteger(numericId)) {
@@ -142,6 +145,11 @@ export function GraffitiPage() {
     try {
       const comment = await api.addComment(item.id, replyBody.trim(), parentId);
       setComments((current) => [...current, comment]);
+      setCollapsedThreads((current) => {
+        const next = new Set(current);
+        next.delete(parentId);
+        return next;
+      });
       setReplyBody('');
       setReplyTo(null);
       setItem((current) =>
@@ -322,9 +330,30 @@ export function GraffitiPage() {
         ) : null}
 
         {comment.replies.length > 0 ? (
-          <div className="comment-replies">
-            {comment.replies.map((reply) => renderComment(reply))}
-          </div>
+          <>
+            <button
+              type="button"
+              className="comment-replies-toggle"
+              onClick={() =>
+                setCollapsedThreads((current) => {
+                  const next = new Set(current);
+                  if (next.has(comment.id)) next.delete(comment.id);
+                  else next.add(comment.id);
+                  return next;
+                })
+              }
+            >
+              {collapsedThreads.has(comment.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              {collapsedThreads.has(comment.id)
+                ? `Показать ответы (${comment.replies.length})`
+                : 'Скрыть ответы'}
+            </button>
+            {collapsedThreads.has(comment.id) ? null : (
+              <div className="comment-replies">
+                {comment.replies.map((reply) => renderComment(reply))}
+              </div>
+            )}
+          </>
         ) : null}
       </article>
     );

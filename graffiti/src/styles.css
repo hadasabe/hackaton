@@ -3385,3 +3385,21 @@ body.walk-route .site-footer {
 .ban-option:disabled {
   opacity: 0.45;
 }
+
+.comment-replies-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  margin-top: 7px;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.comment-replies-toggle:hover {
+  color: var(--ink);
+}
