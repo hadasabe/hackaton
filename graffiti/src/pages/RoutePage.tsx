@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDuration, plural } from '../lib/format';
 import { writePlan } from '../lib/plan';
 import { NotFoundPage } from './NotFoundPage';
+import { BackLink } from '../components/BackLink';
 
 export function RoutePage() {
   const { slug = '' } = useParams();
@@ -100,7 +101,7 @@ export function RoutePage() {
 
   return (
     <main className="page route-detail-page">
-      <Link to="/routes" className="back-link"><ArrowLeft size={16} /> К маршрутам</Link>
+      <BackLink fallback="/routes" />
 
       <article className="route-detail-hero">
         <div className="route-detail-cover">

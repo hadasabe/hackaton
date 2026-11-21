@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { BackLink } from '../components/BackLink';
 
 export function RegisterPage() {
   const { user, refresh } = useAuth();
@@ -40,7 +41,7 @@ export function RegisterPage() {
 
   return (
     <main className="page login-page">
-      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
+      <BackLink />
       <form className="login-card" onSubmit={(event) => void submit(event)}>
         <div className="login-icon"><UserPlus size={24} /></div>
         <span className="section-kicker">Новый аккаунт</span>

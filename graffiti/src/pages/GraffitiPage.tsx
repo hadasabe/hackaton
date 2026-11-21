@@ -40,6 +40,7 @@ import { CollectionPickerDialog } from '../components/CollectionPickerDialog';
 import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
+import { BackLink } from '../components/BackLink';
 
 export function GraffitiPage() {
   const { id } = useParams();
@@ -377,7 +378,7 @@ export function GraffitiPage() {
 
   return (
     <main className="page detail-page">
-      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
+      <BackLink />
 
       <div className="detail-layout">
         <div className="detail-image">

@@ -9,6 +9,7 @@ import {
   WALL_TYPE_OPTIONS,
 } from '../lib/constants';
 import type { WallTerms, WallType } from '../lib/types';
+import { BackLink } from '../components/BackLink';
 
 export function NewWallPage() {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ export function NewWallPage() {
 
   return (
     <main className="page page-narrow">
-      <Link to="/walls" className="back-link"><ArrowLeft size={16} /> К стенам</Link>
+      <BackLink fallback="/walls" />
       <div className="submit-head">
         <span className="section-kicker">Для владельцев</span>
         <h1>Выложить стену</h1>

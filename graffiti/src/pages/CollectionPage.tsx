@@ -9,6 +9,7 @@ import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../lib/format';
 import { NotFoundPage } from './NotFoundPage';
+import { BackLink } from '../components/BackLink';
 
 export function CollectionPage() {
   const { id } = useParams();
@@ -145,7 +146,7 @@ export function CollectionPage() {
 
   return (
     <main className="page">
-      <Link to="/collections" className="back-link"><ArrowLeft size={16} /> Все коллекции</Link>
+      <BackLink fallback="/collections" />
 
       <section className="collection-detail-hero">
         <div className={`collection-detail-cover count-${Math.min(3, collection.covers.length)}`}>

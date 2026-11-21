@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
 import type { Status, Style } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
+import { BackLink } from '../components/BackLink';
 
 export function SubmitPage() {
   const { user } = useAuth();
@@ -99,7 +100,7 @@ export function SubmitPage() {
 
   return (
     <main className="page page-narrow">
-      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
+      <BackLink fallback="/add" />
       <div className="submit-head">
         <span className="section-kicker">Пополнить архив</span>
         <h1>Добавить граффити</h1>

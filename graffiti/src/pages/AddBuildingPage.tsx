@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { ArrowLeft, CheckCircle2, ImagePlus, MapPin, Upload } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { BackLink } from '../components/BackLink';
 
 const CATEGORIES = ['Архитектура', 'История', 'Природа', 'Стрит-арт'];
 
@@ -124,7 +125,7 @@ export function AddBuildingPage() {
 
   return (
     <main className="page page-narrow">
-      <Link to="/add" className="back-link"><ArrowLeft size={16} /> К добавлению</Link>
+      <BackLink fallback="/add" />
       <div className="submit-head">
         <span className="section-kicker">Новый объект</span>
         <h1>Добавить здание</h1>

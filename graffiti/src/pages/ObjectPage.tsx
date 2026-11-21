@@ -9,6 +9,7 @@ import {
   writeFavoritePlaceIds,
 } from '../lib/placeFavorites';
 import { NotFoundPage } from './NotFoundPage';
+import { BackLink } from '../components/BackLink';
 
 export function ObjectPage() {
   const { id = '' } = useParams();
@@ -50,7 +51,7 @@ export function ObjectPage() {
 
   return (
     <main className="page object-page">
-      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
+      <BackLink />
 
       <article className="object-detail">
         <div className="object-detail-media">

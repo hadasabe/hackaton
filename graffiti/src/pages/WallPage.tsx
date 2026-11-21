@@ -7,6 +7,7 @@ import type { Wall } from '../lib/types';
 import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
+import { BackLink } from '../components/BackLink';
 
 function contactHref(contact: string) {
   const value = contact.trim();
@@ -93,7 +94,7 @@ export function WallPage() {
 
   return (
     <main className="page wall-page">
-      <Link to="/walls" className="back-link"><ArrowLeft size={16} /> К стенам</Link>
+      <BackLink fallback="/walls" />
 
       {wall.moderation_status === 'pending' ? (
         <div className="notice">

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Building2, ImagePlus, ShieldCheck } from 'lucide-react';
+import { BackLink } from '../components/BackLink';
 
 export function AddObjectPage() {
   return (
     <main className="page page-narrow add-object-page">
-      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
+      <BackLink />
 
       <div className="submit-head">
         <span className="section-kicker">Пополнить ленту</span>
