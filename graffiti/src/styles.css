@@ -3652,3 +3652,64 @@ button.profile-stat {
     justify-content: flex-start;
   }
 }
+
+/* Desktop bottom dock */
+@media (min-width: 761px) {
+  body.has-bottom-nav .app-shell {
+    padding-bottom: 104px;
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 40;
+    width: min(760px, calc(100% - 48px));
+    min-height: 64px;
+    padding: 6px;
+    gap: 4px;
+    background: rgba(242, 239, 231, 0.97);
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+
+  .bottom-nav a {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 50px;
+    padding: 8px 10px;
+    border-radius: 16px;
+    color: #657052;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .bottom-nav a svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+
+  .bottom-nav a.active {
+    background: var(--ink);
+    color: var(--lime);
+  }
+
+  .bottom-nav a.bottom-nav-mode {
+    background: var(--lime);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+}

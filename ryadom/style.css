@@ -454,3 +454,15 @@ body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(
   .back-to-top svg{width:22px;height:22px;stroke-width:2.4}
   body.map-fullscreen .back-to-top{display:none}
 }
+
+/* Desktop dock for the walk app */
+@media(min-width:761px){
+  .explorer{padding-bottom:104px}
+  .audio-dock{bottom:94px}
+  .mobile-tabs{display:flex;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1300;width:min(700px,calc(100% - 48px));min-height:64px;padding:6px;gap:4px;background:rgba(242,239,231,.97);backdrop-filter:blur(16px);border:2px solid var(--ink);border-radius:22px;box-shadow:5px 5px 0 var(--ink)}
+  .mobile-tabs button,.mobile-tabs a{display:flex;flex:1;min-width:0;flex-direction:row;align-items:center;justify-content:center;gap:7px;min-height:50px;padding:8px 10px;border:0;border-radius:16px;background:none;color:#657052;font-size:12px;font-weight:800;line-height:1;text-align:center;text-decoration:none;white-space:nowrap;position:relative}
+  .mobile-tabs button.active{background:var(--ink);color:var(--lime)}
+  .mobile-tabs a.mobile-tab-mode{background:var(--lime);color:var(--ink);border:1.5px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  .mobile-tabs button svg,.mobile-tabs a svg{width:18px;height:18px}
+  .mobile-tabs .exp-nav-count{position:static;margin-left:2px;padding:1px 4px;font-size:8px}
+}
