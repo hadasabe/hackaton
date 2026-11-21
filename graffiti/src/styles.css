@@ -4156,6 +4156,7 @@ button.profile-stat {
 }
 
 .map-plan-row {
+  position: relative;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) 24px 32px;
   align-items: center;
@@ -4172,8 +4173,25 @@ button.profile-stat {
   background: var(--paper-deep);
 }
 
-.map-plan-row.is-drop-target {
-  background: rgba(216, 255, 62, 0.38);
+.map-plan-row.is-drop-before::before,
+.map-plan-row.is-drop-after::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  z-index: 2;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lime);
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+
+.map-plan-row.is-drop-before::before {
+  top: -3px;
+}
+
+.map-plan-row.is-drop-after::after {
+  bottom: -3px;
 }
 
 .map-plan-row > span {

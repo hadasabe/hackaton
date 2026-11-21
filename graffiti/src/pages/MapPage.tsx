@@ -84,7 +84,7 @@ export function MapPage() {
   const [plan, setPlan] = useState<string[]>(() => readPlan());
   const [showPlan, setShowPlan] = useState(() => searchParams.get('plan') === '1');
   const [dragPlanId, setDragPlanId] = useState<string | null>(null);
-  const [dragPlanOver, setDragPlanOver] = useState<number | null>(null);
+  const [dragPlanInsert, setDragPlanInsert] = useState<number | null>(null);
   const dragPlanRef = useRef<{ id: string; pointerId: number } | null>(null);
   const dragPlanTarget = useRef<number | null>(null);
   const [locating, setLocating] = useState(false);
@@ -468,7 +468,7 @@ export function MapPage() {
     dragPlanRef.current = { id, pointerId: event.pointerId };
     dragPlanTarget.current = index;
     setDragPlanId(id);
-    setDragPlanOver(index);
+    setDragPlanInsert(index);
   }
 
   function movePlanDrag(event: ReactPointerEvent<HTMLButtonElement>) {
@@ -476,17 +476,17 @@ export function MapPage() {
     event.preventDefault();
     const rows = [...document.querySelectorAll<HTMLElement>('.map-plan-row[data-plan-id]')];
     if (!rows.length) return;
-    let target = rows.length - 1;
+    let insert = rows.length;
     for (let index = 0; index < rows.length; index += 1) {
       const rect = rows[index].getBoundingClientRect();
       if (event.clientY < rect.top + rect.height / 2) {
-        target = index;
+        insert = index;
         break;
       }
     }
-    target = Math.max(0, Math.min(plan.length - 1, target));
-    dragPlanTarget.current = target;
-    setDragPlanOver(target);
+    insert = Math.max(0, Math.min(plan.length, insert));
+    dragPlanTarget.current = insert;
+    setDragPlanInsert(insert);
   }
 
   function endPlanDrag(event: ReactPointerEvent<HTMLButtonElement>) {
@@ -495,14 +495,15 @@ export function MapPage() {
     event.preventDefault();
     event.stopPropagation();
     const from = plan.indexOf(dragged.id);
-    const target = dragPlanTarget.current ?? from;
+    const insert = dragPlanTarget.current ?? from;
+    const target = insert > from ? insert - 1 : insert;
     dragPlanRef.current = null;
     dragPlanTarget.current = null;
     if (event.currentTarget.hasPointerCapture(dragged.pointerId)) {
       event.currentTarget.releasePointerCapture(dragged.pointerId);
     }
     setDragPlanId(null);
-    setDragPlanOver(null);
+    setDragPlanInsert(null);
     if (from < 0 || target === from) return;
     const next = [...plan];
     const [moved] = next.splice(from, 1);
@@ -515,7 +516,7 @@ export function MapPage() {
     dragPlanRef.current = null;
     dragPlanTarget.current = null;
     setDragPlanId(null);
-    setDragPlanOver(null);
+    setDragPlanInsert(null);
   }
 
   function locate() {
@@ -598,7 +599,7 @@ export function MapPage() {
               <div className="map-plan-list">
                 {planObjects.map((object, index) => (
                   <div
-                    className={`map-plan-row${dragPlanId === object.id ? ' is-dragging' : ''}${dragPlanId && dragPlanId !== object.id && dragPlanOver === index ? ' is-drop-target' : ''}`}
+                    className={`map-plan-row${dragPlanId === object.id ? ' is-dragging' : ''}${dragPlanId && dragPlanInsert === index ? ' is-drop-before' : ''}${dragPlanId && dragPlanInsert === planObjects.length && index === planObjects.length - 1 ? ' is-drop-after' : ''}`}
                     key={object.id}
                     data-plan-id={object.id}
                   >
