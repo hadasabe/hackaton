@@ -74,7 +74,7 @@ function MapObjectRow({
 
 export function MapPage() {
   const { objects, loading, error } = useCityObjects();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('place'));
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
@@ -152,8 +152,9 @@ export function MapPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedId && searchParams.get('place')) setSelectedId(searchParams.get('place'));
-  }, [searchParams, selectedId]);
+    const place = searchParams.get('place');
+    if (place) setSelectedId(place);
+  }, [searchParams]);
 
   useEffect(() => {
     setPlan(readPlan());
@@ -176,6 +177,15 @@ export function MapPage() {
   }, [objects, query]);
 
   const selected = objects.find((object) => object.id === selectedId) || null;
+
+  function closeSelected() {
+    setSelectedId(null);
+    if (searchParams.get('place')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('place');
+      setSearchParams(next, { replace: true });
+    }
+  }
 
   useEffect(() => {
     if (!mapRef.current || !markerLayer.current) return;
@@ -371,7 +381,7 @@ export function MapPage() {
           </button>
           {selected ? (
             <article className="map-selected-card">
-              <button type="button" className="map-selected-close icon-button" onClick={() => setSelectedId(null)} aria-label="Закрыть карточку">
+              <button type="button" className="map-selected-close icon-button" onClick={closeSelected} aria-label="Закрыть карточку">
                 <X size={16} />
               </button>
               {selected.image ? <img src={selected.image} alt={selected.name} /> : null}
