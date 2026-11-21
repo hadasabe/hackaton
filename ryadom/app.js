@@ -81,7 +81,7 @@ function initMap(){
  const routePane=map.createPane('routePane');routePane.style.zIndex=800;
  new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('map-region'));
 }
-function markerIcon(p){const near=state.near.some(n=>n.id===p.id),photo=Boolean(p.image);return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${photo?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async">`:''}</span>${photo?`<span class="poi-glyph">${icon(p.glyph)}</span>`:''}<span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
+function markerIcon(p){const near=state.near.some(n=>n.id===p.id),photo=Boolean(p.image),position=p.markerPosition||'50% 35%';return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${photo?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async" style="object-position:${esc(position)}">`:''}</span>${photo?`<span class="poi-glyph">${icon(p.glyph)}</span>`:''}<span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
 function clearPlannedRoute(){
  for(const layer of [plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker])if(layer)layer.remove();
  plannedRouteLine=plannedRouteCasing=routeStartMarker=routeEndMarker=null;
@@ -297,7 +297,7 @@ $('place-list').addEventListener('click',e=>{const listen=e.target.closest('[dat
 for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('sheet-peek')){setTab('nearby');return;}setTab(tab);});
 for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
 $('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
-$('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(map){if(state.fix)map.setView([state.fix.lat,state.fix.lng],17);else{map.setView([51.5305,46.0375],15);toast('Включите GPS, чтобы показать ваше положение.');}}});
+$('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(state.fix&&map)map.setView([state.fix.lat,state.fix.lng],17);else beginGPS();});
 $('close-settings').addEventListener('click',()=>$('settings-dialog').close());
 $('audio-policy').addEventListener('change',e=>{audioPolicy=e.target.value;try{localStorage.setItem('ryadom-audio-policy',audioPolicy);}catch(_e){}stopNarration();voiceState.message='Настройка озвучки изменена. Нажмите воспроизведение.';audioUI();});
 function networkStatus(){$('network-note').hidden=navigator.onLine;}
