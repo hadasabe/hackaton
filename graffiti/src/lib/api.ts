@@ -225,6 +225,10 @@ export const api = {
     return request<{ items: WalkPlace[] }>('/api/walk-places');
   },
 
+  walkBuildings() {
+    return request<{ items: WalkBuilding[] }>('/api/walk-buildings');
+  },
+
   favoriteWalkRoutes() {
     return request<{ items: WalkRouteSummary[] }>('/api/walk-routes/favorites');
   },

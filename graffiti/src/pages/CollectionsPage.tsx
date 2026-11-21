@@ -59,7 +59,7 @@ export function CollectionsPage() {
                 <Plus size={17} /> Войти и создать
               </Link>
             )}
-            <Link to="/graffiti" className="button button-outline">Смотреть граффити</Link>
+            <Link to="/" className="button button-outline">К ленте</Link>
           </div>
         </div>
         <div className="collections-hero-art">

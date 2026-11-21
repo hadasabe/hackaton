@@ -162,7 +162,7 @@ export function AccountPage() {
         <div className="profile-actions">
           <Link to="/walls/new" className="button button-dark"><Plus size={16} /> Выложить стену</Link>
           <Link to="/account?tab=favorites" className="button button-outline"><Heart size={16} /> Избранное</Link>
-          <Link to="/" className="button button-outline"><MapIcon size={16} /> Прогулка</Link>
+          <Link to="/map" className="button button-outline"><MapIcon size={16} /> Карта</Link>
         </div>
       </header>
 
@@ -238,7 +238,7 @@ export function AccountPage() {
           <div className="empty-feed">
             <h3>Вы ещё не добавляли здания</h3>
             <p>Добавьте здание в «Прогулке» — после проверки оно появится на карте и здесь.</p>
-            <Link to="/" className="button button-dark"><MapIcon size={16} /> Перейти в прогулку</Link>
+            <Link to="/map" className="button button-dark"><MapIcon size={16} /> Перейти на карту</Link>
           </div>
         ) : (
           <div className="account-list">
@@ -274,7 +274,7 @@ export function AccountPage() {
           <div className="empty-feed">
             <h3>Маршрутов пока нет</h3>
             <p>Соберите прогулку в разделе «Прогулка» и опубликуйте её — она появится здесь.</p>
-            <Link to="/" className="button button-dark"><MapIcon size={16} /> Перейти в прогулку</Link>
+            <Link to="/map" className="button button-dark"><MapIcon size={16} /> Перейти на карту</Link>
           </div>
         ) : (
           <div className="account-list">
@@ -285,7 +285,7 @@ export function AccountPage() {
         <div className="empty-feed">
           <h3>В избранном пока пусто</h3>
           <p>Сохраняйте места и маршруты в «Прогулке» — они будут ждать вас здесь.</p>
-          <Link to="/" className="button button-dark"><MapIcon size={16} /> Смотреть прогулку</Link>
+          <Link to="/map" className="button button-dark"><MapIcon size={16} /> Открыть карту</Link>
         </div>
       ) : (
         <div className="account-favorites">

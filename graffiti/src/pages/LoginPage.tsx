@@ -34,7 +34,7 @@ export function LoginPage() {
 
   return (
     <main className="page login-page">
-      <Link to="/graffiti" className="back-link"><ArrowLeft size={16} /> К граффити</Link>
+      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
       <form className="login-card" onSubmit={(event) => void submit(event)}>
         <div className="login-icon"><LockKeyhole size={24} /></div>
         <span className="section-kicker">Аккаунт</span>

@@ -265,7 +265,7 @@ export function GraffitiPage() {
     return (
       <main className="page page-narrow">
         <div className="notice error">{error || 'Работа не найдена'}</div>
-        <Link to="/graffiti" className="button button-outline"><ArrowLeft size={16} /> К граффити</Link>
+        <Link to="/" className="button button-outline"><ArrowLeft size={16} /> К ленте</Link>
       </main>
     );
   }
@@ -377,7 +377,7 @@ export function GraffitiPage() {
 
   return (
     <main className="page detail-page">
-      <Link to="/graffiti" className="back-link"><ArrowLeft size={16} /> К граффити</Link>
+      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
 
       <div className="detail-layout">
         <div className="detail-image">

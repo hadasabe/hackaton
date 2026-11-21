@@ -49,13 +49,14 @@ export default function App() {
           <ScrollToTop />
           <Header />
           <Routes>
-            <Route path="/" element={<WalkPage />} />
-            <Route path="/graffiti" element={<FeedPage />} />
+            <Route path="/" element={<FeedPage />} />
+            <Route path="/map" element={<WalkPage />} />
+            <Route path="/graffiti" element={<Navigate to="/" replace />} />
             <Route path="/g/:id" element={<GraffitiPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:id" element={<CollectionPage />} />
             <Route path="/walls" element={<WallsPage />} />
-            <Route path="/walk" element={<Navigate to="/" replace />} />
+            <Route path="/walk" element={<Navigate to="/map" replace />} />
             <Route path="/r/:slug" element={<WalkPage />} />
             <Route
               path="/walls/new"

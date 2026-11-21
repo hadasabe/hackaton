@@ -8,7 +8,7 @@ export function NotFoundPage() {
         <SearchX size={42} />
         <h1>Здесь ничего нет</h1>
         <p>Страница не существует или у вас нет доступа к этому разделу.</p>
-        <Link to="/graffiti" className="button button-dark">К граффити</Link>
+        <Link to="/" className="button button-dark">К ленте</Link>
       </div>
     </main>
   );

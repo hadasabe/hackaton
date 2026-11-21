@@ -682,6 +682,27 @@ body.walk-fullscreen .walk-embed {
   overflow: hidden;
 }
 
+.place-feed-card .card-body h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.tag-place {
+  background: var(--lime);
+}
+
+.place-feed-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  background: var(--paper-deep);
+  color: var(--muted);
+}
+
 .card-actions {
   display: flex;
   align-items: center;

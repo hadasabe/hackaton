@@ -1,44 +1,114 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowRight, MapPin, Map as MapIcon, Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
-import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { FeedStats, Graffiti, ReactionValue, Status, Style } from '../lib/types';
+import type { FeedStats, Graffiti, ReactionValue, WalkBuilding, WalkPlace } from '../lib/types';
 import { plural } from '../lib/format';
 import { ContentTabs } from '../components/ContentTabs';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { useAuth } from '../context/AuthContext';
 
+type FeedKind = 'all' | 'places' | 'graffiti';
+
+type FeedEntry =
+  | { kind: 'place'; key: string; place: WalkPlace }
+  | { kind: 'graffiti'; key: string; item: Graffiti };
+
+function buildingToPlace(building: WalkBuilding): WalkPlace {
+  return {
+    id: `building-${building.id}`,
+    name: building.title,
+    category: building.category || 'Здание',
+    address: building.address,
+    description: building.description,
+    era: 'Добавлено горожанами',
+    image: building.image_path,
+    lat: building.lat,
+    lng: building.lng,
+  };
+}
+
+function PlaceCard({ place }: { place: WalkPlace }) {
+  const href = `/map?place=${encodeURIComponent(place.id)}`;
+  return (
+    <article className="graffiti-card place-feed-card">
+      <Link to={href} className="card-image-link" aria-label={`Открыть на карте: ${place.name}`}>
+        {place.image ? (
+          <img src={place.image} alt={place.name} loading="lazy" />
+        ) : (
+          <span className="place-feed-placeholder"><MapPin size={30} /></span>
+        )}
+      </Link>
+
+      <div className="card-body">
+        <div className="card-topline">
+          <span className="card-address">
+            <MapPin size={13} />
+            {place.address}
+          </span>
+          <span className="card-time">на карте</span>
+        </div>
+
+        <div className="tags">
+          <span className="tag tag-place">МЕСТО</span>
+          {place.category ? <span className="tag tag-style">{place.category}</span> : null}
+        </div>
+
+        <h3>{place.name}</h3>
+        {place.artist ? <p className="card-author">{place.artist}</p> : null}
+        {place.description ? <p className="card-description">{place.description}</p> : null}
+
+        <div className="card-actions">
+          <Link to={href} className="reaction comments-link">
+            <MapIcon size={16} />
+            На карте
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function FeedPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<Graffiti[]>([]);
+  const [places, setPlaces] = useState<WalkPlace[]>([]);
   const [stats, setStats] = useState<FeedStats | null>(null);
-  const [status, setStatus] = useState<Status | 'all'>('all');
-  const [style, setStyle] = useState<Style | 'all'>('all');
+  const [kind, setKind] = useState<FeedKind>('all');
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 250);
-    return () => window.clearTimeout(timer);
-  }, [query]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    try {
-      const data = await api.feed({ status, style, q: debouncedQuery });
-      setItems(data.items);
-      setStats(data.stats);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Не удалось загрузить ленту');
-    } finally {
-      setLoading(false);
+    const [feedResult, placesResult, buildingsResult] = await Promise.allSettled([
+      api.feed(),
+      api.walkPlaces(),
+      api.walkBuildings(),
+    ]);
+
+    if (feedResult.status === 'fulfilled') {
+      setItems(feedResult.value.items);
+      setStats(feedResult.value.stats);
+    } else {
+      setError('Не удалось загрузить граффити');
     }
-  }, [status, style, debouncedQuery]);
+
+    if (placesResult.status === 'fulfilled') {
+      const buildings = buildingsResult.status === 'fulfilled'
+        ? buildingsResult.value.items.map(buildingToPlace)
+        : [];
+      setPlaces([...placesResult.value.items, ...buildings]);
+    } else if (buildingsResult.status === 'fulfilled') {
+      setPlaces(buildingsResult.value.items.map(buildingToPlace));
+    } else {
+      setError((current) => current || 'Не удалось загрузить места');
+    }
+
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -81,24 +151,54 @@ export function FeedPage() {
     }
   }
 
-  const total = stats?.total ?? 0;
+  const needle = query.trim().toLowerCase();
+  const filteredPlaces = places.filter((place) => {
+    if (!needle) return true;
+    return [place.name, place.address, place.description, place.category, place.era, place.artType, place.artist]
+      .some((value) => String(value || '').toLowerCase().includes(needle));
+  });
+  const filteredGraffiti = items.filter((item) => {
+    if (!needle) return true;
+    return [item.address, item.author_name, item.description]
+      .some((value) => String(value || '').toLowerCase().includes(needle));
+  });
+
+  const visiblePlaces = kind === 'graffiti' ? [] : filteredPlaces;
+  const visibleGraffiti = kind === 'places' ? [] : filteredGraffiti;
+  const entries: FeedEntry[] = [];
+  const maxLength = Math.max(visiblePlaces.length, visibleGraffiti.length);
+  for (let index = 0; index < maxLength; index += 1) {
+    if (visiblePlaces[index]) {
+      entries.push({ kind: 'place', key: `place-${visiblePlaces[index].id}`, place: visiblePlaces[index] });
+    }
+    if (visibleGraffiti[index]) {
+      entries.push({ kind: 'graffiti', key: `graffiti-${visibleGraffiti[index].id}`, item: visibleGraffiti[index] });
+    }
+  }
+
+  const totalObjects = places.length + items.length;
+  const graffitiAlive = stats?.alive ?? 0;
 
   return (
     <main className="page">
       <section className="feed-hero">
         <div className="hero-copy">
-          <span className="eyebrow">Саратов · уличный архив</span>
+          <span className="eyebrow">Саратов · места и стрит-арт</span>
           <h1>
-            Граффити, пока
+            Лента
             <br />
-            их не закрасили
+            города
           </h1>
           <p>
-            Фотографии, адреса и статусы работ. Архив живой: ставьте лайки, обсуждайте
-            и отмечайте, если работа ещё на месте.
+            Архитектура, история, природа, музеи и граффити — все объекты в одном потоке.
+            Открывайте карточки или переходите на карту.
           </p>
           <div className="hero-actions">
-            <Link to="/submit" className="button button-dark">
+            <Link to="/map" className="button button-dark">
+              <MapIcon size={17} />
+              Открыть карту
+            </Link>
+            <Link to="/submit" className="button button-outline">
               <Plus size={17} />
               Добавить граффити
             </Link>
@@ -106,20 +206,20 @@ export function FeedPage() {
         </div>
         <div className="hero-stats">
           <div className="hero-stat hero-stat-main">
-            <strong>{total}</strong>
-            <span>{plural(total, 'работа', 'работы', 'работ')} в архиве</span>
+            <strong>{totalObjects}</strong>
+            <span>{plural(totalObjects, 'объект', 'объекта', 'объектов')} в ленте</span>
           </div>
           <div className="hero-stat">
-            <strong>{stats?.alive ?? 0}</strong>
-            <span>на месте</span>
+            <strong>{places.length}</strong>
+            <span>{plural(places.length, 'место', 'места', 'мест')}</span>
           </div>
           <div className="hero-stat">
-            <strong>{stats?.erased ?? 0}</strong>
-            <span>стёрто</span>
+            <strong>{items.length}</strong>
+            <span>{plural(items.length, 'граффити', 'граффити', 'граффити')}</span>
           </div>
           <div className="hero-stat">
-            <strong>{stats?.partial ?? 0}</strong>
-            <span>частично</span>
+            <strong>{graffitiAlive}</strong>
+            <span>работ на месте</span>
           </div>
         </div>
       </section>
@@ -129,48 +229,43 @@ export function FeedPage() {
       <section id="feed" className="feed-section">
         <div className="feed-toolbar">
           <div className="feed-title">
-            <span className="section-kicker">Граффити</span>
-            <h2>Свежие работы</h2>
+            <span className="section-kicker">Все объекты</span>
+            <h2>Единая лента</h2>
           </div>
           <label className="search-box">
             <Search size={16} />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Адрес, автор или описание"
+              placeholder="Название, адрес, автор или описание"
             />
           </label>
         </div>
 
         <div className="filters-row">
-          <div className="chip-row" role="group" aria-label="Статус работы">
+          <div className="chip-row" role="group" aria-label="Тип объекта">
             <button
               type="button"
-              className={`chip ${status === 'all' ? 'active' : ''}`}
-              onClick={() => setStatus('all')}
+              className={`chip ${kind === 'all' ? 'active' : ''}`}
+              onClick={() => setKind('all')}
             >
-              Все
+              Все · {totalObjects}
             </button>
-            {STATUS_OPTIONS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`chip ${status === value ? 'active' : ''}`}
-                onClick={() => setStatus(value)}
-              >
-                {STATUS_META[value].label}
-              </button>
-            ))}
+            <button
+              type="button"
+              className={`chip ${kind === 'places' ? 'active' : ''}`}
+              onClick={() => setKind('places')}
+            >
+              Места · {places.length}
+            </button>
+            <button
+              type="button"
+              className={`chip ${kind === 'graffiti' ? 'active' : ''}`}
+              onClick={() => setKind('graffiti')}
+            >
+              Граффити · {items.length}
+            </button>
           </div>
-          <label className="select-box">
-            <SlidersHorizontal size={15} />
-            <select value={style} onChange={(event) => setStyle(event.target.value as Style | 'all')}>
-              <option value="all">Все стили</option>
-              {STYLE_OPTIONS.map((value) => (
-                <option key={value} value={value}>{STYLE_META[value].label}</option>
-              ))}
-            </select>
-          </label>
         </div>
 
         {error ? <div className="notice error">{error}</div> : null}
@@ -181,10 +276,10 @@ export function FeedPage() {
               <div className="card-skeleton" key={index} />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : entries.length === 0 ? (
           <div className="empty-feed">
             <h3>Пока ничего не нашлось</h3>
-            <p>Измените фильтры или добавьте первую работу в этом районе.</p>
+            <p>Измените запрос или добавьте объект в ленту.</p>
             <Link to="/submit" className="button button-dark">
               <Plus size={16} />
               Добавить граффити
@@ -192,12 +287,16 @@ export function FeedPage() {
           </div>
         ) : (
           <div className="feed-grid">
-            {items.map((item) => (
-              <GraffitiCard
-                key={item.id}
-                item={item}
-                onReact={(value) => void handleReact(item, value)}
-              />
+            {entries.map((entry) => (
+              entry.kind === 'place' ? (
+                <PlaceCard key={entry.key} place={entry.place} />
+              ) : (
+                <GraffitiCard
+                  key={entry.key}
+                  item={entry.item}
+                  onReact={(value) => void handleReact(entry.item, value)}
+                />
+              )
             ))}
           </div>
         )}
@@ -205,12 +304,12 @@ export function FeedPage() {
 
       <section className="submit-banner">
         <div>
-          <span className="section-kicker">Архив пополняют люди</span>
-          <h2>Знаете работу, которой нет в ленте?</h2>
-          <p>Пришлите фото и адрес. Администратор проверит и опубликует.</p>
+          <span className="section-kicker">Ленту пополняют люди</span>
+          <h2>Знаете место или работу, которых нет в ленте?</h2>
+          <p>Пришлите фото граффити — или добавьте своё здание на карте.</p>
         </div>
         <Link to="/submit" className="button button-lime">
-          Предложить работу <ArrowRight size={17} />
+          Предложить граффити <ArrowRight size={17} />
         </Link>
       </section>
     </main>

@@ -4,12 +4,12 @@ export function ContentTabs({ active }: { active: 'feed' | 'collections' }) {
   return (
     <div className="content-tabs" role="tablist" aria-label="Граффити и коллекции">
       <Link
-        to="/graffiti"
+        to="/"
         className={`chip${active === 'feed' ? ' active' : ''}`}
         role="tab"
         aria-selected={active === 'feed'}
       >
-        Лента работ
+        Лента
       </Link>
       <Link
         to="/collections"

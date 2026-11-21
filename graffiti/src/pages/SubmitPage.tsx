@@ -87,7 +87,7 @@ export function SubmitPage() {
             Обычно это занимает немного времени.
           </p>
           <div className="row gap-10 wrap center">
-            <Link to="/graffiti" className="button button-dark">К граффити</Link>
+            <Link to="/" className="button button-dark">К ленте</Link>
             <button type="button" className="button button-outline" onClick={reset}>
               Добавить ещё
             </button>
@@ -99,7 +99,7 @@ export function SubmitPage() {
 
   return (
     <main className="page page-narrow">
-      <Link to="/graffiti" className="back-link"><ArrowLeft size={16} /> К граффити</Link>
+      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
       <div className="submit-head">
         <span className="section-kicker">Пополнить архив</span>
         <h1>Добавить граффити</h1>

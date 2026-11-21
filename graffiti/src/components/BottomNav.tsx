@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Images, Map, SprayCan, User } from 'lucide-react';
+import { Map, Rows3, SprayCan, User } from 'lucide-react';
 
 export function BottomNav() {
   const location = useLocation();
-  const hidden = location.pathname === '/' || location.pathname.startsWith('/walk') || location.pathname.startsWith('/r/');
+  const hidden = location.pathname === '/map' || location.pathname.startsWith('/walk') || location.pathname.startsWith('/r/');
 
   useEffect(() => {
     document.body.classList.toggle('has-bottom-nav', !hidden);
@@ -13,19 +13,19 @@ export function BottomNav() {
 
   if (hidden) return null;
 
-  const artSection = location.pathname === '/graffiti'
+  const artSection = location.pathname === '/'
     || location.pathname.startsWith('/g/')
     || location.pathname.startsWith('/collections');
 
   return (
     <nav className="bottom-nav" aria-label="Разделы сайта">
-      <NavLink to="/graffiti" className={() => (artSection ? 'active' : '')}>
-        <Images size={20} />
-        <span>Граффити</span>
+      <NavLink to="/" className={() => (artSection ? 'active' : '')}>
+        <Rows3 size={20} />
+        <span>Лента</span>
       </NavLink>
-      <NavLink to="/" className="bottom-nav-mode">
+      <NavLink to="/map">
         <Map size={20} />
-        <span>Прогулка</span>
+        <span>Карта</span>
       </NavLink>
       <NavLink to="/walls">
         <SprayCan size={20} />

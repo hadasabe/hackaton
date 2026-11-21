@@ -40,7 +40,7 @@ export function RegisterPage() {
 
   return (
     <main className="page login-page">
-      <Link to="/graffiti" className="back-link"><ArrowLeft size={16} /> К граффити</Link>
+      <Link to="/" className="back-link"><ArrowLeft size={16} /> К ленте</Link>
       <form className="login-card" onSubmit={(event) => void submit(event)}>
         <div className="login-icon"><UserPlus size={24} /></div>
         <span className="section-kicker">Новый аккаунт</span>

@@ -176,7 +176,7 @@ export function CollectionPage() {
                 </button>
               </>
             ) : null}
-            <Link to="/graffiti" className="button button-outline"><Plus size={16} /> Найти работы</Link>
+            <Link to="/" className="button button-outline"><Plus size={16} /> Найти работы</Link>
           </div>
         </div>
       </section>
@@ -198,7 +198,7 @@ export function CollectionPage() {
             <p>
               Откройте работу в ленте и нажмите «В коллекцию», чтобы добавить её сюда.
             </p>
-            <Link to="/graffiti" className="button button-dark"><Plus size={16} /> Перейти к граффити</Link>
+            <Link to="/" className="button button-dark"><Plus size={16} /> Перейти к ленте</Link>
           </div>
         ) : (
           <div className="collection-grid">

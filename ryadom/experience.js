@@ -173,6 +173,7 @@
   document.addEventListener('input',event=>{if(event.target.id==='route-search'){routesQuery=event.target.value;updateRoutesResults();return;}const field=event.target.closest('[data-route-reply-form] textarea');if(field)routeReplyBody=field.value;});
   document.addEventListener('change',event=>{if(event.target.id==='route-stops-filter'){routesStops=event.target.value;updateRoutesResults();return;}if(event.target.id==='route-sort'){routesSort=event.target.value;updateRoutesResults();}});
   const routeParam=new URLSearchParams(location.search).get('route');if(routeParam)void showRouteDetail(routeParam);
+  const placeParam=new URLSearchParams(location.search).get('place');if(placeParam){app.setTab('map',false);app.selectPlace(placeParam,true);}
   updateNav(document.body.classList.contains('mobile-catalog')?'places':'map');
  }
  root.addEventListener('ryadom:ready',init);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
