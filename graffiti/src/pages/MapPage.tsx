@@ -324,15 +324,17 @@ export function MapPage() {
                     </button>
                   </div>
                 ))}
-                {planObjects.length >= 2 ? (
-                  <Link to="/routes?create=1" className="button button-dark">Опубликовать прогулку</Link>
-                ) : null}
-                <button type="button" className="text-button" onClick={() => {
-                  writePlan([]);
-                  setPlan([]);
-                }}>
-                  Очистить прогулку
-                </button>
+                <div className="map-plan-actions">
+                  {planObjects.length >= 2 ? (
+                    <Link to="/routes?create=1" className="button button-dark">Опубликовать прогулку</Link>
+                  ) : null}
+                  <button type="button" className="button button-outline" onClick={() => {
+                    writePlan([]);
+                    setPlan([]);
+                  }}>
+                    Очистить прогулку
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="map-empty">
