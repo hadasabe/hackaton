@@ -353,3 +353,5 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-route-distance svg{width:11px;height:11px}
 
 .exp-credit{margin:28px 0 0;padding-top:14px;border-top:1px dashed var(--line);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+
+.dialog-credit{margin:20px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
