@@ -684,6 +684,10 @@ export function MapPage() {
     if (first) setSelectedId(first.id);
   }
 
+  function endWalk() {
+    setWalkStarted(false);
+  }
+
   async function optimizePlan() {
     const stops = plan
       .map((id) => objects.find((object) => object.id === id))
@@ -806,14 +810,24 @@ export function MapPage() {
                   {routeMode ? (
                     <Link to="/routes?create=1" className="button button-dark">Сохранить</Link>
                   ) : planObjects.length > 0 ? (
-                    <button
-                      type="button"
-                      className="button button-dark"
-                      onClick={() => void startWalk()}
-                      disabled={locating}
-                    >
-                      Начать прогулку
-                    </button>
+                    walkStarted ? (
+                      <button
+                        type="button"
+                        className="button button-dark"
+                        onClick={endWalk}
+                      >
+                        Завершить прогулку
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="button button-dark"
+                        onClick={() => void startWalk()}
+                        disabled={locating}
+                      >
+                        Начать прогулку
+                      </button>
+                    )
                   ) : null}
                   {planObjects.length >= 2 ? (
                     <button
