@@ -298,6 +298,9 @@ for(const button of document.querySelectorAll('[data-tab]'))button.addEventListe
 for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
 $('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
 $('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(state.fix&&map)map.setView([state.fix.lat,state.fix.lng],17);else beginGPS();});
+function setMapFullscreen(on){document.body.classList.toggle('map-fullscreen',on);const button=$('map-fullscreen');if(button){button.innerHTML=icon(on?'compress':'expand');button.setAttribute('aria-label',on?'Выйти из полноэкранного режима':'Открыть карту на весь экран');button.title=on?'Выйти из полноэкранного режима':'На весь экран';}if(window.parent!==window)window.parent.postMessage({type:'walk:fullscreen',value:on},location.origin);setTimeout(()=>map?.invalidateSize({pan:false}),250);}
+$('map-fullscreen').addEventListener('click',()=>setMapFullscreen(!document.body.classList.contains('map-fullscreen')));
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('map-fullscreen'))setMapFullscreen(false);});
 $('close-settings').addEventListener('click',()=>$('settings-dialog').close());
 $('audio-policy').addEventListener('change',e=>{audioPolicy=e.target.value;try{localStorage.setItem('ryadom-audio-policy',audioPolicy);}catch(_e){}stopNarration();voiceState.message='Настройка озвучки изменена. Нажмите воспроизведение.';audioUI();});
 function networkStatus(){$('network-note').hidden=navigator.onLine;}

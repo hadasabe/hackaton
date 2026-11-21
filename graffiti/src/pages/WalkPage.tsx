@@ -5,10 +5,22 @@ export function WalkPage() {
   const { slug } = useParams<{ slug?: string }>();
   useEffect(() => {
     document.body.classList.add('walk-route');
-    return () => document.body.classList.remove('walk-route');
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { type?: string; value?: boolean } | null;
+      if (data?.type === 'walk:fullscreen') {
+        document.body.classList.toggle('walk-fullscreen', Boolean(data.value));
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      document.body.classList.remove('walk-route');
+      document.body.classList.remove('walk-fullscreen');
+    };
   }, []);
 
-  const src = `/walk-app/?embed=1&v=58${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
+  const src = `/walk-app/?embed=1&v=59${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
 
   return (
     <main className="walk-embed-page">

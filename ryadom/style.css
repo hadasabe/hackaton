@@ -407,3 +407,17 @@ body.embed-mode .network-note{display:none!important}
 .location-box{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
 .location-heading{display:none}
 .has-location .location-heading{display:flex}
+
+/* Full-screen map: hide the app chrome and keep only the map controls. */
+body.map-fullscreen{overflow:hidden}
+body.map-fullscreen .header,
+body.map-fullscreen .mobile-tabs,
+body.map-fullscreen .explorer,
+body.map-fullscreen .map-bottom,
+body.map-fullscreen .map-privacy,
+body.map-fullscreen .network-note,
+body.map-fullscreen .audio-dock,
+body.map-fullscreen .toast{display:none!important}
+body.map-fullscreen .layout{display:block;height:100dvh;min-height:0}
+body.map-fullscreen .map-region{position:fixed;inset:0;width:100vw;height:100dvh;max-height:none;min-height:0;z-index:2500;margin:0;border-radius:0}
+body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right))}
