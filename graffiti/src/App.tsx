@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
+import { FeedBackToTop } from './components/FeedBackToTop';
+import { SupportNote } from './components/SupportNote';
 import { ScrollToTop } from './components/ScrollToTop';
 import { AdminGate } from './components/AdminGate';
 import { RequireAuth } from './components/RequireAuth';
@@ -90,8 +92,10 @@ export default function App() {
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          <SupportNote />
           <Footer />
           <BottomNav />
+          <FeedBackToTop />
           </div>
         </ConfirmProvider>
       </AuthProvider>

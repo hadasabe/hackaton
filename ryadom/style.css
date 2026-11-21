@@ -466,3 +466,9 @@ body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(
   .mobile-tabs button svg,.mobile-tabs a svg{width:18px;height:18px}
   .mobile-tabs .exp-nav-count{position:static;margin-left:2px;padding:1px 4px;font-size:8px}
 }
+
+.sidebar-footer{flex-wrap:wrap}
+.sidebar-footer .sidebar-support{flex:0 0 100%;margin:10px 0 0 29px;padding-top:10px;border-top:1px dashed #c9cdbd;font-size:11px}
+.sidebar-footer .sidebar-support a{font-weight:800;color:var(--ink);text-underline-offset:3px}
+dialog .support-line{font-size:13px;line-height:1.6;color:var(--muted);margin:4px 0 18px}
+dialog .support-line a{color:var(--ink);font-weight:800;text-underline-offset:3px}

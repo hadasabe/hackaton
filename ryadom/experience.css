@@ -323,3 +323,6 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-route-comments>h3 svg{width:17px;height:17px;stroke-width:2.2}
 
 #gallery-add-plan.in-plan{background:var(--ink);color:var(--lime);border-color:var(--ink)}
+
+.exp-support{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);text-align:center;font-size:11px}
+.exp-support a{color:var(--ink);font-weight:800;text-underline-offset:3px}
