@@ -1,40 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus, X } from 'lucide-react';
+import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META } from '../lib/constants';
 import type { Graffiti, UserProfileResponse, UserRelation, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
-import { formatDate, formatDuration, plural } from '../lib/format';
+import { formatDate, plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, removeFavoritePlace } from '../lib/placeFavorites';
 import { useAuth } from '../context/AuthContext';
+import { RouteRow } from '../components/RouteRow';
+import { PeopleDialog } from '../components/PeopleDialog';
 
 type ProfileTab = 'walls' | 'buildings' | 'routes' | 'favorites';
 
 function isProfileTab(value: string | null): value is ProfileTab {
   return value === 'walls' || value === 'buildings' || value === 'routes' || value === 'favorites';
-}
-
-function RouteRow({ route, showAuthor = false }: { route: WalkRouteSummary; showAuthor?: boolean }) {
-  const duration = formatDuration(route.duration_minutes);
-  return (
-    <Link to={`/r/${route.slug}`} className="account-row account-route-row">
-      <span className="account-route-icon"><MapIcon size={24} /></span>
-      <div className="account-row-main">
-        <div className="row gap-8 wrap">
-          <strong>{route.title}</strong>
-          {duration ? <span className="tag tag-lime">{duration}</span> : null}
-          <span className="tag">{route.visibility === 'link' ? 'по ссылке' : 'для всех'}</span>
-        </div>
-        {route.description ? <span>{route.description}</span> : null}
-        <small>
-          {showAuthor ? <>Автор: {route.owner_name} · </> : null}
-          {route.stops.length} {plural(route.stops.length, 'остановка', 'остановки', 'остановок')}
-          {' · '}{route.likes} ♥ · {route.comments_count} 💬 · {formatDate(route.created_at)}
-        </small>
-      </div>
-      <ArrowRight size={18} />
-    </Link>
-  );
 }
 
 function GraffitiRow({ item, onRemove }: { item: Graffiti; onRemove: (item: Graffiti) => void }) {
@@ -421,35 +400,13 @@ export function AccountPage() {
       )}
 
       {peopleKind ? (
-        <div className="people-overlay" onClick={() => setPeopleKind(null)}>
-          <section className="people-dialog" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-            <header>
-              <div>
-                <span className="section-kicker">Профиль</span>
-                <h2>{peopleKind === 'followers' ? 'Подписчики' : 'Подписки'}</h2>
-              </div>
-              <button type="button" className="icon-button" onClick={() => setPeopleKind(null)} aria-label="Закрыть"><X size={18} /></button>
-            </header>
-            {peopleLoading ? <div className="admin-skeleton" /> : null}
-            {peopleError ? <div className="notice error">{peopleError}</div> : null}
-            {!peopleLoading && !peopleError && people.length === 0 ? (
-              <p className="people-empty">Здесь пока пусто.</p>
-            ) : null}
-            <div className="people-list">
-              {people.map((person) => (
-                <div className="people-row" key={person.id}>
-                  <span className="people-avatar">
-                    {person.avatar_url ? <img src={person.avatar_url} alt="" /> : person.name.slice(0, 1).toUpperCase()}
-                  </span>
-                  <div>
-                    <strong>{person.name}</strong>
-                    <small>{person.routes_count} {plural(person.routes_count, 'маршрут', 'маршрута', 'маршрутов')}</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
+        <PeopleDialog
+          kind={peopleKind}
+          items={people}
+          loading={peopleLoading}
+          error={peopleError}
+          onClose={() => setPeopleKind(null)}
+        />
       ) : null}
     </main>
   );

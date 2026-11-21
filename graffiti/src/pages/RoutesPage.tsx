@@ -201,7 +201,7 @@ export function RoutesPage() {
                 </div>
                 <div className="card-body">
                   <div className="card-topline">
-                    <span className="card-address"><RouteIcon size={13} /> {route.owner_name}</span>
+                    <span className="card-address"><RouteIcon size={13} /> <Link to={`/u/${route.owner_id}`} className="card-author-link">{route.owner_name}</Link></span>
                     <span className="card-time">{formatDate(route.created_at)}</span>
                   </div>
                   <div className="tags">

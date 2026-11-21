@@ -153,7 +153,7 @@ export function RoutePage() {
           <h1>{currentRoute.title}</h1>
           {currentRoute.description ? <p>{currentRoute.description}</p> : null}
           <div className="route-detail-meta">
-            <span>Автор: {currentRoute.owner_name}</span>
+            <span>Автор: <Link to={`/u/${currentRoute.owner_id}`} className="author-link">{currentRoute.owner_name}</Link></span>
             <span>{formatDate(currentRoute.created_at)}</span>
             {formatDuration(currentRoute.duration_minutes) ? <span>{formatDuration(currentRoute.duration_minutes)}</span> : null}
           </div>

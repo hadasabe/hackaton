@@ -5737,3 +5737,40 @@ body.map-is-fullscreen {
   width: 100%;
   justify-content: center;
 }
+
+.profile-avatar > img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-link {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.author-link:hover {
+  color: var(--ink-soft);
+}
+
+.card-author-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-author-link:hover {
+  text-decoration: underline;
+}
+
+a.people-row {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.people-row:hover {
+  border-color: var(--ink);
+}

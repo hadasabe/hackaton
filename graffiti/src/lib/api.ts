@@ -340,6 +340,12 @@ export const api = {
     return request<{ items: UserRelation[] }>(`/api/users/${id}/following`);
   },
 
+  toggleUserFollow(id: number) {
+    return request<{ following: boolean; followers_count: number }>(`/api/users/${id}/follow`, {
+      method: 'POST',
+    });
+  },
+
   uploadAvatar(form: FormData) {
     return request<{ avatar_url: string }>('/api/account/avatar', { method: 'POST', body: form });
   },

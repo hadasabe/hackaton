@@ -17,6 +17,7 @@ import { CollectionPage } from './pages/CollectionPage';
 import { WallPage } from './pages/WallPage';
 import { NewWallPage } from './pages/NewWallPage';
 import { AccountPage } from './pages/AccountPage';
+import { UserPage } from './pages/UserPage';
 import { AddObjectPage } from './pages/AddObjectPage';
 import { SubmitPage } from './pages/SubmitPage';
 import { LoginPage } from './pages/LoginPage';
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/walk" element={<Navigate to="/map" replace />} />
             <Route path="/r/:slug" element={<RoutePage />} />
             <Route path="/routes/:slug" element={<RoutePage />} />
+            <Route path="/u/:id" element={<UserPage />} />
             <Route
               path="/walls/new"
               element={(
