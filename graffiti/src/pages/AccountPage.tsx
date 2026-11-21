@@ -243,7 +243,6 @@ export function AccountPage() {
             onChange={(event) => void changeAvatar(event.target.files?.[0])}
           />
           <div>
-            <span className="eyebrow">Профиль</span>
             <h1>{user.name}</h1>
             <p>{email}</p>
             <div className="profile-stats">
