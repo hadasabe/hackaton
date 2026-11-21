@@ -160,10 +160,6 @@ export function FeedPage() {
             <br />
             города
           </h1>
-          <p>
-            Архитектура, история, природа, музеи и граффити — все объекты в одном потоке.
-            Открывайте карточки или переходите на карту.
-          </p>
           <div className="hero-actions">
             <Link to="/map" className="button button-dark">
               <MapIcon size={17} />
