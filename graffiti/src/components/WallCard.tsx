@@ -2,12 +2,14 @@ import { Link } from 'react-router-dom';
 import { AtSign, MapPin, Ruler, UserRound } from 'lucide-react';
 import { WALL_TERMS_META, WALL_TYPE_META } from '../lib/constants';
 import type { Wall } from '../lib/types';
+import { useCardLink } from '../lib/cardLink';
 import { ReportButton } from './ReportButton';
 
 export function WallCard({ wall }: { wall: Wall }) {
   const terms = WALL_TERMS_META[wall.terms];
+  const cardLink = useCardLink(`/walls/${wall.id}`);
   return (
-    <article className="graffiti-card wall-feed-card">
+    <article className="graffiti-card wall-feed-card" {...cardLink}>
       <div className="place-card-media">
         <Link to={`/walls/${wall.id}`} className="card-image-link" aria-label={`Открыть стену: ${wall.address}`}>
           <img src={wall.image_path} alt={`Стена: ${wall.address}`} loading="lazy" />
@@ -18,7 +20,7 @@ export function WallCard({ wall }: { wall: Wall }) {
         <div className="card-topline">
           <span className="card-address">
             <MapPin size={13} />
-            {wall.address}
+            <span className="card-address-text">{wall.address}</span>
           </span>
         </div>
 

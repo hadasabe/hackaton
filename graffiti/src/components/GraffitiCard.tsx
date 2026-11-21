@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Heart, MapPin, Map as MapIcon, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import type { Graffiti, ReactionValue } from '../lib/types';
+import { useCardLink } from '../lib/cardLink';
 import { ReportButton } from './ReportButton';
 
 export function Tags({ item }: { item: Graffiti }) {
@@ -31,8 +32,9 @@ export function GraffitiCard({
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
 }) {
+  const cardLink = useCardLink(`/g/${item.id}`);
   return (
-    <article className="graffiti-card">
+    <article className="graffiti-card" {...cardLink}>
       <div className="place-card-media">
         <Link to={`/g/${item.id}`} className="card-image-link" aria-label={`Открыть работу: ${item.address}`}>
           <img src={item.image_path} alt={`Граффити: ${item.address}`} loading="lazy" />
@@ -54,7 +56,7 @@ export function GraffitiCard({
         <div className="card-topline">
           <span className="card-address">
             <MapPin size={13} />
-            {item.address}
+            <span className="card-address-text">{item.address}</span>
           </span>
         </div>
 

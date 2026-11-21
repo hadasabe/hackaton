@@ -8,6 +8,7 @@ import { formatDate, formatDuration, plural } from '../lib/format';
 import { readPlan, writePlan } from '../lib/plan';
 import { useAuth } from '../context/AuthContext';
 import { ReportButton } from '../components/ReportButton';
+import { cardLinkProps } from '../lib/cardLink';
 
 export function RoutesPage() {
   const { objects } = useCityObjects();
@@ -184,7 +185,7 @@ export function RoutesPage() {
             const stops = route.stops.map((id) => byId.get(id)).filter(Boolean);
             const cover = stops.find((stop) => stop?.image)?.image;
             return (
-              <article className="graffiti-card route-feed-card" key={route.id}>
+              <article className="graffiti-card route-feed-card" key={route.id} {...cardLinkProps(`/r/${route.slug}`, navigate)}>
                 <div className="place-card-media">
                   <Link to={`/r/${route.slug}`} className="card-image-link" aria-label={`Открыть маршрут: ${route.title}`}>
                     {cover ? <img src={cover} alt="" loading="lazy" /> : <span className="route-cover-placeholder"><RouteIcon size={30} /></span>}
@@ -202,7 +203,7 @@ export function RoutesPage() {
                 </div>
                 <div className="card-body">
                   <div className="card-topline">
-                    <span className="card-address"><RouteIcon size={13} /> <Link to={`/u/${route.owner_id}`} className="card-author-link">{route.owner_name}</Link></span>
+                    <span className="card-address"><RouteIcon size={13} /> <Link to={`/u/${route.owner_id}`} className="card-author-link card-address-text">{route.owner_name}</Link></span>
                     <span className="card-time">{formatDate(route.created_at)}</span>
                   </div>
                   <div className="tags">

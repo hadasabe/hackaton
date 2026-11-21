@@ -11,6 +11,7 @@ import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } fr
 import { FeedControls } from '../components/FeedControls';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { ReportButton } from '../components/ReportButton';
+import { useCardLink } from '../lib/cardLink';
 import { useAuth } from '../context/AuthContext';
 
 
@@ -48,9 +49,10 @@ function PlaceCard({
   const likes = place?.likes ?? 0;
   const dislikes = place?.dislikes ?? 0;
   const comments = place?.comments_count ?? 0;
+  const cardLink = useCardLink(object.detailPath);
 
   return (
-    <article className="graffiti-card place-feed-card">
+    <article className="graffiti-card place-feed-card" {...cardLink}>
       <div className="place-card-media">
         <Link to={object.detailPath} className="card-image-link" aria-label={`Открыть объект: ${object.name}`}>
           {object.image ? (
@@ -74,7 +76,7 @@ function PlaceCard({
         <div className="card-topline">
           <span className="card-address">
             <MapPin size={13} />
-            {object.address}
+            <span className="card-address-text">{object.address}</span>
           </span>
         </div>
 
