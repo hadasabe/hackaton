@@ -68,6 +68,7 @@ export interface Graffiti {
   dislikes: number;
   comments_count: number;
   my_reaction: ReactionValue | null;
+  submitted_by?: { id: number; name: string; email: string } | null;
   ai?: AiCheck;
 }
 
@@ -127,9 +128,18 @@ export interface AdminUser {
   role: 'user' | 'admin';
   created_at: string;
   shadow_banned: number;
+  banned: number;
   graffiti_count: number;
   comments_count: number;
   walls_count: number;
+}
+
+export interface PublicUserProfile {
+  id: number;
+  name: string;
+  role: 'user' | 'admin';
+  created_at: string;
+  email?: string;
 }
 
 export interface StatusReport {

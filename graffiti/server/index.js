@@ -83,7 +83,7 @@ function getUser(req) {
     const payload = jwt.verify(token, JWT_SECRET);
     if (typeof payload !== 'object') return null;
     const user = db
-      .prepare('SELECT id, name, email, role, shadow_banned FROM users WHERE id = ?')
+      .prepare('SELECT id, name, email, role, shadow_banned, banned FROM users WHERE id = ?')
       .get(Number(payload.sub));
     return user || null;
   } catch {
@@ -113,6 +113,10 @@ function attachUser(req, _res, next) {
 function requireUser(req, res, next) {
   if (!req.user) {
     res.status(401).json({ error: 'Войдите или зарегистрируйтесь' });
+    return;
+  }
+  if (req.user.banned) {
+    res.status(403).json({ error: 'Аккаунт заблокирован' });
     return;
   }
   next();
@@ -244,6 +248,10 @@ app.post('/api/auth/login', (req, res) => {
     res.status(401).json({ error: 'Неверный email или пароль' });
     return;
   }
+  if (user.banned) {
+    res.status(403).json({ error: 'Аккаунт заблокирован' });
+    return;
+  }
   setSession(res, user);
   res.json({ user: publicUser(user) });
 });
@@ -254,6 +262,10 @@ app.post('/api/auth/logout', (_req, res) => {
 });
 
 app.get('/api/auth/me', (req, res) => {
+  if (req.user?.banned) {
+    res.status(403).json({ error: 'Аккаунт заблокирован' });
+    return;
+  }
   res.json({ user: req.user ? publicUser(req.user) : null });
 });
 
@@ -972,6 +984,82 @@ app.delete('/api/walk-routes/comments/:commentId', requireUser, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/users/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  const user = db
+    .prepare('SELECT id, name, email, role, created_at, banned FROM users WHERE id = ?')
+    .get(id);
+  if (!user || user.banned) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  const isAdmin = req.user?.role === 'admin';
+  const own = Boolean(req.user && (req.user.id === id || isAdmin));
+  const routeWhere = own ? 'wr.owner_id = ?' : "wr.owner_id = ? AND wr.visibility = 'public'";
+  const routes = db
+    .prepare(`${WALK_ROUTE_SELECT} WHERE ${routeWhere} ORDER BY datetime(wr.created_at) DESC LIMIT 100`)
+    .all(req.actorId, req.actorId, id)
+    .map((row) => walkRouteSummary(row, req));
+  const followers = db
+    .prepare('SELECT COUNT(*) AS count FROM user_follows WHERE following_id = ?')
+    .get(id).count;
+  const following = db
+    .prepare('SELECT COUNT(*) AS count FROM user_follows WHERE follower_id = ?')
+    .get(id).count;
+  const isFollowing = Boolean(
+    req.user &&
+      req.user.id !== id &&
+      db
+        .prepare('SELECT 1 FROM user_follows WHERE follower_id = ? AND following_id = ?')
+        .get(req.user.id, id),
+  );
+  res.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      created_at: user.created_at,
+      email: own ? user.email : undefined,
+    },
+    routes,
+    followers_count: Number(followers || 0),
+    following_count: Number(following || 0),
+    is_following: isFollowing,
+    is_me: Boolean(req.user && req.user.id === id),
+  });
+});
+
+app.post('/api/users/:id/follow', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id === req.user.id) {
+    res.status(400).json({ error: 'Нельзя подписаться на себя' });
+    return;
+  }
+  const user = db.prepare('SELECT id, banned FROM users WHERE id = ?').get(id);
+  if (!user || user.banned) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  const existing = db
+    .prepare('SELECT 1 FROM user_follows WHERE follower_id = ? AND following_id = ?')
+    .get(req.user.id, id);
+  if (existing) {
+    db.prepare('DELETE FROM user_follows WHERE follower_id = ? AND following_id = ?').run(req.user.id, id);
+  } else {
+    db.prepare(
+      'INSERT INTO user_follows (follower_id, following_id, created_at) VALUES (?, ?, ?)',
+    ).run(req.user.id, id, nowIso());
+  }
+  const followers = db
+    .prepare('SELECT COUNT(*) AS count FROM user_follows WHERE following_id = ?')
+    .get(id).count;
+  res.json({ following: !existing, followers_count: Number(followers || 0) });
+});
+
 app.get('/api/graffiti/:id', (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -1593,7 +1681,7 @@ app.get('/api/admin/users', requireAdmin, (_req, res) => {
   const items = db
     .prepare(`
       SELECT
-        u.id, u.name, u.email, u.role, u.created_at, u.shadow_banned,
+        u.id, u.name, u.email, u.role, u.created_at, u.shadow_banned, u.banned,
         (SELECT COUNT(*) FROM graffiti g WHERE g.created_by = 'user:' || u.id) AS graffiti_count,
         (SELECT COUNT(*) FROM comments c WHERE c.actor_id = 'user:' || u.id AND c.deleted_at IS NULL) AS comments_count,
         (SELECT COUNT(*) FROM walls w WHERE w.owner_id = u.id) AS walls_count
@@ -1605,10 +1693,10 @@ app.get('/api/admin/users', requireAdmin, (_req, res) => {
   res.json({ items, counts: { users: items.length } });
 });
 
-app.post('/api/admin/users/:id/shadow-ban', requireAdmin, (req, res) => {
+app.post('/api/admin/users/:id/ban', requireAdmin, (req, res) => {
   const id = Number(req.params.id);
-  const banned = req.body?.banned;
-  if (!Number.isInteger(id) || typeof banned !== 'boolean') {
+  const type = req.body?.type;
+  if (!Number.isInteger(id) || !['none', 'shadow', 'full'].includes(type)) {
     res.status(400).json({ error: 'Некорректные данные' });
     return;
   }
@@ -1625,8 +1713,12 @@ app.post('/api/admin/users/:id/shadow-ban', requireAdmin, (req, res) => {
     res.status(400).json({ error: 'Нельзя ограничить администратора' });
     return;
   }
-  db.prepare('UPDATE users SET shadow_banned = ? WHERE id = ?').run(banned ? 1 : 0, id);
-  res.json({ ok: true, shadow_banned: banned });
+  db.prepare('UPDATE users SET shadow_banned = ?, banned = ? WHERE id = ?').run(
+    type === 'shadow' ? 1 : 0,
+    type === 'full' ? 1 : 0,
+    id,
+  );
+  res.json({ ok: true, shadow_banned: type === 'shadow', banned: type === 'full' });
 });
 
 app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
@@ -1636,6 +1728,26 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
   const items = db
     .prepare(`${GRAFFITI_SELECT} WHERE g.moderation_status = ? ORDER BY datetime(g.created_at) DESC LIMIT 300`)
     .all(req.actorId, tab);
+  const submitterIds = [
+    ...new Set(
+      items
+        .map((item) => {
+          const match = /^user:(\d+)$/.exec(item.created_by || '');
+          return match ? Number(match[1]) : null;
+        })
+        .filter(Boolean),
+    ),
+  ];
+  const submitters = submitterIds.length
+    ? db
+        .prepare(`SELECT id, name, email FROM users WHERE id IN (${submitterIds.map(() => '?').join(',')})`)
+        .all(...submitterIds)
+    : [];
+  const submittersById = new Map(submitters.map((user) => [user.id, user]));
+  const itemsWithSubmitters = items.map((item) => {
+    const match = /^user:(\d+)$/.exec(item.created_by || '');
+    return { ...item, submitted_by: match ? submittersById.get(Number(match[1])) || null : null };
+  });
   const counts = db
     .prepare(`
       SELECT
@@ -1648,7 +1760,7 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
     `)
     .get();
   res.json({
-    items: attachAiChecks(items),
+    items: attachAiChecks(itemsWithSubmitters),
     counts: {
       pending: counts.pending || 0,
       published: counts.published || 0,

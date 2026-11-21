@@ -224,10 +224,10 @@ export const api = {
     return request<{ items: AdminUser[]; counts: AdminCounts }>('/api/admin/users');
   },
 
-  setShadowBan(id: number, banned: boolean) {
-    return request<{ ok: true; shadow_banned: boolean }>(`/api/admin/users/${id}/shadow-ban`, {
+  setBan(id: number, type: 'none' | 'shadow' | 'full') {
+    return request<{ ok: true; shadow_banned: boolean; banned: boolean }>(`/api/admin/users/${id}/ban`, {
       method: 'POST',
-      body: JSON.stringify({ banned }),
+      body: JSON.stringify({ type }),
     });
   },
 

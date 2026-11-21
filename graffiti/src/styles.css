@@ -3330,3 +3330,58 @@ body.walk-route .site-footer {
   padding: 0;
   color: var(--muted);
 }
+
+.ban-card {
+  width: min(540px, 100%);
+}
+
+.ban-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ban-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  text-align: left;
+}
+
+.ban-option > svg {
+  margin-top: 2px;
+  flex: none;
+}
+
+.ban-option > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ban-option strong {
+  font-size: 14px;
+}
+
+.ban-option small {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ban-option.danger {
+  border-color: var(--red);
+}
+
+.ban-option.safe {
+  border-color: #7c9f2e;
+}
+
+.ban-option:disabled {
+  opacity: 0.45;
+}

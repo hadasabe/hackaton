@@ -203,6 +203,15 @@ db.exec(`
     FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS user_follows (
+    follower_id INTEGER NOT NULL,
+    following_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (follower_id, following_id),
+    FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_graffiti_feed
     ON graffiti(moderation_status, published_at DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_graffiti
@@ -211,6 +220,8 @@ db.exec(`
     ON comment_reactions(comment_id);
   CREATE INDEX IF NOT EXISTS idx_walk_route_comment_reactions
     ON walk_route_comment_reactions(comment_id);
+  CREATE INDEX IF NOT EXISTS idx_user_follows_following
+    ON user_follows(following_id);
   CREATE INDEX IF NOT EXISTS idx_reactions_graffiti
     ON reactions(graffiti_id);
   CREATE INDEX IF NOT EXISTS idx_status_reports
@@ -241,6 +252,7 @@ function ensureColumn(table, column, definition) {
 ensureColumn('media', 'content_hash', 'TEXT');
 ensureColumn('media', 'dhash', 'TEXT');
 ensureColumn('users', 'shadow_banned', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('users', 'banned', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('comments', 'hidden', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('comments', 'parent_id', 'INTEGER');
 ensureColumn('walk_route_comments', 'parent_id', 'INTEGER');

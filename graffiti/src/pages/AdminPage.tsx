@@ -66,6 +66,8 @@ export function AdminPage() {
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<Graffiti | null>(null);
   const [reasonRequest, setReasonRequest] = useState<ReasonRequest | null>(null);
+  const [banTarget, setBanTarget] = useState<AdminUser | null>(null);
+  const [banSaving, setBanSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -185,22 +187,17 @@ export function AdminPage() {
     }
   }
 
-  async function toggleShadow(user: AdminUser) {
-    const next = !user.shadow_banned;
-    const confirmed = await confirm({
-      title: next ? 'Скрыть пользователя?' : 'Вернуть пользователя?',
-      message: next
-        ? 'Пользователь продолжит пользоваться сайтом, но его новые работы и комментарии не будут видны другим. Он не узнает об ограничении.'
-        : 'Новые работы и комментарии снова станут видны другим.',
-      confirmLabel: next ? 'Скрыть' : 'Вернуть',
-      skipKey: next ? 'shadow-ban' : 'shadow-unban',
-    });
-    if (!confirmed) return;
+  async function applyBan(type: 'none' | 'shadow' | 'full') {
+    if (!banTarget) return;
+    setBanSaving(true);
     try {
-      await api.setShadowBan(user.id, next);
+      await api.setBan(banTarget.id, type);
+      setBanTarget(null);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось изменить ограничение');
+    } finally {
+      setBanSaving(false);
     }
   }
 
@@ -237,7 +234,7 @@ export function AdminPage() {
         <UsersPanel
           users={users}
           loading={loading}
-          onToggle={(user) => void toggleShadow(user)}
+          onBan={(user) => setBanTarget(user)}
         />
       ) : tab === 'walls' ? (
         <WallsPanel
@@ -285,7 +282,9 @@ export function AdminPage() {
                 <p className="admin-description">{item.description || 'Без описания'}</p>
                 {item.ai ? <AiCheckBadge check={item.ai} /> : null}
                 <div className="admin-meta">
-                  <span>{item.author_name || 'автор не указан'}</span>
+                  <span>Заявка от: {item.submitted_by?.name || 'неизвестный пользователь'}</span>
+                  {item.submitted_by?.email ? <span>{item.submitted_by.email}</span> : null}
+                  {item.author_name ? <span>Художник: {item.author_name}</span> : null}
                   <span>{formatDate(item.created_at)}</span>
                   <span>❤ {item.likes} · 👎 {item.dislikes} · 💬 {item.comments_count}</span>
                 </div>
@@ -330,6 +329,15 @@ export function AdminPage() {
           request={reasonRequest}
           onClose={() => setReasonRequest(null)}
           onSubmit={submitReason}
+        />
+      ) : null}
+
+      {banTarget ? (
+        <BanDialog
+          user={banTarget}
+          saving={banSaving}
+          onClose={() => setBanTarget(null)}
+          onChoose={(type) => void applyBan(type)}
         />
       ) : null}
     </main>
@@ -435,14 +443,80 @@ function WallsPanel({
   );
 }
 
+function BanDialog({
+  user,
+  saving,
+  onClose,
+  onChoose,
+}: {
+  user: AdminUser;
+  saving: boolean;
+  onClose: () => void;
+  onChoose: (type: 'none' | 'shadow' | 'full') => void;
+}) {
+  const restricted = Boolean(user.banned || user.shadow_banned);
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Ограничить пользователя">
+      <div className="modal-card ban-card">
+        <div className="modal-head">
+          <div>
+            <span className="section-kicker">Пользователь</span>
+            <h2>{user.name}</h2>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose} aria-label="Закрыть">
+            <X size={18} />
+          </button>
+        </div>
+        <p className="muted">
+          {user.email}
+          <br />
+          Выберите, как ограничить доступ. Обычный бан не даст войти, теневой оставит сайт доступным, но скроет новый контент от других.
+        </p>
+        <div className="ban-options">
+          <button
+            type="button"
+            className="ban-option danger"
+            onClick={() => onChoose('full')}
+            disabled={saving || Boolean(user.banned)}
+          >
+            <UserX size={20} />
+            <span><strong>Обычный бан</strong><small>Пользователь не сможет войти в аккаунт.</small></span>
+          </button>
+          <button
+            type="button"
+            className="ban-option"
+            onClick={() => onChoose('shadow')}
+            disabled={saving || Boolean(user.shadow_banned)}
+          >
+            <UserX size={20} />
+            <span><strong>Теневой бан</strong><small>Сайт останется доступен, но новый контент не увидят другие.</small></span>
+          </button>
+          <button
+            type="button"
+            className="ban-option safe"
+            onClick={() => onChoose('none')}
+            disabled={saving || !restricted}
+          >
+            <UserCheck size={20} />
+            <span><strong>Разбанить</strong><small>Вернуть обычный доступ.</small></span>
+          </button>
+        </div>
+        <div className="modal-actions">
+          <button type="button" className="button button-outline" onClick={onClose}>Отмена</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UsersPanel({
   users,
   loading,
-  onToggle,
+  onBan,
 }: {
   users: AdminUser[];
   loading: boolean;
-  onToggle: (user: AdminUser) => void;
+  onBan: (user: AdminUser) => void;
 }) {
   if (loading) {
     return (
@@ -465,12 +539,13 @@ function UsersPanel({
   return (
     <div className="admin-users">
       {users.map((user) => (
-        <article className={`admin-user-card ${user.shadow_banned ? 'is-shadow' : ''}`} key={user.id}>
+        <article className={`admin-user-card ${user.shadow_banned || user.banned ? 'is-shadow' : ''}`} key={user.id}>
           <div className="admin-user-info">
             <div className="admin-user-head">
               <strong>{user.name}</strong>
               {user.role === 'admin' ? <span className="moderation-badge published">админ</span> : null}
               {user.shadow_banned ? <span className="moderation-badge rejected">теневой бан</span> : null}
+              {user.banned ? <span className="moderation-badge rejected">забанен</span> : null}
             </div>
             <span className="admin-user-email">{user.email}</span>
             <div className="admin-meta">
@@ -484,11 +559,11 @@ function UsersPanel({
           {user.role === 'admin' ? null : (
             <button
               type="button"
-              className={`button ${user.shadow_banned ? 'button-outline' : 'button-danger'}`}
-              onClick={() => onToggle(user)}
+              className={`button ${user.shadow_banned || user.banned ? 'button-outline' : 'button-danger'}`}
+              onClick={() => onBan(user)}
             >
-              {user.shadow_banned ? <UserCheck size={15} /> : <UserX size={15} />}
-              {user.shadow_banned ? 'Снять теневой бан' : 'Теневой бан'}
+              {user.shadow_banned || user.banned ? <UserCheck size={15} /> : <UserX size={15} />}
+              {user.shadow_banned || user.banned ? 'Изменить бан' : 'Бан'}
             </button>
           )}
         </article>
