@@ -4655,8 +4655,8 @@ button.profile-stat {
 }
 
 .routes-toolbar .search-box {
-  flex: 1 1 260px;
-  max-width: 480px;
+  flex: 1 1 320px;
+  max-width: none;
 }
 
 .routes-toolbar-actions {
