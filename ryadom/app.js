@@ -155,7 +155,7 @@ function rememberDetails(){for(const el of $('place-list').querySelectorAll('det
 function refreshCardDistances(){for(const el of $('place-list').querySelectorAll('[data-distance]')){const p=find(el.dataset.distance);el.hidden=!state.fix;el.querySelector('span').textContent=`${displayDistance(distance(p))} от вас`;}for(const el of $('place-list').querySelectorAll('[data-outside]'))el.hidden=!(state.fix&&state.view!=='catalog'&&state.exploring&&state.selected===el.dataset.outside&&distance(find(el.dataset.outside))>100);for(const el of $('place-list').querySelectorAll('[data-place-id]'))el.classList.toggle('selected-card',el.dataset.placeId===state.selected);}
 function renderCards(){
  const catalog=state.view==='catalog',query=$('search').value.trim().toLowerCase(),category=$('category-filter').value;
- let list=catalog?places.filter(p=>(!query||`${p.name} ${p.address} ${p.artist||''} ${p.artType||''} ${p.description}`.toLowerCase().includes(query))&&(!category||p.category===category)):state.near;
+ let list=catalog?places.filter(p=>(!query||`${p.name} ${p.address} ${p.artist||''} ${p.artType||''} ${p.description}`.toLowerCase().includes(query))&&(!category||p.category===category)):state.fix?state.near:places.slice();
  if(catalog&&state.fix)list=list.slice().sort((a,b)=>distance(a)-distance(b));else if(catalog)list=list.slice().sort((a,b)=>Number(Boolean(b.image))-Number(Boolean(a.image)));
  const manual=find(state.selected);if(!catalog&&state.exploring&&manual&&!list.some(p=>p.id===manual.id))list=[manual,...list];
  if(!list.some(p=>p.id===state.selected))state.selected=list[0]?.id||null;
