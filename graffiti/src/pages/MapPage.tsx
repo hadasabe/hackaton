@@ -474,7 +474,7 @@ export function MapPage() {
         </label>
         <div className="map-head-actions">
           <Link to="/routes" className="button button-outline"><Route size={16} /> Маршруты</Link>
-          <button type="button" className="button button-dark" onClick={() => setShowPlan((value) => !value)}>
+          <button type="button" className="button button-dark" onClick={() => setShowPlan(true)}>
             Моя прогулка · {plan.length}
           </button>
           <button type="button" className="button button-outline" onClick={locate} disabled={locating}>
@@ -491,7 +491,19 @@ export function MapPage() {
         <aside className="map-sidebar">
           <div className="map-sidebar-head">
             <strong>{showPlan ? 'Моя прогулка' : 'Объекты'}</strong>
-            <span>{showPlan ? planObjects.length : sortedObjects.length}</span>
+            <div className="map-sidebar-head-right">
+              <span>{showPlan ? planObjects.length : sortedObjects.length}</span>
+              {showPlan ? (
+                <button
+                  type="button"
+                  className="icon-button map-plan-close"
+                  onClick={() => setShowPlan(false)}
+                  aria-label="Показать объекты"
+                >
+                  <X size={15} />
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {showPlan ? (

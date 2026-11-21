@@ -4031,6 +4031,12 @@ button.profile-stat {
   font-size: 13px;
 }
 
+.map-sidebar-head-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .map-sidebar-head span {
   display: grid;
   place-items: center;
@@ -4041,6 +4047,11 @@ button.profile-stat {
   background: var(--lime);
   font-size: 11px;
   font-weight: 800;
+}
+
+.map-plan-close {
+  width: 26px;
+  height: 26px;
 }
 
 .map-object-list,
