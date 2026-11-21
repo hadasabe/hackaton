@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus } from 'lucide-react';
+import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus, X } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META } from '../lib/constants';
-import type { Graffiti, UserProfileResponse, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
+import type { Graffiti, UserProfileResponse, UserRelation, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
 import { formatDate, formatDuration, plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, removeFavoritePlace } from '../lib/placeFavorites';
 import { useAuth } from '../context/AuthContext';
@@ -93,7 +93,7 @@ function PlaceRow({ place, onRemove }: { place: WalkPlace; onRemove: (id: string
 }
 
 export function AccountPage() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [walls, setWalls] = useState<Wall[]>([]);
@@ -110,6 +110,12 @@ export function AccountPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const avatarInput = useRef<HTMLInputElement | null>(null);
+  const [peopleKind, setPeopleKind] = useState<'followers' | 'following' | null>(null);
+  const [people, setPeople] = useState<UserRelation[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
+  const [peopleError, setPeopleError] = useState('');
 
   useEffect(() => {
     const requested = searchParams.get('tab');
@@ -164,6 +170,40 @@ export function AccountPage() {
     .map((id) => placeById.get(id))
     .filter((place): place is WalkPlace => Boolean(place));
 
+  async function changeAvatar(file: File | undefined) {
+    if (!file) return;
+    setAvatarSaving(true);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('avatar', file);
+      await api.uploadAvatar(form);
+      await refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось загрузить аватар');
+    } finally {
+      setAvatarSaving(false);
+    }
+  }
+
+  async function openPeople(kind: 'followers' | 'following') {
+    if (!user) return;
+    setPeopleKind(kind);
+    setPeople([]);
+    setPeopleError('');
+    setPeopleLoading(true);
+    try {
+      const data = kind === 'followers'
+        ? await api.userFollowers(user.id)
+        : await api.userFollowing(user.id);
+      setPeople(data.items);
+    } catch (caught) {
+      setPeopleError(caught instanceof Error ? caught.message : 'Не удалось загрузить список');
+    } finally {
+      setPeopleLoading(false);
+    }
+  }
+
   function selectTab(next: ProfileTab) {
     setTab(next);
     setSearchParams(next === 'walls' ? {} : { tab: next }, { replace: true });
@@ -186,14 +226,33 @@ export function AccountPage() {
     <main className="page account-page">
       <header className="page-header profile-page-header">
         <div className="profile-identity">
-          <span className="profile-avatar" aria-hidden="true">{user.name.slice(0, 1).toUpperCase()}</span>
+          <button
+            type="button"
+            className={`profile-avatar profile-avatar-button${avatarSaving ? ' is-saving' : ''}`}
+            onClick={() => avatarInput.current?.click()}
+            aria-label="Изменить аватар"
+          >
+            {user.avatar_url ? <img src={user.avatar_url} alt="" /> : user.name.slice(0, 1).toUpperCase()}
+            <span className="profile-avatar-plus"><Plus size={13} /></span>
+          </button>
+          <input
+            ref={avatarInput}
+            className="visually-hidden"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => void changeAvatar(event.target.files?.[0])}
+          />
           <div>
             <span className="eyebrow">Профиль</span>
             <h1>{user.name}</h1>
             <p>{email}</p>
             <div className="profile-stats">
-              <span className="profile-stat"><strong>{followers}</strong><span>{plural(followers, 'подписчик', 'подписчика', 'подписчиков')}</span></span>
-              <span className="profile-stat"><strong>{following}</strong><span>{plural(following, 'подписка', 'подписки', 'подписок')}</span></span>
+              <button type="button" className="profile-stat" onClick={() => void openPeople('followers')}>
+                <strong>{followers}</strong><span>{plural(followers, 'подписчик', 'подписчика', 'подписчиков')}</span>
+              </button>
+              <button type="button" className="profile-stat" onClick={() => void openPeople('following')}>
+                <strong>{following}</strong><span>{plural(following, 'подписка', 'подписки', 'подписок')}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -361,6 +420,38 @@ export function AccountPage() {
           ) : null}
         </div>
       )}
+
+      {peopleKind ? (
+        <div className="people-overlay" onClick={() => setPeopleKind(null)}>
+          <section className="people-dialog" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <header>
+              <div>
+                <span className="section-kicker">Профиль</span>
+                <h2>{peopleKind === 'followers' ? 'Подписчики' : 'Подписки'}</h2>
+              </div>
+              <button type="button" className="icon-button" onClick={() => setPeopleKind(null)} aria-label="Закрыть"><X size={18} /></button>
+            </header>
+            {peopleLoading ? <div className="admin-skeleton" /> : null}
+            {peopleError ? <div className="notice error">{peopleError}</div> : null}
+            {!peopleLoading && !peopleError && people.length === 0 ? (
+              <p className="people-empty">Здесь пока пусто.</p>
+            ) : null}
+            <div className="people-list">
+              {people.map((person) => (
+                <div className="people-row" key={person.id}>
+                  <span className="people-avatar">
+                    {person.avatar_url ? <img src={person.avatar_url} alt="" /> : person.name.slice(0, 1).toUpperCase()}
+                  </span>
+                  <div>
+                    <strong>{person.name}</strong>
+                    <small>{person.routes_count} {plural(person.routes_count, 'маршрут', 'маршрута', 'маршрутов')}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

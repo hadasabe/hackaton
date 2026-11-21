@@ -142,6 +142,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'user' | 'admin';
+  avatar_url?: string;
 }
 
 export interface AdminCounts {
@@ -201,7 +202,18 @@ export interface PublicUserProfile {
   name: string;
   role: 'user' | 'admin';
   created_at: string;
+  avatar_url?: string;
   email?: string;
+}
+
+export interface UserRelation {
+  id: number;
+  name: string;
+  role: 'user' | 'admin';
+  created_at: string;
+  avatar_url?: string;
+  routes_count: number;
+  is_following: boolean;
 }
 
 export interface WalkRouteSummary {

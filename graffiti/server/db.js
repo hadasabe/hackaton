@@ -23,6 +23,7 @@ db.exec(`
     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+    avatar_path TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   );
 
@@ -781,6 +782,12 @@ export const SAMPLES = [
     moderation: 'published',
   },
 ];
+
+
+const userColumns = db.prepare('PRAGMA table_info(users)').all().map((column) => column.name);
+if (!userColumns.includes('avatar_path')) {
+  db.exec("ALTER TABLE users ADD COLUMN avatar_path TEXT NOT NULL DEFAULT ''");
+}
 
 const COMMENTS = [
   ['Аня', 'Была здесь вчера — работа на месте, выглядит ещё ярче вживую.'],

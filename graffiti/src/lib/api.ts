@@ -12,6 +12,7 @@ import type {
   Status,
   StatusReport,
   UserProfileResponse,
+  UserRelation,
   WalkBuilding,
   WalkPlace,
   WalkRouteSummary,
@@ -307,6 +308,18 @@ export const api = {
 
   userProfile(id: number) {
     return request<UserProfileResponse>(`/api/users/${id}`);
+  },
+
+  userFollowers(id: number) {
+    return request<{ items: UserRelation[] }>(`/api/users/${id}/followers`);
+  },
+
+  userFollowing(id: number) {
+    return request<{ items: UserRelation[] }>(`/api/users/${id}/following`);
+  },
+
+  uploadAvatar(form: FormData) {
+    return request<{ avatar_url: string }>('/api/account/avatar', { method: 'POST', body: form });
   },
 
   adminList(tab: 'pending' | 'published' | 'rejected') {

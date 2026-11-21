@@ -122,7 +122,7 @@ const RESERVED_NAMES = new Set(['администратор', 'редакция'
 const walkRouteCache = new Map();
 
 function publicUser(user) {
-  return { id: user.id, name: user.name, email: user.email, role: user.role };
+  return { id: user.id, name: user.name, email: user.email, role: user.role, avatar_url: user.avatar_path || '' };
 }
 
 function getUser(req) {
@@ -132,7 +132,7 @@ function getUser(req) {
     const payload = jwt.verify(token, JWT_SECRET);
     if (typeof payload !== 'object') return null;
     const user = db
-      .prepare('SELECT id, name, email, role, shadow_banned, banned FROM users WHERE id = ?')
+      .prepare('SELECT id, name, email, role, avatar_path, shadow_banned, banned FROM users WHERE id = ?')
       .get(Number(payload.sub));
     return user || null;
   } catch {
@@ -297,7 +297,7 @@ app.post('/api/auth/register', (req, res) => {
       .prepare('INSERT INTO users (name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)')
       .run(name, email, bcrypt.hashSync(password, 10), 'user', nowIso());
     const user = db
-      .prepare('SELECT id, name, email, role FROM users WHERE id = ?')
+      .prepare('SELECT id, name, email, role, avatar_path FROM users WHERE id = ?')
       .get(Number(info.lastInsertRowid));
     setSession(res, user);
     res.status(201).json({ user: publicUser(user) });
@@ -345,6 +345,27 @@ app.get('/api/auth/me', (req, res) => {
     return;
   }
   res.json({ user: req.user ? publicUser(req.user) : null });
+});
+
+app.post('/api/account/avatar', requireUser, upload.single('avatar'), (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: 'Выберите изображение' });
+    return;
+  }
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(req.file.mimetype)) {
+    res.status(400).json({ error: 'Можно загрузить JPG, PNG или WEBP' });
+    return;
+  }
+  if (!rateLimit(`avatar:${req.user.id}`, 10, 60 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много загрузок. Попробуйте позже.' });
+    return;
+  }
+  const mediaInfo = db
+    .prepare('INSERT INTO media (mime, data, created_at) VALUES (?, ?, ?)')
+    .run(req.file.mimetype, req.file.buffer, nowIso());
+  const avatarUrl = `/api/media/${Number(mediaInfo.lastInsertRowid)}`;
+  db.prepare('UPDATE users SET avatar_path = ? WHERE id = ?').run(avatarUrl, req.user.id);
+  res.json({ avatar_url: avatarUrl });
 });
 
 function cleanText(value, max) {
@@ -456,7 +477,11 @@ app.get('/api/media/:id', (req, res) => {
         EXISTS(
           SELECT 1 FROM walls w
           WHERE w.image_path = '/api/media/' || m.id AND w.owner_id = ?
-        ) AS owned_wall
+        ) AS owned_wall,
+        EXISTS(
+          SELECT 1 FROM users u
+          WHERE u.avatar_path = '/api/media/' || m.id
+        ) AS public_avatar
       FROM media m
       WHERE m.id = ?
     `)
@@ -465,7 +490,7 @@ app.get('/api/media/:id', (req, res) => {
     res.status(404).json({ error: 'Файл не найден' });
     return;
   }
-  const isPublic = Boolean(item.public_graffiti || item.public_wall || item.public_building);
+  const isPublic = Boolean(item.public_graffiti || item.public_wall || item.public_building || item.public_avatar);
   const canSeePrivate = Boolean(
     req.user && (req.user.role === 'admin' || item.owned_graffiti || item.owned_wall),
   );
@@ -1327,7 +1352,7 @@ app.get('/api/users/:id', (req, res) => {
     return;
   }
   const user = db
-    .prepare('SELECT id, name, email, role, created_at, banned FROM users WHERE id = ?')
+    .prepare('SELECT id, name, email, role, avatar_path, created_at, banned FROM users WHERE id = ?')
     .get(id);
   if (!user || user.banned) {
     res.status(404).json({ error: 'Пользователь не найден' });
@@ -1359,6 +1384,7 @@ app.get('/api/users/:id', (req, res) => {
       name: user.name,
       role: user.role,
       created_at: user.created_at,
+      avatar_url: user.avatar_path || '',
       email: own ? user.email : undefined,
     },
     routes,
@@ -1384,7 +1410,7 @@ function userRelationList(req, res, kind) {
   const whereColumn = kind === 'followers' ? 'f.following_id' : 'f.follower_id';
   const items = db
     .prepare(`
-      SELECT u.id, u.name, u.role, u.created_at,
+      SELECT u.id, u.name, u.role, u.created_at, u.avatar_path,
         (SELECT COUNT(*) FROM walk_routes wr
          WHERE wr.owner_id = u.id AND wr.visibility = 'public') AS routes_count,
         (SELECT 1 FROM user_follows mine
@@ -1401,6 +1427,7 @@ function userRelationList(req, res, kind) {
       name: user.name,
       role: user.role,
       created_at: user.created_at,
+      avatar_url: user.avatar_path || '',
       routes_count: Number(user.routes_count || 0),
       is_following: Boolean(user.is_following),
     }));
