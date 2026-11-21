@@ -101,13 +101,14 @@ export function MapPage() {
 
   useEffect(() => {
     if (!mapNode.current || mapRef.current) return;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
     const map = L.map(mapNode.current, {
       zoomControl: false,
       attributionControl: false,
       scrollWheelZoom: true,
-      zoomSnap: 0.05,
-      zoomDelta: 0.5,
-      doubleClickZoom: !window.matchMedia('(pointer: coarse)').matches,
+      zoomSnap: coarsePointer ? 0.05 : 1,
+      zoomDelta: coarsePointer ? 0.5 : 1,
+      doubleClickZoom: !coarsePointer,
     }).setView([51.5305, 46.0375], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
       subdomains: 'abc',
@@ -146,6 +147,7 @@ export function MapPage() {
   }, []);
 
   useEffect(() => {
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
     const node = mapNode.current;
     const map: L.Map | null = mapRef.current;
     if (!map || !node) return;
