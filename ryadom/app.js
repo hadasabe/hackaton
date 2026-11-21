@@ -328,6 +328,7 @@ window.RyadomApp={
  selectPlace:(id,fromMap=true)=>{if(find(id))selectPlace(id,fromMap);},
  setTab,setMode,
  beginGPS:()=>{if(state.source==='gps'&&locator.active){state.follow=true;updateMap();}else beginGPS();},
+ requestGPS:()=>{if(state.source==='gps'&&locator.active)return true;stopSources();stopNarration();state.queue.reset();state.found.clear();state.fix=null;state.heading=null;state.headingAnchor=null;state.source='gps';state.exploring=false;state.follow=true;updateProximity();return locator.start();},
  toast,
  showRoute:ids=>showPlannedRoute(ids),
  clearRoute:()=>{routeDrawRequest++;clearPlannedRoute();},
