@@ -398,3 +398,8 @@ body.embed-mode .network-note{display:none!important}
 
 /* Leaflet draws the route into its own SVG; the UI icon rule must not clip it. */
 .leaflet-overlay-pane svg{width:auto;height:auto;max-width:none;max-height:none}
+
+/* The start button stands alone; the status line appears only with a GPS fix. */
+.location-box{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.location-heading{display:none}
+.has-location .location-heading{display:flex}

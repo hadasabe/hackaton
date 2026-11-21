@@ -137,10 +137,6 @@ function updateLocationUI(){
  $('location-dot').className='location-dot'+(live?' live':demo?' demo':'');
  $('accuracy-label').textContent=gps&&fix?`±${Math.round(fix.accuracy)} м`:demo?'Демо':'';
  $('location-title').textContent=demo?'Демонстрационная прогулка':gps?(state.gpsIssue?'GPS требует внимания':fix?'Вы на карте':'Определяем местоположение'):'Начнём с вашего места';
- let message='Разрешите геолокацию, чтобы находить места рядом. Координаты обрабатываются на устройстве.';
- if(demo)message='Движение имитируется. Расстояния считаются по настоящим координатам, но это не маршрут для навигации.';
- if(gps){message=state.gpsIssue||(fix?geo.reliable(fix)?'Новые места появляются в радиусе 200 м. Держите приложение открытым во время прогулки.':'Сигнал неточный или устарел. Карточки приблизительны, новые рассказы автоматически не запускаются.':'Разрешите доступ в запросе браузера. Первое измерение может занять несколько секунд.');}
- $('location-message').textContent=message;
  $('gps-button').innerHTML=icon('locate')+`<span>${gps&&locator.active?'Остановить GPS-прогулку':demo?'Перейти к настоящему GPS':'Начать прогулку'}</span>`;
  $('demo-console').hidden=!demo;
 }
