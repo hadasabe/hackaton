@@ -131,7 +131,7 @@ export function RoutesPage() {
               setShowCreate(true);
             }}
           >
-            <Plus size={16} /> Опубликовать маршрут
+            <Plus size={16} /> Создать маршрут
           </button>
           <Link to="/map" className="button button-outline"><MapIcon size={16} /> Карта</Link>
         </div>
@@ -142,7 +142,7 @@ export function RoutesPage() {
           <div className="route-create-head">
             <div>
               <span className="section-kicker">Новый маршрут · {plan.length} {plural(plan.length, 'остановка', 'остановки', 'остановок')}</span>
-              <h2>Опубликовать мой маршрут</h2>
+              <h2>Создать мой маршрут</h2>
             </div>
             <button type="button" className="button button-outline" onClick={() => setShowCreate(false)}>Отмена</button>
           </div>

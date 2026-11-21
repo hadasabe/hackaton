@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
@@ -183,6 +183,7 @@ function MapObjectRow({
 
 export function MapPage() {
   const { objects, loading, error } = useCityObjects();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const routeMode = searchParams.get('mode') === 'route';
   const planTitle = routeMode ? 'Мой маршрут' : 'Моя прогулка';
@@ -717,6 +718,12 @@ export function MapPage() {
     setWalkStarted(false);
   }
 
+  function publishWalk() {
+    if (plan.length < 2) return;
+    writeRouteDraft(plan);
+    navigate('/routes?create=1');
+  }
+
   async function optimizePlan() {
     const stops = plan
       .map((id) => objects.find((object) => object.id === id))
@@ -866,6 +873,11 @@ export function MapPage() {
                         Начать прогулку
                       </button>
                     )
+                  ) : null}
+                  {!routeMode && planObjects.length >= 2 ? (
+                    <button type="button" className="button button-outline" onClick={publishWalk}>
+                      Опубликовать прогулку
+                    </button>
                   ) : null}
                   {planObjects.length >= 2 ? (
                     <button
