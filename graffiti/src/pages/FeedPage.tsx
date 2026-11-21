@@ -178,7 +178,7 @@ export function FeedPage() {
         <div className="hero-stats">
           <div className="hero-stat hero-stat-main">
             <strong>{totalObjects}</strong>
-            <span>{plural(totalObjects, 'объект', 'объекта', 'объектов')} в ленте</span>
+            <span>{plural(totalObjects, 'объект', 'объекта', 'объектов')}</span>
           </div>
           <div className="hero-stat">
             <strong>{places.length}</strong>
@@ -198,11 +198,7 @@ export function FeedPage() {
       <ContentTabs active="feed" />
 
       <section id="feed" className="feed-section">
-        <div className="feed-toolbar">
-          <div className="feed-title">
-            <span className="section-kicker">Все объекты</span>
-            <h2>Единая лента</h2>
-          </div>
+        <div className="feed-toolbar feed-toolbar-compact">
           <label className="search-box">
             <Search size={16} />
             <input
