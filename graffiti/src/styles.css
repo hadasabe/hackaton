@@ -4212,6 +4212,7 @@ button.profile-stat {
   height: 100%;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden;
   border: 0;
   background: transparent;
   color: var(--ink);
@@ -4242,17 +4243,22 @@ button.profile-stat {
   cursor: grabbing;
 }
 
-.map-plan-object strong {
+.map-plan-object strong,
+.map-plan-object small {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.map-plan-object strong {
   font-size: 12.5px;
 }
 
 .map-plan-object small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--muted);
   font-size: 10.5px;
 }

@@ -605,8 +605,8 @@ export function MapPage() {
                   >
                     <span>{index + 1}</span>
                     <button type="button" className="map-plan-object" onClick={() => setSelectedId(object.id)}>
-                      <strong>{object.name}</strong>
-                      <small>{object.address}</small>
+                      <strong title={object.name}>{object.name}</strong>
+                      <small title={object.address}>{object.address}</small>
                     </button>
                     <button
                       type="button"
