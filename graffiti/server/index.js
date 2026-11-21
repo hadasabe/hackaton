@@ -2083,7 +2083,7 @@ app.get('/api/my/walls', requireUser, (req, res) => {
 
 app.post('/api/walk-buildings', requireUser, upload.single('photo'), (req, res) => {
   if (!req.file) {
-    res.status(400).json({ error: 'Прикрепите фото достопримечательности' });
+    res.status(400).json({ error: 'Прикрепите фото объекта' });
     return;
   }
   if (!rateLimit(`building-create:${req.actorId}`, 5, 60 * 60 * 1000)) {

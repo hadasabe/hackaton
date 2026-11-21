@@ -5273,12 +5273,6 @@ button.profile-stat {
   hyphens: auto;
 }
 
-.add-object-card-attraction h2 {
-  font-size: 18px;
-  line-height: 1.02;
-  letter-spacing: -0.025em;
-}
-
 .add-object-card p {
   color: var(--muted);
   font-size: 13px;

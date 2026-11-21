@@ -10,7 +10,7 @@ export function AddObjectPage() {
       <div className="submit-head">
         <span className="section-kicker">Пополнить ленту</span>
         <h1>Добавить объект</h1>
-        <p>Выберите, что хотите добавить: граффити, достопримечательность или свободную стену. Заявка появится в ленте после проверки.</p>
+        <p>Выберите, что хотите добавить: граффити, городской объект или свободную стену. Заявка появится в ленте после проверки.</p>
       </div>
 
       <div className="add-object-grid">
@@ -23,11 +23,11 @@ export function AddObjectPage() {
           </div>
         </Link>
 
-        <Link to="/add-building" className="add-object-card add-object-card-attraction">
+        <Link to="/add-building" className="add-object-card">
           <span className="add-object-icon"><Building2 size={28} /></span>
           <div>
             <span className="section-kicker">Архитектура, история, природа</span>
-            <h2>Достопримеча­тельность</h2>
+            <h2>Добавить объект</h2>
             <p>Фото, название, адрес и точка на карте. После проверки объект появится в ленте и на карте.</p>
           </div>
         </Link>

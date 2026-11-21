@@ -112,11 +112,11 @@ export function AddBuildingPage() {
         <div className="success-card">
           <CheckCircle2 size={42} />
           <span className="section-kicker">Заявка отправлена</span>
-          <h1>Достопримечательность отправлена на проверку</h1>
+          <h1>Объект отправлен на проверку</h1>
           <p>После проверки редакции объект появится в ленте и на карте.</p>
           <div className="row gap-10 wrap center">
             <Link to="/" className="button button-dark">К ленте</Link>
-            <Link to="/account?tab=buildings" className="button button-outline">Мои достопримечательности</Link>
+            <Link to="/account?tab=buildings" className="button button-outline">Мои объекты</Link>
           </div>
         </div>
       </main>
@@ -128,19 +128,19 @@ export function AddBuildingPage() {
       <BackLink fallback="/add" />
       <div className="submit-head">
         <span className="section-kicker">Новый объект</span>
-        <h1>Добавить достопримечательность</h1>
-        <p>Загрузите фото, укажите адрес и отметьте точку на карте. После проверки достопримечательность появится в ленте.</p>
+        <h1>Добавить объект</h1>
+        <p>Загрузите фото, укажите адрес и отметьте точку на карте. После проверки объект появится в ленте.</p>
         {user ? <p className="submit-as">Заявка от <strong>{user.name}</strong></p> : null}
       </div>
 
       <form className="submit-form" onSubmit={(event) => void submit(event)}>
         <div className={`upload-zone ${file ? 'has-file' : ''}`}>
           {preview ? (
-            <img src={preview} alt="Предпросмотр достопримечательности" />
+            <img src={preview} alt="Предпросмотр объекта" />
           ) : (
             <div className="upload-placeholder">
               <ImagePlus size={35} />
-              <strong>Фото достопримечательности</strong>
+              <strong>Фото объекта</strong>
               <span>JPG, PNG или WEBP · до 10 МБ</span>
             </div>
           )}
