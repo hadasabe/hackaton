@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { UserCheck, UserPlus } from 'lucide-react';
+import { ArrowRight, UserCheck, UserPlus } from 'lucide-react';
 import { api } from '../lib/api';
+import { WALL_TERMS_META } from '../lib/constants';
 import type { UserProfileResponse, UserRelation } from '../lib/types';
 import { formatDate, plural } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
@@ -9,12 +10,15 @@ import { NotFoundPage } from './NotFoundPage';
 import { RouteRow } from '../components/RouteRow';
 import { PeopleDialog } from '../components/PeopleDialog';
 
+type PublicProfileTab = 'routes' | 'walls' | 'buildings';
+
 export function UserPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const profileId = Number(id);
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
+  const [tab, setTab] = useState<PublicProfileTab>('routes');
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -34,6 +38,7 @@ export function UserPage() {
     setLoading(true);
     setNotFound(false);
     setActionError('');
+    setTab('routes');
     api.userProfile(profileId)
       .then((data) => {
         if (alive) setProfile(data);
@@ -136,12 +141,20 @@ export function UserPage() {
 
       {actionError ? <div className="notice error">{actionError}</div> : null}
 
-      <section className="account-favorite-group">
-        <div className="account-favorite-head">
-          <h2>Маршруты</h2>
-          <span>{profile.routes.length}</span>
-        </div>
-        {profile.routes.length ? (
+      <div className="account-tabs">
+        <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => setTab('routes')}>
+          Маршруты <span>{profile.routes.length}</span>
+        </button>
+        <button type="button" className={`chip${tab === 'walls' ? ' active' : ''}`} onClick={() => setTab('walls')}>
+          Стены <span>{profile.walls.length}</span>
+        </button>
+        <button type="button" className={`chip${tab === 'buildings' ? ' active' : ''}`} onClick={() => setTab('buildings')}>
+          Здания <span>{profile.buildings.length}</span>
+        </button>
+      </div>
+
+      {tab === 'routes' ? (
+        profile.routes.length ? (
           <div className="account-list">
             {profile.routes.map((route) => <RouteRow route={route} key={route.id} />)}
           </div>
@@ -150,8 +163,58 @@ export function UserPage() {
             <h3>Маршрутов пока нет</h3>
             <p>Пользователь ещё не публиковал прогулки.</p>
           </div>
-        )}
-      </section>
+        )
+      ) : tab === 'walls' ? (
+        profile.walls.length ? (
+          <div className="account-list">
+            {profile.walls.map((wall) => {
+              const terms = WALL_TERMS_META[wall.terms];
+              return (
+                <Link to={`/walls/${wall.id}`} className="account-row" key={wall.id}>
+                  <img src={wall.image_path} alt={wall.address} />
+                  <div className="account-row-main">
+                    <div className="row gap-8 wrap">
+                      <strong>{wall.title}</strong>
+                      <span className="tag" style={{ color: terms.color, background: terms.background }}>{terms.label}</span>
+                    </div>
+                    <span>{wall.address}</span>
+                    <small>{formatDate(wall.created_at)}</small>
+                  </div>
+                  <ArrowRight size={18} />
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="empty-feed">
+            <h3>Стен пока нет</h3>
+            <p>Пользователь ещё не выкладывал стены.</p>
+          </div>
+        )
+      ) : (
+        profile.buildings.length ? (
+          <div className="account-list">
+            {profile.buildings.map((building) => (
+              <div className="account-row" key={building.id}>
+                <img src={building.image_path} alt={building.address} />
+                <div className="account-row-main">
+                  <div className="row gap-8 wrap">
+                    <strong>{building.title}</strong>
+                    <span className="tag">{building.category}</span>
+                  </div>
+                  <span>{building.address}</span>
+                  <small>{formatDate(building.created_at)}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-feed">
+            <h3>Зданий пока нет</h3>
+            <p>Пользователь ещё не добавлял здания.</p>
+          </div>
+        )
+      )}
 
       {peopleKind ? (
         <PeopleDialog

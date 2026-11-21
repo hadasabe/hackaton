@@ -1429,6 +1429,31 @@ app.get('/api/users/:id', (req, res) => {
     .prepare(`${WALK_ROUTE_SELECT} WHERE ${routeWhere} ORDER BY datetime(wr.created_at) DESC LIMIT 100`)
     .all(req.actorId, req.actorId, id)
     .map((row) => walkRouteSummary(row, req));
+  const walls = db
+    .prepare(`
+      SELECT w.*, u.name AS owner_name
+      FROM walls w
+      JOIN users u ON u.id = w.owner_id
+      WHERE w.owner_id = ? AND w.kind = 'wall'
+        AND w.moderation_status = 'published' AND w.status = 'open'
+      ORDER BY datetime(w.created_at) DESC
+      LIMIT 100
+    `)
+    .all(id)
+    .map(({ vk_url: _vkUrl, ...wall }) => wall);
+  const buildings = db
+    .prepare(`
+      SELECT w.id, w.title, w.address, w.category, w.description,
+             w.lat, w.lng, w.image_path, w.published_at, w.created_at,
+             u.name AS owner_name
+      FROM walls w
+      JOIN users u ON u.id = w.owner_id
+      WHERE w.owner_id = ? AND w.kind = 'building'
+        AND w.moderation_status = 'published' AND w.status = 'open'
+      ORDER BY datetime(COALESCE(w.published_at, w.created_at)) DESC
+      LIMIT 100
+    `)
+    .all(id);
   const followers = db
     .prepare('SELECT COUNT(*) AS count FROM user_follows WHERE following_id = ?')
     .get(id).count;
@@ -1452,6 +1477,8 @@ app.get('/api/users/:id', (req, res) => {
       email: own ? user.email : undefined,
     },
     routes,
+    walls,
+    buildings,
     followers_count: Number(followers || 0),
     following_count: Number(following || 0),
     is_following: isFollowing,

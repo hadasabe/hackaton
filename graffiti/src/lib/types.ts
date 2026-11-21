@@ -242,6 +242,8 @@ export interface WalkRouteSummary {
 export interface UserProfileResponse {
   user: PublicUserProfile;
   routes: WalkRouteSummary[];
+  walls: Wall[];
+  buildings: WalkBuilding[];
   followers_count: number;
   following_count: number;
   is_following: boolean;
