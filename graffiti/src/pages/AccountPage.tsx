@@ -52,7 +52,7 @@ function GraffitiRow({ item, onRemove }: { item: Graffiti; onRemove: (item: Graf
       <Link to={`/g/${item.id}`} className="button button-outline">Открыть</Link>
       <button
         type="button"
-        className="text-button account-remove"
+        className="button button-outline account-remove"
         onClick={() => onRemove(item)}
         aria-label={`Убрать из избранного: ${item.address}`}
       >
@@ -81,7 +81,7 @@ function PlaceRow({ place, onRemove }: { place: WalkPlace; onRemove: (id: string
       </div>
       <button
         type="button"
-        className="text-button account-remove"
+        className="button button-outline account-remove"
         onClick={() => onRemove(place.id)}
         aria-label={`Убрать из избранного: ${place.name}`}
       >

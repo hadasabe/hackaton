@@ -5658,3 +5658,31 @@ body.map-is-fullscreen {
   font-size: 14px;
   font-weight: 800;
 }
+
+.account-remove {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 11px;
+  color: var(--ink);
+}
+
+.walls-tools {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.walls-tools .search-box {
+  width: min(380px, 100%);
+}
+
+@media (max-width: 640px) {
+  .walls-tools {
+    width: 100%;
+  }
+
+  .walls-tools .search-box {
+    flex: 1 1 100%;
+  }
+}

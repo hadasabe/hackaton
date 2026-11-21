@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Paintbrush, Plus, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META, WALL_TERMS_OPTIONS } from '../lib/constants';
 import type { Wall } from '../lib/types';
@@ -40,48 +40,25 @@ export function WallsPage() {
 
   return (
     <main className="page">
-      <section className="walls-hero">
-        <div>
-          <span className="eyebrow">Стены и владельцы</span>
-          <h1>Есть стена?<br />Дайте её художнику</h1>
-          <p>
-            Владельцы выкладывают свободные фасады, заборы и гаражи и указывают контакт
-            для связи. Стены появляются в каталоге после проверки администратора.
-          </p>
-          <div className="hero-actions">
-            {user ? (
-              <Link to="/walls/new" className="button button-dark">
-                <Plus size={17} /> Выложить стену
-              </Link>
-            ) : (
-              <Link to="/login" className="button button-dark">
-                <Plus size={17} /> Войти и выложить
-              </Link>
-            )}
-
-          </div>
-        </div>
-        <div className="walls-hero-art">
-          <Paintbrush size={54} />
-          <strong>Свободно для мурала</strong>
-          <span>Фасад · гараж · забор</span>
-        </div>
-      </section>
-
       <section className="walls-section">
         <div className="feed-toolbar">
           <div className="feed-title">
             <span className="section-kicker">Каталог</span>
             <h2>Свободные стены</h2>
           </div>
-          <label className="search-box">
-            <Search size={16} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Адрес, название или описание"
-            />
-          </label>
+          <div className="walls-tools">
+            <label className="search-box">
+              <Search size={16} />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Адрес, название или описание"
+              />
+            </label>
+            <Link to={user ? '/walls/new' : '/login'} className="button button-dark">
+              <Plus size={16} /> Выложить стену
+            </Link>
+          </div>
         </div>
 
         <div className="filters-row">

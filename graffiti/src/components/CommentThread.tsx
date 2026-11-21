@@ -153,7 +153,7 @@ export function CommentThread({
               autoFocus
             />
             <div className="comment-reply-actions">
-              <button type="button" className="text-button" onClick={() => setReplyTo(null)}>
+              <button type="button" className="button button-outline" onClick={() => setReplyTo(null)}>
                 Отмена
               </button>
               <button type="submit" className="button button-dark" disabled={sending || !replyBody.trim()}>

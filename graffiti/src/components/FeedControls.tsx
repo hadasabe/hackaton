@@ -20,7 +20,7 @@ export function FeedControls({ active }: { active: 'objects' | 'collections' }) 
         <input
           value={query}
           onChange={(event) => changeQuery(event.target.value)}
-          placeholder="Поиск объекта или коллекции"
+          placeholder="Поиск"
           aria-label="Поиск"
         />
       </label>
