@@ -552,9 +552,9 @@ export function MapPage() {
     const planPoints = planGeometry && planGeometry.length > 1 ? planGeometry : routeWaypoints;
     if (planPoints.length > 1) {
       planLine.current = L.polyline(planPoints, {
-        color: '#111111',
-        weight: 5,
-        opacity: 0.75,
+        color: '#d8ff3e',
+        weight: 6,
+        opacity: 1,
         dashArray: '2 8',
       }).addTo(mapRef.current);
     }
