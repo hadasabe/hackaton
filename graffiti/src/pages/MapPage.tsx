@@ -40,6 +40,108 @@ function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: 
   return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
+type RouteStop = { id: string; lat: number; lng: number };
+
+function optimizeStopOrder(stops: RouteStop[], start?: { lat: number; lng: number }): string[] {
+  if (stops.length < 2) return stops.map((stop) => stop.id);
+  const remaining = [...stops];
+  const order: RouteStop[] = [];
+  let current = start;
+  if (current) {
+    let nearest = 0;
+    for (let index = 1; index < remaining.length; index += 1) {
+      if (distanceMeters(current, remaining[index]) < distanceMeters(current, remaining[nearest])) {
+        nearest = index;
+      }
+    }
+    order.push(remaining.splice(nearest, 1)[0]);
+    current = order[0];
+  } else {
+    order.push(remaining.shift()!);
+    current = order[0];
+  }
+  while (remaining.length) {
+    let nearest = 0;
+    for (let index = 1; index < remaining.length; index += 1) {
+      if (distanceMeters(current, remaining[index]) < distanceMeters(current, remaining[nearest])) {
+        nearest = index;
+      }
+    }
+    const next = remaining.splice(nearest, 1)[0];
+    order.push(next);
+    current = next;
+  }
+
+  const routeDistance = (route: RouteStop[]) => {
+    let total = 0;
+    let previous = start || route[0];
+    for (const stop of route) {
+      total += distanceMeters(previous, stop);
+      previous = stop;
+    }
+    return total;
+  };
+
+  let best = order;
+  let improved = true;
+  while (improved) {
+    improved = false;
+    for (let i = 0; i < best.length - 1; i += 1) {
+      for (let j = i + 1; j < best.length; j += 1) {
+        const candidate = [
+          ...best.slice(0, i),
+          ...best.slice(i, j + 1).reverse(),
+          ...best.slice(j + 1),
+        ];
+        if (routeDistance(candidate) + 0.5 < routeDistance(best)) {
+          best = candidate;
+          improved = true;
+        }
+      }
+    }
+  }
+  return best.map((stop) => stop.id);
+}
+
+function readCurrentPoint(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  });
+}
+
+async function roadOptimizedOrder(
+  stops: RouteStop[],
+  start?: { lat: number; lng: number },
+): Promise<string[]> {
+  const points = [...(start ? [start] : []), ...stops.map((stop) => ({ lat: stop.lat, lng: stop.lng }))];
+  const coordinates = points.map(({ lat, lng }) => `${lng},${lat}`).join(';');
+  const response = await fetch(
+    `https://routing.openstreetmap.de/routed-foot/trip/v1/driving/${coordinates}?roundtrip=false&source=first&destination=any&overview=false`,
+  );
+  if (!response.ok) throw new Error('trip request failed');
+  const data = await response.json() as { waypoints?: Array<{ waypoint_index?: number }> };
+  const waypoints = data.waypoints;
+  if (!Array.isArray(waypoints) || waypoints.length !== points.length) {
+    throw new Error('trip response is invalid');
+  }
+  const sorted = waypoints
+    .map((waypoint, index) => ({ index, position: Number(waypoint.waypoint_index) }))
+    .sort((a, b) => a.position - b.position);
+  const offset = start ? 1 : 0;
+  if (start && sorted[0]?.index !== 0) throw new Error('start point is not fixed');
+  const ids = sorted.slice(offset).map(({ index }) => stops[index - offset]?.id).filter(Boolean) as string[];
+  if (ids.length !== stops.length) throw new Error('trip order is incomplete');
+  return ids;
+}
+
 function objectLabel(object: CityObject) {
   if (object.kind === 'graffiti') return 'Граффити';
   if (object.kind === 'building') return 'Здание';
@@ -88,6 +190,8 @@ export function MapPage() {
   const dragPlanRef = useRef<{ id: string; pointerId: number } | null>(null);
   const dragPlanTarget = useRef<number | null>(null);
   const [locating, setLocating] = useState(false);
+  const [planOptimizing, setPlanOptimizing] = useState(false);
+  const [walkStarted, setWalkStarted] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const mapNode = useRef<HTMLDivElement | null>(null);
@@ -406,18 +510,25 @@ export function MapPage() {
     }
   }, [objects, visibleObjects]);
 
-  useEffect(() => {
-    const points = plan
+  const routeWaypoints = useMemo(() => {
+    const stops = plan
       .map((id) => objects.find((object) => object.id === id))
       .filter((object): object is CityObject => Boolean(object && object.lat != null && object.lng != null))
       .map((object) => [object.lat as number, object.lng as number] as [number, number]);
-    if (points.length < 2) {
+    if (walkStarted && userPoint) {
+      return [[userPoint.lat, userPoint.lng] as [number, number], ...stops];
+    }
+    return stops;
+  }, [objects, plan, userPoint, walkStarted]);
+
+  useEffect(() => {
+    if (routeWaypoints.length < 2) {
       setPlanGeometry(null);
       return;
     }
     setPlanGeometry(null);
     const controller = new AbortController();
-    const coordinates = points.map(([lat, lng]) => `${lng},${lat}`).join(';');
+    const coordinates = routeWaypoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
     fetch(
       `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coordinates}?overview=full&geometries=geojson`,
       { signal: controller.signal },
@@ -432,17 +543,13 @@ export function MapPage() {
         // Keep the straight fallback when routing is unavailable.
       });
     return () => controller.abort();
-  }, [objects, plan]);
+  }, [routeWaypoints]);
 
   useEffect(() => {
     if (!mapRef.current) return;
     planLine.current?.remove();
     planLine.current = null;
-    const straightPoints = plan
-      .map((id) => objects.find((object) => object.id === id))
-      .filter((object): object is CityObject => Boolean(object && object.lat != null && object.lng != null))
-      .map((object) => [object.lat as number, object.lng as number] as [number, number]);
-    const planPoints = planGeometry && planGeometry.length > 1 ? planGeometry : straightPoints;
+    const planPoints = planGeometry && planGeometry.length > 1 ? planGeometry : routeWaypoints;
     if (planPoints.length > 1) {
       planLine.current = L.polyline(planPoints, {
         color: '#111111',
@@ -455,7 +562,7 @@ export function MapPage() {
       planLine.current?.remove();
       planLine.current = null;
     };
-  }, [objects, plan, planGeometry]);
+  }, [routeWaypoints, planGeometry]);
 
   useEffect(() => {
     for (const marker of markers.current.values()) {
@@ -484,6 +591,7 @@ export function MapPage() {
 
   function togglePlan(id: string) {
     const next = plan.includes(id) ? plan.filter((planId) => planId !== id) : [...plan, id];
+    if (!next.length) setWalkStarted(false);
     writePlan(next);
     setPlan(next);
   }
@@ -548,19 +656,54 @@ export function MapPage() {
     setDragPlanInsert(null);
   }
 
-  function locate() {
-    if (!navigator.geolocation) return;
+  async function locate() {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const point = { lat: position.coords.latitude, lng: position.coords.longitude };
+    const point = await readCurrentPoint();
+    setLocating(false);
+    if (!point) return;
+    setUserPoint(point);
+    mapRef.current?.flyTo([point.lat, point.lng], 15, { duration: 0.6 });
+  }
+
+  async function startWalk() {
+    setLocating(true);
+    const point = await readCurrentPoint();
+    setLocating(false);
+    if (point) setUserPoint(point);
+    setWalkStarted(true);
+    const first = planObjects.find((object) => object.lat != null && object.lng != null) || planObjects[0];
+    if (first) setSelectedId(first.id);
+  }
+
+  async function optimizePlan() {
+    const stops = plan
+      .map((id) => objects.find((object) => object.id === id))
+      .filter((object): object is CityObject => Boolean(object && object.lat != null && object.lng != null))
+      .map((object) => ({ id: object.id, lat: object.lat as number, lng: object.lng as number }));
+    if (stops.length < 2) return;
+    setPlanOptimizing(true);
+    let start = userPoint ?? undefined;
+    if (!start) {
+      const point = await readCurrentPoint();
+      if (point) {
+        start = point;
         setUserPoint(point);
-        mapRef.current?.flyTo([point.lat, point.lng], 15, { duration: 0.6 });
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+      }
+    }
+    try {
+      let ordered: string[];
+      try {
+        ordered = await roadOptimizedOrder(stops, start);
+      } catch {
+        ordered = optimizeStopOrder(stops, start);
+      }
+      const missing = plan.filter((id) => !ordered.includes(id));
+      const next = [...ordered, ...missing];
+      writePlan(next);
+      setPlan(next);
+    } finally {
+      setPlanOptimizing(false);
+    }
   }
 
   const sortedObjects = useMemo(() => {
@@ -656,17 +799,26 @@ export function MapPage() {
                     <button
                       type="button"
                       className="button button-dark"
-                      onClick={() => {
-                        const first = planObjects.find((object) => object.lat != null && object.lng != null) || planObjects[0];
-                        if (first) setSelectedId(first.id);
-                      }}
+                      onClick={() => void startWalk()}
+                      disabled={locating}
                     >
                       Начать прогулку
+                    </button>
+                  ) : null}
+                  {planObjects.length >= 2 ? (
+                    <button
+                      type="button"
+                      className="button button-outline"
+                      onClick={() => void optimizePlan()}
+                      disabled={planOptimizing}
+                    >
+                      {planOptimizing ? 'Строю…' : 'Кратчайший маршрут'}
                     </button>
                   ) : null}
                   <button type="button" className="button button-outline" onClick={() => {
                     writePlan([]);
                     setPlan([]);
+                    setWalkStarted(false);
                   }}>
                     Очистить прогулку
                   </button>
