@@ -5314,3 +5314,17 @@ body.map-is-fullscreen {
   flex-direction: column;
   gap: 9px;
 }
+
+.routes-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .routes-head-actions {
+    justify-content: flex-start;
+  }
+}
