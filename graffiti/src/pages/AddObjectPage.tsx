@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Building2, ImagePlus, ShieldCheck } from 'lucide-react';
+import { Building2, ImagePlus, Paintbrush, ShieldCheck } from 'lucide-react';
 import { BackLink } from '../components/BackLink';
 
 export function AddObjectPage() {
@@ -10,7 +10,7 @@ export function AddObjectPage() {
       <div className="submit-head">
         <span className="section-kicker">Пополнить ленту</span>
         <h1>Добавить объект</h1>
-        <p>Предложите граффити или добавьте городское здание. Заявка появится в ленте после проверки.</p>
+        <p>Выберите, что хотите добавить: граффити, городское место или свободную стену. Заявка появится в ленте после проверки.</p>
       </div>
 
       <div className="add-object-grid">
@@ -26,9 +26,18 @@ export function AddObjectPage() {
         <Link to="/add-building" className="add-object-card">
           <span className="add-object-icon"><Building2 size={28} /></span>
           <div>
-            <span className="section-kicker">Архитектура и места</span>
-            <h2>Добавить здание</h2>
+            <span className="section-kicker">Архитектура, история, природа</span>
+            <h2>Добавить место</h2>
             <p>Фото, название, адрес и точка на карте. После проверки объект появится в ленте и на карте.</p>
+          </div>
+        </Link>
+
+        <Link to="/walls/new" className="add-object-card">
+          <span className="add-object-icon"><Paintbrush size={28} /></span>
+          <div>
+            <span className="section-kicker">Для владельцев</span>
+            <h2>Выложить стену</h2>
+            <p>Свободный фасад, гараж или забор для художников. Укажите фото, адрес и условия.</p>
           </div>
         </Link>
       </div>

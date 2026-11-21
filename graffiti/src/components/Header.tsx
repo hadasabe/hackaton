@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Building2, Heart, LogOut, Map, Rows3, ShieldCheck, SprayCan } from 'lucide-react';
+import { Building2, Heart, LogOut, Map, Plus, Rows3, ShieldCheck, SprayCan } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
@@ -72,6 +72,9 @@ export function Header() {
             <Heart size={17} />
           </Link>
         ) : null}
+        <Link to="/add" className="header-favorite header-add" aria-label="Добавить объект" title="Добавить объект">
+          <Plus size={18} />
+        </Link>
         {isAdmin ? (
           <NavLink to="/admin" className="nav-admin header-admin">
             <ShieldCheck size={15} />

@@ -267,6 +267,14 @@ p {
   transform: translateY(-1px);
 }
 
+.header-add {
+  background: var(--lime);
+}
+
+.header-add:hover {
+  background: var(--card);
+}
+
 .auth-links {
   display: flex;
   align-items: center;
@@ -597,6 +605,9 @@ p {
 .card-address {
   display: inline-flex;
   align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
   gap: 4px;
   font-size: 12.5px;
   font-weight: 750;
@@ -5174,7 +5185,7 @@ button.profile-stat {
 
 .add-object-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
   margin-top: 24px;
 }
