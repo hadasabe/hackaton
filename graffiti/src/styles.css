@@ -5686,3 +5686,10 @@ body.map-is-fullscreen {
     flex: 1 1 100%;
   }
 }
+
+.leaflet-marker-icon.map-cluster {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  text-align: center;
+}

@@ -18,14 +18,14 @@ export function Header() {
 
   useEffect(() => {
     setHidden(false);
-    if (location.pathname !== '/graffiti') return;
+    if (!window.matchMedia('(max-width: 760px)').matches) return;
     let lastY = window.scrollY;
     let frame = 0;
     const onScroll = () => {
       if (frame) return;
       frame = window.requestAnimationFrame(() => {
         const y = window.scrollY;
-        if (y > 120 && y > lastY + 4) setHidden(true);
+        if (y > 90 && y > lastY + 4) setHidden(true);
         else if (y < lastY - 4 || y < 40) setHidden(false);
         lastY = y;
         frame = 0;
