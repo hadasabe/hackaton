@@ -132,10 +132,10 @@ export function RoutesPage() {
         <form className="route-create-form" onSubmit={(event) => void createRoute(event)}>
           <div className="route-create-head">
             <div>
-              <span className="section-kicker">Новый маршрут · {plan.length} остановок</span>
+              <span className="section-kicker">Новый маршрут · {plan.length} {plural(plan.length, 'остановка', 'остановки', 'остановок')}</span>
               <h2>Опубликовать мою прогулку</h2>
             </div>
-            <button type="button" className="text-button" onClick={() => setShowCreate(false)}>Свернуть</button>
+            <button type="button" className="button button-outline" onClick={() => setShowCreate(false)}>Отмена</button>
           </div>
           <div className="route-create-fields">
             <label>Название<input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={80} required /></label>
