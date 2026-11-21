@@ -158,6 +158,18 @@ export function useCityObjects() {
     void reload();
   }, [reload]);
 
+  const updatePlace = useCallback((id: string, patch: Partial<WalkPlace>) => {
+    setState((current) => {
+      const places = current.places.map((object) => (
+        object.id === id ? { ...object, place: object.place ? { ...object.place, ...patch } : object.place } : object
+      ));
+      const objects = current.objects.map((object) => (
+        object.id === id ? { ...object, place: object.place ? { ...object.place, ...patch } : object.place } : object
+      ));
+      return { ...current, places, objects };
+    });
+  }, []);
+
   const updateGraffiti = useCallback((id: number, patch: Partial<Graffiti>) => {
     setState((current) => {
       const graffiti = current.graffiti.map((object) => (
@@ -174,5 +186,5 @@ export function useCityObjects() {
     });
   }, []);
 
-  return { ...state, reload, updateGraffiti };
+  return { ...state, reload, updatePlace, updateGraffiti };
 }

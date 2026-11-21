@@ -66,6 +66,10 @@ export interface WalkPlace {
   image: string;
   lat: number | null;
   lng: number | null;
+  likes: number;
+  dislikes: number;
+  comments_count: number;
+  my_reaction: ReactionValue | null;
 }
 
 export interface WalkBuilding {

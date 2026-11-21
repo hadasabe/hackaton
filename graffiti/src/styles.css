@@ -5253,3 +5253,58 @@ body.map-is-fullscreen {
     height: 38px;
   }
 }
+
+.place-card-media {
+  position: relative;
+}
+
+.place-card-heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255, 253, 246, 0.94);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 rgba(17, 17, 17, 0.18);
+  cursor: pointer;
+}
+
+.place-card-heart.active {
+  background: var(--lime);
+}
+
+.place-card-heart.active svg {
+  fill: var(--ink);
+}
+
+.place-comments-link {
+  text-decoration: none;
+}
+
+.object-comments {
+  max-width: 850px;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1.5px solid var(--line);
+}
+
+.object-comments h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  font-size: 22px;
+}
+
+.object-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}

@@ -772,47 +772,183 @@ function findWalkRoute(slug, req) {
     .get(req.actorId, req.actorId, slug);
 }
 
-app.get('/api/walk-places', (_req, res) => {
+const WALK_PLACE_SELECT = `
+  SELECT wp.*,
+    (SELECT COUNT(*) FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.value = 'like') AS likes,
+    (SELECT COUNT(*) FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.value = 'dislike') AS dislikes,
+    (SELECT COUNT(*) FROM walk_place_comments c WHERE c.place_id = wp.id AND c.deleted_at IS NULL) AS comments_count,
+    (SELECT r.value FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.actor_id = ?) AS my_reaction
+  FROM walk_places wp
+`;
+
+function walkPlaceItem(place) {
+  const photo = parseDbJson(place.photo_json, null);
+  const gallery = parseDbJson(place.gallery_json, []);
+  return {
+    id: String(place.id),
+    name: place.name,
+    category: place.category || '',
+    address: place.address || '',
+    description: place.description || '',
+    story: place.story || '',
+    lookFor: place.look_for || '',
+    era: place.era || '',
+    artType: place.art_type || '',
+    artist: place.artist || '',
+    city: place.city || 'САРАТОВ',
+    tags: parseDbJson(place.tags_json, []),
+    sources: parseDbJson(place.sources_json, []),
+    photo: photo
+      ? {
+          ...photo,
+          src: publicPlaceImage(photo.src),
+        }
+      : null,
+    gallery: Array.isArray(gallery)
+      ? gallery.map((item) => ({ ...item, src: publicPlaceImage(item.src) }))
+      : [],
+    image: publicPlaceImage(place.image_path),
+    lat: Number.isFinite(place.lat) ? place.lat : null,
+    lng: Number.isFinite(place.lng) ? place.lng : null,
+    likes: Number(place.likes || 0),
+    dislikes: Number(place.dislikes || 0),
+    comments_count: Number(place.comments_count || 0),
+    my_reaction: place.my_reaction || null,
+  };
+}
+
+function walkPlaceComments(placeId, req) {
+  return db
+    .prepare(`
+      SELECT id, parent_id, actor_id, author_name, body, created_at, deleted_at
+      FROM walk_place_comments
+      WHERE place_id = ?
+      ORDER BY datetime(created_at) ASC
+    `)
+    .all(placeId)
+    .map((comment) => {
+      const deleted = Boolean(comment.deleted_at);
+      return {
+        id: comment.id,
+        parent_id: comment.parent_id,
+        author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+        body: deleted ? '' : comment.body,
+        created_at: comment.created_at,
+        deleted,
+        likes: 0,
+        dislikes: 0,
+        my_reaction: null,
+        can_delete: !deleted && (comment.actor_id === req.actorId || req.user?.role === 'admin'),
+      };
+    });
+}
+
+app.get('/api/walk-places', (req, res) => {
   const hidden = new Set(
     db.prepare('SELECT place_id FROM hidden_places').all().map((row) => String(row.place_id)),
   );
   const rows = db
-    .prepare("SELECT * FROM walk_places WHERE moderation_status = 'published' ORDER BY rowid ASC")
-    .all();
-  const items = rows
-    .filter((place) => !hidden.has(String(place.id)))
-    .map((place) => {
-      const photo = parseDbJson(place.photo_json, null);
-      const gallery = parseDbJson(place.gallery_json, []);
-      return {
-        id: String(place.id),
-        name: place.name,
-        category: place.category || '',
-        address: place.address || '',
-        description: place.description || '',
-        story: place.story || '',
-        lookFor: place.look_for || '',
-        era: place.era || '',
-        artType: place.art_type || '',
-        artist: place.artist || '',
-        city: place.city || 'САРАТОВ',
-        tags: parseDbJson(place.tags_json, []),
-        sources: parseDbJson(place.sources_json, []),
-        photo: photo
-          ? {
-              ...photo,
-              src: publicPlaceImage(photo.src),
-            }
-          : null,
-        gallery: Array.isArray(gallery)
-          ? gallery.map((item) => ({ ...item, src: publicPlaceImage(item.src) }))
-          : [],
-        image: publicPlaceImage(place.image_path),
-        lat: Number.isFinite(place.lat) ? place.lat : null,
-        lng: Number.isFinite(place.lng) ? place.lng : null,
-      };
-    });
-  res.json({ items });
+    .prepare(`${WALK_PLACE_SELECT} WHERE wp.moderation_status = 'published' ORDER BY wp.rowid ASC`)
+    .all(req.actorId || '');
+  res.json({ items: rows.filter((place) => !hidden.has(String(place.id))).map(walkPlaceItem) });
+});
+
+app.get('/api/walk-places/:id', (req, res) => {
+  const place = db
+    .prepare(`${WALK_PLACE_SELECT} WHERE wp.id = ? AND wp.moderation_status = 'published'`)
+    .get(req.actorId || '', String(req.params.id));
+  if (!place) {
+    res.status(404).json({ error: 'Объект не найден' });
+    return;
+  }
+  res.json({ item: walkPlaceItem(place), comments: walkPlaceComments(String(place.id), req) });
+});
+
+app.post('/api/walk-places/:id/reaction', requireUser, (req, res) => {
+  const id = String(req.params.id);
+  const value = req.body?.value;
+  if (!['like', 'dislike'].includes(value)) {
+    res.status(400).json({ error: 'Некорректная реакция' });
+    return;
+  }
+  const place = db.prepare("SELECT id FROM walk_places WHERE id = ? AND moderation_status = 'published'").get(id);
+  if (!place) {
+    res.status(404).json({ error: 'Объект не найден' });
+    return;
+  }
+  const existing = db
+    .prepare('SELECT value FROM walk_place_reactions WHERE place_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (existing?.value === value) {
+    db.prepare('DELETE FROM walk_place_reactions WHERE place_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else {
+    db.prepare(`
+      INSERT INTO walk_place_reactions (place_id, actor_id, value, created_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(place_id, actor_id) DO UPDATE SET value = excluded.value, created_at = excluded.created_at
+    `).run(id, req.actorId, value, nowIso());
+  }
+  const counts = db.prepare(`
+    SELECT
+      (SELECT COUNT(*) FROM walk_place_reactions WHERE place_id = ? AND value = 'like') AS likes,
+      (SELECT COUNT(*) FROM walk_place_reactions WHERE place_id = ? AND value = 'dislike') AS dislikes
+  `).get(id, id);
+  const mine = db
+    .prepare('SELECT value FROM walk_place_reactions WHERE place_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  res.json({
+    likes: Number(counts.likes || 0),
+    dislikes: Number(counts.dislikes || 0),
+    my_reaction: mine?.value || null,
+  });
+});
+
+app.post('/api/walk-places/:id/comments', requireUser, (req, res) => {
+  const id = String(req.params.id);
+  const body = cleanUserText(req.body?.body, 800);
+  if (body.length < 1) {
+    res.status(400).json({ error: 'Комментарий не может быть пустым' });
+    return;
+  }
+  const place = db.prepare("SELECT id FROM walk_places WHERE id = ? AND moderation_status = 'published'").get(id);
+  if (!place) {
+    res.status(404).json({ error: 'Объект не найден' });
+    return;
+  }
+  if (!rateLimit(`walk-place-comment:${req.actorId}`, 20, 10 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много комментариев. Попробуйте позже.' });
+    return;
+  }
+  const parentId = Number(req.body?.parent_id);
+  let parent = null;
+  if (Number.isInteger(parentId) && parentId > 0) {
+    parent = db
+      .prepare('SELECT id, place_id, author_name FROM walk_place_comments WHERE id = ? AND deleted_at IS NULL')
+      .get(parentId);
+    if (!parent || String(parent.place_id) !== id) {
+      res.status(400).json({ error: 'Комментарий, на который вы отвечаете, не найден' });
+      return;
+    }
+  }
+  const createdAt = nowIso();
+  const info = db
+    .prepare(`
+      INSERT INTO walk_place_comments (place_id, parent_id, actor_id, author_name, body, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `)
+    .run(id, parent ? parent.id : null, req.actorId, req.user.name, body, createdAt);
+  res.status(201).json({
+    id: Number(info.lastInsertRowid),
+    parent_id: parent ? parent.id : null,
+    author_name: req.user.name,
+    body,
+    created_at: createdAt,
+    deleted: false,
+    likes: 0,
+    dislikes: 0,
+    my_reaction: null,
+    can_delete: true,
+  });
 });
 
 function normalizeWalkDuration(value) {

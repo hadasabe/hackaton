@@ -148,6 +148,27 @@ db.exec(`
     updated_at TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS walk_place_reactions (
+    place_id TEXT NOT NULL,
+    actor_id TEXT NOT NULL,
+    value TEXT NOT NULL CHECK (value IN ('like', 'dislike')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (place_id, actor_id),
+    FOREIGN KEY (place_id) REFERENCES walk_places(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_place_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    place_id TEXT NOT NULL,
+    parent_id INTEGER,
+    actor_id TEXT NOT NULL,
+    author_name TEXT NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    deleted_at TEXT,
+    FOREIGN KEY (place_id) REFERENCES walk_places(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS hidden_places (
     place_id TEXT PRIMARY KEY,
     reason TEXT NOT NULL DEFAULT '',

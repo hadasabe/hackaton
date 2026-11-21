@@ -270,6 +270,24 @@ export const api = {
     return request<{ items: WalkPlace[] }>('/api/walk-places');
   },
 
+  walkPlace(id: string) {
+    return request<{ item: WalkPlace; comments: Comment[] }>(`/api/walk-places/${encodeURIComponent(id)}`);
+  },
+
+  reactWalkPlace(id: string, value: ReactionValue) {
+    return request<{ likes: number; dislikes: number; my_reaction: ReactionValue | null }>(
+      `/api/walk-places/${encodeURIComponent(id)}/reaction`,
+      { method: 'POST', body: JSON.stringify({ value }) },
+    );
+  },
+
+  addWalkPlaceComment(id: string, body: string, parentId?: number | null) {
+    return request<Comment>(`/api/walk-places/${encodeURIComponent(id)}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body, parent_id: parentId || null }),
+    });
+  },
+
   walkBuildings() {
     return request<{ items: WalkBuilding[] }>('/api/walk-buildings');
   },
