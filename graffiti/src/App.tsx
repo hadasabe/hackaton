@@ -43,6 +43,7 @@ function Footer() {
         Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.
       </p>
       {!user ? <Link to="/login">Вход для администратора</Link> : null}
+      <SupportNote />
       <p className="site-footer-credit">product by team «НАПИШИ 123» © 2026</p>
     </footer>
   );
@@ -118,7 +119,6 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>
-          <SupportNote />
           <Footer />
           <BottomNav />
           <FeedBackToTop />

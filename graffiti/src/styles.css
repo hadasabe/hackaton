@@ -3648,10 +3648,16 @@ button.profile-stat {
     padding: 12px 16px;
   }
 
-  body.has-bottom-nav .site-footer > div,
+  body.has-bottom-nav .site-footer > div:not(.support-note),
   body.has-bottom-nav .site-footer > p:not(.site-footer-credit),
   body.has-bottom-nav .site-footer > a {
     display: none;
+  }
+
+  body.has-bottom-nav .site-footer > .support-note {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 8px;
   }
 
   body.has-bottom-nav .site-footer .site-footer-credit {
@@ -3867,7 +3873,7 @@ button.profile-stat {
   }
 }
 
-/* Support link at the bottom of every section */
+/* Support link in the footer */
 .support-note {
   display: flex;
   align-items: center;
@@ -3879,6 +3885,45 @@ button.profile-stat {
   background: var(--paper);
   color: var(--muted);
   font-size: 12px;
+}
+
+.site-footer .support-note {
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--card);
+  flex: none;
+}
+
+.site-footer .support-note a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: var(--card);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer .support-note a > span:last-child {
+  color: var(--card);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0;
+}
+
+.site-footer .support-note-icon {
+  color: var(--ink);
+}
+
+.site-footer .support-note a:hover,
+.site-footer .support-note a:hover > span:last-child {
+  color: var(--lime);
 }
 
 .support-note-icon {
