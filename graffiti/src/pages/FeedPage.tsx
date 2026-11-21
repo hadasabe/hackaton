@@ -188,6 +188,7 @@ export function FeedPage() {
             <br />
             города
           </h1>
+          <p className="hero-add-copy">Добавьте свой объект: граффити, здание или место.</p>
           <div className="hero-actions">
             <Link to="/add" className="button button-outline">
               <Plus size={17} />
