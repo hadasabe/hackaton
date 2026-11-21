@@ -9,7 +9,7 @@
  const svg=name=>`<svg aria-hidden="true"><use href="#${name}"/></svg>`;
  const KEYS={favorites:'ryadom-favorites-v1',plan:'ryadom-walk-v1'};
  let ready=false,app,places,byId,favorites=[],plan=[],view='base',storageAvailable=true,allPhotos=[],photos=[],photoIndex=0,galleryScope='place',galleryReturn=null;
- let currentUser=null,routesTab='public',routes=[],routesLoading=false,routesError='',routeDetail=null,routeComments=[],routeEditing=null,routeDraft=null,favoriteRoutes=[],routeReplyTo=null,routeReplyBody='';
+ let currentUser=null,routesTab='public',routes=[],routesLoading=false,routesError='',routeDetail=null,routeComments=[],routeEditing=null,routeDraft=null,routeDraftToPlan=false,favoriteRoutes=[],routeReplyTo=null,routeReplyBody='';
  let profileUser=null,profileRoutes=[],profileFollowing=false,profileFollowers=0,profileFollowingCount=0,profileLoading=false,profileError='',myFollowers=0,myFollowing=0;
  let collapsedCommentThreads=new Set();
  const get=id=>byId.get(id);
@@ -104,9 +104,10 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){decorateCards();void loadCurrentUser();}});
   void loadCurrentUser();
   $('route-form').addEventListener('submit',event=>void submitRouteForm(event));
-  $('route-dialog-close').addEventListener('click',()=>{routeDraft=null;$('route-dialog').close();});
-  $('route-dialog-cancel').addEventListener('click',()=>{routeDraft=null;$('route-dialog').close();});
-  $('route-edit-stops').addEventListener('click',()=>{routeDraft={title:$('route-title').value,description:$('route-description').value,visibility:$('route-visibility').value};$('route-dialog').close();showPanel('plan');});
+  $('route-dialog-close').addEventListener('click',()=>$('route-dialog').close());
+  $('route-dialog-cancel').addEventListener('click',()=>$('route-dialog').close());
+  $('route-edit-stops').addEventListener('click',()=>{routeDraft={title:$('route-title').value,description:$('route-description').value,visibility:$('route-visibility').value};routeDraftToPlan=true;$('route-dialog').close();showPanel('plan');});
+  $('route-dialog').addEventListener('close',()=>{if(routeDraftToPlan){routeDraftToPlan=false;return;}if(routeDraft){routeDraft=null;if(view==='plan')renderPanel();}});
   document.addEventListener('submit',event=>{const reply=event.target.closest('[data-route-reply-form]');if(reply){event.preventDefault();void submitRouteComment(reply,Number(reply.dataset.parentId));return;}const form=event.target.closest('[data-route-comment-form]');if(form){event.preventDefault();void submitRouteComment(form);}});
   document.addEventListener('input',event=>{const field=event.target.closest('[data-route-reply-form] textarea');if(field)routeReplyBody=field.value;});
   const routeParam=new URLSearchParams(location.search).get('route');if(routeParam)void showRouteDetail(routeParam);
