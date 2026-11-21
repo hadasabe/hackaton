@@ -3601,5 +3601,482 @@
         "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
       }
     ]
+  },
+  {
+    "id": "rotonde",
+    "name": "Ротонда",
+    "category": "История",
+    "address": "Бабушкин взвоз",
+    "description": "Белоснежная ротонда на волжском склоне — одна из узнаваемых обзорных точек Саратова.",
+    "story": "Ротонда стоит на Бабушкином взвозе, историческом спуске к Волге. Отсюда открывается панорама реки, моста и набережной; место давно стало популярной видовой площадкой и частью прогулочного маршрута по старому городу.",
+    "lookFor": "Панораму Волги и моста; лучшее время — закат.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A0%D0%BE%D1%82%D0%BE%D0%BD%D0%B4%D0%B0_%D0%B8_%D0%91%D0%B0%D0%B1%D1%83%D1%88%D0%BA%D0%B8%D0%BD_%D0%B2%D0%B7%D0%B2%D0%BE%D0%B7_%D0%B2_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D0%B5.jpg"
+      }
+    ],
+    "lat": 51.52282,
+    "lng": 46.039691,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/rotonde.jpg",
+    "photo": {
+      "src": "assets/photos/rotonde.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A0%D0%BE%D1%82%D0%BE%D0%BD%D0%B4%D0%B0_%D0%B8_%D0%91%D0%B0%D0%B1%D1%83%D1%88%D0%BA%D0%B8%D0%BD_%D0%B2%D0%B7%D0%B2%D0%BE%D0%B7_%D0%B2_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D0%B5.jpg",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/31/%D0%A0%D0%BE%D1%82%D0%BE%D0%BD%D0%B4%D0%B0_%D0%B8_%D0%91%D0%B0%D0%B1%D1%83%D1%88%D0%BA%D0%B8%D0%BD_%D0%B2%D0%B7%D0%B2%D0%BE%D0%B7_%D0%B2_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D0%B5.jpg",
+      "title": "Ротонда и Бабушкин взвоз в Саратове",
+      "author": "Ю. Кособрюхов",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 429
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/rotonde.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%A0%D0%BE%D1%82%D0%BE%D0%BD%D0%B4%D0%B0_%D0%B8_%D0%91%D0%B0%D0%B1%D1%83%D1%88%D0%BA%D0%B8%D0%BD_%D0%B2%D0%B7%D0%B2%D0%BE%D0%B7_%D0%B2_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D0%B5.jpg",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/31/%D0%A0%D0%BE%D1%82%D0%BE%D0%BD%D0%B4%D0%B0_%D0%B8_%D0%91%D0%B0%D0%B1%D1%83%D1%88%D0%BA%D0%B8%D0%BD_%D0%B2%D0%B7%D0%B2%D0%BE%D0%B7_%D0%B2_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%D0%B5.jpg",
+        "title": "Ротонда и Бабушкин взвоз в Саратове",
+        "author": "Ю. Кособрюхов",
+        "license": "CC0",
+        "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 429
+      }
+    ]
+  },
+  {
+    "id": "radishchev-monument",
+    "name": "Памятник А. Н. Радищеву",
+    "category": "История",
+    "address": "Улица Радищева, 39",
+    "description": "Памятник писателю и философу Александру Радищеву у художественного музея его имени.",
+    "story": "Памятник Александру Николаевичу Радищеву установлен в центре Саратова, рядом с Радищевским музеем. Писатель и просветитель родился в Саратовской губернии; его имя носит одна из центральных улиц города.",
+    "lookFor": "Бронзовую фигуру на фоне исторической застройки улицы Радищева.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg"
+      }
+    ],
+    "lat": 51.532061,
+    "lng": 46.035822,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "pin",
+    "image": "assets/photos/radishchev-monument.jpg",
+    "photo": {
+      "src": "assets/photos/radishchev-monument.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg/960px-%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg",
+      "title": "Памятник Радищеву после снегопада Саратов 2026-01-12",
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 482,
+      "height": 640
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/radishchev-monument.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg/960px-%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A0%D0%B0%D0%B4%D0%B8%D1%89%D0%B5%D0%B2%D1%83_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D1%81%D0%BD%D0%B5%D0%B3%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2_2026-01-12.jpg",
+        "title": "Памятник Радищеву после снегопада Саратов 2026-01-12",
+        "author": "ИринаЯ",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 482,
+        "height": 640
+      }
+    ]
+  },
+  {
+    "id": "gagarin-museum",
+    "name": "Народный музей Ю. А. Гагарина",
+    "category": "История",
+    "address": "Улица Сакко и Ванцетти, 15",
+    "description": "Музей о Юрии Гагарине и космической истории Саратовской области.",
+    "story": "Народный музей Юрия Гагарина расположен в здании бывшего ремесленного училища, где будущий космонавт учился. Экспозиция рассказывает о годах учёбы, первом полёте и связях Саратова с историей космонавтики.",
+    "lookFor": "Мемориальные вещи, документы и фотографии, связанные с Гагариным.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg"
+      }
+    ],
+    "lat": 51.528486,
+    "lng": 46.031449,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/gagarin-museum.jpg",
+    "photo": {
+      "src": "assets/photos/gagarin-museum.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "title": "Народный музей Гагарина на ул Сакко и Ванцентти 15 Саратов",
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/gagarin-museum.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%9D%D0%B0%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%B9_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D0%B0_%D0%BD%D0%B0_%D1%83%D0%BB_%D0%A1%D0%B0%D0%BA%D0%BA%D0%BE_%D0%B8_%D0%92%D0%B0%D0%BD%D1%86%D0%B5%D0%BD%D1%82%D1%82%D0%B8_15_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "title": "Народный музей Гагарина на ул Сакко и Ванцентти 15 Саратов",
+        "author": "ИринаЯ",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480
+      }
+    ]
+  },
+  {
+    "id": "duhoshestvensky-cathedral",
+    "name": "Духосошественский собор",
+    "category": "Архитектура",
+    "address": "Духосошественская площадь, 3",
+    "description": "Один из главных соборов Саратова с выразительным фасадом и городской колокольней.",
+    "story": "Собор Сошествия Святого Духа строился в конце XIX века и стал одним из крупнейших храмов города. Его архитектура сочетает элементы русского стиля и эклектики; рядом сформировалась Духосошественская площадь.",
+    "lookFor": "Высокую колокольню и детали фасадного декора.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2,_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg"
+      }
+    ],
+    "lat": 51.536198,
+    "lng": 46.056076,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/duhoshestvensky-cathedral.jpg",
+    "photo": {
+      "src": "assets/photos/duhoshestvensky-cathedral.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2,_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%2C_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg/960px-%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%2C_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg",
+      "title": "Саратов, Духосошественский собор 1",
+      "author": "AndyVolykhov",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 478
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/duhoshestvensky-cathedral.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2,_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%2C_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg/960px-%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%2C_%D0%94%D1%83%D1%85%D0%BE%D1%81%D0%BE%D1%88%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_1.jpg",
+        "title": "Саратов, Духосошественский собор 1",
+        "author": "AndyVolykhov",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 478
+      }
+    ]
+  },
+  {
+    "id": "nikolsky-monastery",
+    "name": "Свято-Никольский мужской монастырь",
+    "category": "Архитектура",
+    "address": "Улица Дегтярная, 26",
+    "description": "Действующий мужской монастырь на юге города с храмом и тихой территорией.",
+    "story": "Свято-Никольский мужской монастырь ведёт историю с конца XIX века. Монастырский комплекс включает храм, корпуса и сад; сегодня это действующая обитель и одна из точек паломнических маршрутов Саратова.",
+    "lookFor": "Монастырский двор и храмовую архитектуру.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg"
+      }
+    ],
+    "lat": 51.518014,
+    "lng": 45.991395,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/nikolsky-monastery.jpg",
+    "photo": {
+      "src": "assets/photos/nikolsky-monastery.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "title": "Свято Никольский монастырь Саратов",
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/nikolsky-monastery.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%A1%D0%B2%D1%8F%D1%82%D0%BE_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%BE%D0%BD%D0%B0%D1%81%D1%82%D1%8B%D1%80%D1%8C_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "title": "Свято Никольский монастырь Саратов",
+        "author": "ИринаЯ",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480
+      }
+    ]
+  },
+  {
+    "id": "teremok-theatre",
+    "name": "Саратовский театр кукол «Теремок»",
+    "category": "Архитектура",
+    "address": "Бабушкин взвоз, 16",
+    "description": "Городской театр кукол на Бабушкином взвозе — заметная точка культурного центра.",
+    "story": "Саратовский театр кукол «Теремок» работает с 1930-х годов и известен постановками для детей и взрослых. Здание на Бабушкином взвозе соседствует с исторической застройкой и видом на Волгу.",
+    "lookFor": "Фасад театра и афишу; подходит для семейной прогулки.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2).jpg"
+      }
+    ],
+    "lat": 51.526179,
+    "lng": 46.038357,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/teremok-theatre.jpg",
+    "photo": {
+      "src": "assets/photos/teremok-theatre.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2).jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg/960px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg",
+      "title": "Театр кукол Теремок (Саратов)",
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 416
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/teremok-theatre.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2).jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg/960px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BA%D1%83%D0%BA%D0%BE%D0%BB_%D0%A2%D0%B5%D1%80%D0%B5%D0%BC%D0%BE%D0%BA_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg",
+        "title": "Театр кукол Теремок (Саратов)",
+        "author": "ИринаЯ",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 416
+      }
+    ]
+  },
+  {
+    "id": "covered-market",
+    "name": "Крытый рынок",
+    "category": "Архитектура",
+    "address": "Улица Чапаева, 59",
+    "description": "Историческое здание городского крытого рынка на Чапаева.",
+    "story": "Крытый рынок в центре Саратова — узнаваемое общественное здание с выразительным фасадом. Рынок остаётся действующим и хранит атмосферу старого городского торга.",
+    "lookFor": "Фасад и часовую башню со стороны улицы Чапаева.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg"
+      }
+    ],
+    "lat": 51.532018,
+    "lng": 46.020835,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/covered-market.jpg",
+    "photo": {
+      "src": "assets/photos/covered-market.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg/960px-%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg",
+      "title": "Крытый рынок",
+      "author": "Bessy Betsy",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 272
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/covered-market.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg/960px-%D0%9A%D1%80%D1%8B%D1%82%D1%8B%D0%B9_%D1%80%D1%8B%D0%BD%D0%BE%D0%BA.jpg",
+        "title": "Крытый рынок",
+        "author": "Bessy Betsy",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 272
+      }
+    ]
+  },
+  {
+    "id": "stolypin-monument",
+    "name": "Памятник П. А. Столыпину",
+    "category": "История",
+    "address": "Театральная площадь",
+    "description": "Памятник реформатору Петру Столыпину в историческом центре Саратова.",
+    "story": "Пётр Аркадьевич Столыпин был саратовским губернатором в начале XX века. Памятник в центре города напоминает о периоде его работы и реформах; рядом находится площадь, названная в его честь.",
+    "lookFor": "Бронзовую фигуру и окружающую историческую застройку.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg"
+      }
+    ],
+    "lat": 51.531749,
+    "lng": 46.0363935,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "pin",
+    "image": "assets/photos/stolypin-monument.jpg",
+    "photo": {
+      "src": "assets/photos/stolypin-monument.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg/960px-%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg",
+      "title": "Дом Бендера и памятник Столыпину П А",
+      "author": "ИринаЯ",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/stolypin-monument.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg/960px-%D0%94%D0%BE%D0%BC_%D0%91%D0%B5%D0%BD%D0%B4%D0%B5%D1%80%D0%B0_%D0%B8_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%A1%D1%82%D0%BE%D0%BB%D1%8B%D0%BF%D0%B8%D0%BD%D1%83_%D0%9F_%D0%90.jpg",
+        "title": "Дом Бендера и памятник Столыпину П А",
+        "author": "ИринаЯ",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480
+      }
+    ]
+  },
+  {
+    "id": "eternal-flame",
+    "name": "Вечный огонь в Парке Победы",
+    "category": "История",
+    "address": "Парк Победы, Соколовая гора",
+    "description": "Мемориал Вечного огня на Соколовой горе в Парке Победы.",
+    "story": "Вечный огонь установлен в мемориальной части Парка Победы на Соколовой горе. Рядом находятся памятные аллеи и экспозиция военной техники; место связано с памятью о погибших в Великой Отечественной войне.",
+    "lookFor": "Мемориал и панораму города со смотровой площадки.",
+    "era": "",
+    "sources": [
+      {
+        "title": "Туристический портал Саратова",
+        "url": "https://www.welcome-saratov.ru/landmarks/"
+      },
+      {
+        "title": "Фотография — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2)_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg"
+      }
+    ],
+    "lat": 51.5449724,
+    "lng": 46.0521132,
+    "source": "https://www.welcome-saratov.ru/landmarks/",
+    "verified": "2026-11-21",
+    "glyph": "pin",
+    "image": "assets/photos/eternal-flame.jpg",
+    "photo": {
+      "src": "assets/photos/eternal-flame.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2)_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg/960px-%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg",
+      "title": "Парк Победы (Саратов) Вечный огонь",
+      "author": "Виктор Алексеев",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 381
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/eternal-flame.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_(%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2)_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg/960px-%D0%9F%D0%B0%D1%80%D0%BA_%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D1%8B_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29_%D0%92%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D0%BE%D0%B3%D0%BE%D0%BD%D1%8C.jpg",
+        "title": "Парк Победы (Саратов) Вечный огонь",
+        "author": "Виктор Алексеев",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 381
+      }
+    ]
   }
 ]

@@ -791,6 +791,61 @@ export const SAMPLES = [
     description: 'Теги и надписи на подпорной стене на Бабушкином взвозе. Часть стены закрашена, часть рисунков сохранилась.',
     moderation: 'published',
   },
+  {
+    image: 'mural-pisarev.jpg',
+    word: 'ПИСАРЕВ',
+    height: 900,
+    address: 'проспект Героев Отечества, 11',
+    status: 'alive',
+    style: 'mural',
+    author: 'Дмитрий Жумаев',
+    description: 'Портрет гвардии сержанта ВДВ Виталия Писарева. Создан в рамках проекта «Историческая память»; рядом находится мурал Александра Аксёнова. Источник: tursar.ru',
+    moderation: 'published',
+  },
+  {
+    image: 'mural-aksenov.jpg',
+    word: 'АКСЁНОВ',
+    height: 900,
+    address: 'проспект Героев Отечества, 11',
+    status: 'alive',
+    style: 'mural',
+    author: 'Дмитрий Жумаев',
+    description: 'Портрет Героя России Александра Аксёнова в рамках проекта «Герои земли Саратовской». Источник: sarnovosti.ru',
+    moderation: 'published',
+  },
+  {
+    image: 'mural-pomoch.jpg',
+    word: 'ПОМОЧЬ',
+    height: 900,
+    address: 'улица Тархова, 27Б',
+    status: 'alive',
+    style: 'mural',
+    author: 'Дмитрий Жумаев',
+    description: 'Социальный мурал отряда «ЛизаАлерт»: девочка в парке ждёт помощи прохожих. Напоминает не проходить мимо потерявшегося ребёнка. Источник: 4vsar.ru',
+    moderation: 'published',
+  },
+  {
+    image: 'mural-volga-yangtze.jpg',
+    word: 'ВОЛГА',
+    height: 900,
+    address: 'набережная Космонавтов, у Ротонды',
+    status: 'partial',
+    style: 'mural',
+    author: 'Екатерина Зайцева и художники Поволжья',
+    description: 'Панорамная композиция «Волга и Янцзы — великие реки дружбы» длиной около 150 метров. В 2026 году сообщалось об ухудшении состояния. Источник: nversia.ru',
+    moderation: 'published',
+  },
+  {
+    image: 'mural-vodorosli.jpg',
+    word: 'ЭКОЛОГИЯ',
+    height: 900,
+    address: 'площадь Кирова, 8',
+    status: 'alive',
+    style: 'graffiti',
+    author: 'Марина Багаева, Олег Зябкин',
+    description: 'Экологический мурал «Водорослям крышка» на трансформаторной станции. Работа проекта «ЭкологизАРТор» посвящена защите Волги. Источник: saratov24.tv',
+    moderation: 'published',
+  },
 ];
 
 
@@ -973,6 +1028,16 @@ const COLLECTION_SAMPLES = [
     description: 'Работы, появившиеся без согласования: теги, надписи и рисунки во дворах, на гаражах и подпорных стенах.',
     indices: [25, 26, 27, 28, 29, 30, 31, 32, 33],
   },
+  {
+    title: 'Герои на фасадах',
+    description: 'Большие портреты героев и памятные муралы Саратова.',
+    indices: [34, 35],
+  },
+  {
+    title: 'Новая волна',
+    description: 'Свежие муралы и социальный стрит-арт 2023–2026 годов.',
+    indices: [34, 35, 36, 37, 38],
+  },
 ];
 
 function refreshSeedImages() {
@@ -1132,6 +1197,64 @@ function seedWalkPlaces() {
   console.log(`[stena] checked ${checked} walk places`);
 }
 
+const ROUTE_SAMPLES = [
+  {
+    title: 'Волга и Ротонда',
+    description: 'Короткая прогулка по набережной: Ротонда, памятник Гагарину, вид на Волгу и городской пляж.',
+    duration: 60,
+    stops: ['rotonde', 'gagarin-monument', 'embankment', 'city-beach'],
+  },
+  {
+    title: 'Литературный Саратов',
+    description: 'Липки, памятник Чернышевскому, музей-усадьба и Радищевский музей — прогулка по литературному центру города.',
+    duration: 90,
+    stops: ['lipki', 'chernyshevsky', 'conservatory', 'radishchev-monument', 'radishchev'],
+  },
+  {
+    title: 'Парк Победы',
+    description: 'Мемориалы Соколовой горы: Журавли, Вечный огонь и Парк Победы с панорамой Саратова.',
+    duration: 90,
+    stops: ['cranes', 'eternal-flame', 'catalog-park-pobedy-na-sokolovoy-gore'],
+  },
+  {
+    title: 'Старый город: рынок и театр',
+    description: 'Крытый рынок, памятник Столыпину, консерватория, театр кукол «Теремок» и Ротонда.',
+    duration: 120,
+    stops: ['covered-market', 'stolypin-monument', 'conservatory', 'teremok-theatre', 'rotonde'],
+  },
+];
+
+function seedWalkRoutes() {
+  const admin = db.prepare("SELECT id FROM users WHERE role = 'admin' ORDER BY id LIMIT 1").get();
+  if (!admin) return;
+  const findRoute = db.prepare('SELECT id FROM walk_routes WHERE owner_id = ? AND title = ?');
+  const placeExists = db.prepare('SELECT 1 FROM walk_places WHERE id = ?');
+  const slugExists = db.prepare('SELECT 1 FROM walk_routes WHERE slug = ?');
+  const insertRoute = db.prepare(`
+    INSERT INTO walk_routes (owner_id, slug, title, description, duration_minutes, visibility, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 'public', ?, ?)
+  `);
+  const insertStop = db.prepare(
+    'INSERT OR IGNORE INTO walk_route_stops (route_id, place_id, position) VALUES (?, ?, ?)',
+  );
+  ROUTE_SAMPLES.forEach((sample, index) => {
+    if (findRoute.get(admin.id, sample.title)) return;
+    const stops = sample.stops.filter((id) => placeExists.get(id));
+    if (stops.length < 2) return;
+    let slug = `sample-walk-${index + 1}`;
+    let suffix = 2;
+    while (slugExists.get(slug)) {
+      slug = `sample-walk-${index + 1}-${suffix}`;
+      suffix += 1;
+    }
+    const createdAt = new Date(Date.now() - (index + 3) * 86400000).toISOString();
+    const info = insertRoute.run(admin.id, slug, sample.title, sample.description, sample.duration, createdAt, createdAt);
+    const routeId = Number(info.lastInsertRowid);
+    stops.forEach((placeId, position) => insertStop.run(routeId, placeId, position));
+    console.log(`[stena] seeded route ${sample.title}`);
+  });
+}
+
 export function seedDatabase() {
   const name = process.env.ADMIN_NAME || 'Администратор';
   const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
@@ -1169,6 +1292,7 @@ export function seedDatabase() {
   }
 
   seedWalkPlaces();
+  seedWalkRoutes();
   seedWalls();
   migrateUploadsToMedia();
 
