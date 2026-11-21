@@ -5666,24 +5666,32 @@ body.map-is-fullscreen {
   color: var(--ink);
 }
 
-.walls-tools {
-  display: flex;
+.walls-toolbar {
   align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
 }
 
-.walls-tools .search-box {
-  width: min(380px, 100%);
+.walls-search {
+  flex: 0 1 320px;
+  width: min(320px, 100%);
 }
 
-@media (max-width: 640px) {
-  .walls-tools {
-    width: 100%;
+@media (max-width: 760px) {
+  .feed-toolbar.walls-toolbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
   }
 
-  .walls-tools .search-box {
-    flex: 1 1 100%;
+  .walls-toolbar .feed-title h2 {
+    font-size: clamp(18px, 5.4vw, 24px);
+    line-height: 0.96;
+  }
+
+  .walls-toolbar .walls-search {
+    flex: 0 0 45%;
+    width: 45%;
+    min-width: 0;
   }
 }
 

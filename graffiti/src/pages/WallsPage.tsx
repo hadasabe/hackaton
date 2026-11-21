@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
-import { WALL_TERMS_META, WALL_TERMS_OPTIONS } from '../lib/constants';
 import type { Wall } from '../lib/types';
 import { WallCard } from '../components/WallCard';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +9,6 @@ import { useAuth } from '../context/AuthContext';
 export function WallsPage() {
   const { user } = useAuth();
   const [walls, setWalls] = useState<Wall[]>([]);
-  const [terms, setTerms] = useState('all');
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,14 +23,14 @@ export function WallsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await api.walls({ q: debounced, terms });
+      const data = await api.walls({ q: debounced });
       setWalls(data.items);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось загрузить стены');
     } finally {
       setLoading(false);
     }
-  }, [debounced, terms]);
+  }, [debounced]);
 
   useEffect(() => {
     void load();
@@ -41,46 +39,20 @@ export function WallsPage() {
   return (
     <main className="page">
       <section className="walls-section">
-        <div className="feed-toolbar">
+        <div className="feed-toolbar walls-toolbar">
           <div className="feed-title">
             <span className="section-kicker">Каталог</span>
             <h2>Свободные стены</h2>
           </div>
-          <div className="walls-tools">
-            <label className="search-box">
-              <Search size={16} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Адрес, название или описание"
-              />
-            </label>
-            <Link to={user ? '/walls/new' : '/login'} className="button button-dark">
-              <Plus size={16} /> Выложить стену
-            </Link>
-          </div>
-        </div>
-
-        <div className="filters-row">
-          <div className="chip-row" role="group" aria-label="Условия">
-            <button
-              type="button"
-              className={`chip ${terms === 'all' ? 'active' : ''}`}
-              onClick={() => setTerms('all')}
-            >
-              Все условия
-            </button>
-            {WALL_TERMS_OPTIONS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`chip ${terms === value ? 'active' : ''}`}
-                onClick={() => setTerms(value)}
-              >
-                {WALL_TERMS_META[value].label}
-              </button>
-            ))}
-          </div>
+          <label className="search-box walls-search">
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Поиск"
+              aria-label="Поиск стен"
+            />
+          </label>
         </div>
 
         {error ? <div className="notice error">{error}</div> : null}
