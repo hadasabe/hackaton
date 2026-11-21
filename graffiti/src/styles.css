@@ -5685,6 +5685,11 @@ body.map-is-fullscreen {
 .feed-toolbar.walls-toolbar {
   align-items: center;
   border-top: 0;
+  padding-top: 0;
+}
+
+.walls-page {
+  padding-top: 18px;
 }
 
 .walls-search {

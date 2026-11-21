@@ -37,7 +37,7 @@ export function WallsPage() {
   }, [load]);
 
   return (
-    <main className="page">
+    <main className="page walls-page">
       <section className="walls-section">
         <div className="feed-toolbar walls-toolbar">
           <div className="feed-title">
