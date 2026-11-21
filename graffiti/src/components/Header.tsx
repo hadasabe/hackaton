@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { LogOut, Map, ShieldCheck, SprayCan } from 'lucide-react';
+import { Building2, LogOut, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
@@ -34,7 +34,7 @@ export function Header() {
   return (
     <header className={`site-header${hidden ? ' header-hidden' : ''}`}>
       <Link to="/" className="logo" aria-label="Туристический Саратов — на главную">
-        <span className="logo-mark"><SprayCan size={20} strokeWidth={2.4} /></span>
+        <span className="logo-mark"><Building2 size={20} strokeWidth={2.4} /></span>
         <span className="logo-text">
           Туристический
           <small>Саратов</small>
@@ -42,13 +42,6 @@ export function Header() {
       </Link>
 
       <nav className="main-nav" aria-label="Основная навигация">
-        <NavLink to="/graffiti" end>Граффити</NavLink>
-        <NavLink to="/collections">Коллекции</NavLink>
-        <NavLink to="/walls">Стены</NavLink>
-        <NavLink to="/" end className="nav-walk">
-          <Map size={15} />
-          Прогулка
-        </NavLink>
         {isAdmin ? (
           <NavLink to="/admin" className="nav-admin">
             <ShieldCheck size={15} />

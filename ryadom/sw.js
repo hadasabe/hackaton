@@ -1,5 +1,5 @@
 /* App shell only. OSM tiles are deliberately never prefetched or cached here. */
-const CACHE='ryadom-mvp-52';
+const CACHE='ryadom-mvp-53';
 const CORE=['./','./index.html','./style.css','./app.js','./geo.js','./experience.js','./experience.css','./data/places.js','./data/audio-manifest.js','./vendor/leaflet.js','./vendor/leaflet.css','./manifest.webmanifest','./assets/mark.svg','./assets/conservatory.svg','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('ryadom-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
