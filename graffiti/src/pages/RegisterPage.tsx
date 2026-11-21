@@ -19,10 +19,15 @@ export function RegisterPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    const normalizedEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail)) {
+      setError('Введите корректный email, например name@mail.ru');
+      return;
+    }
     setSending(true);
     setError('');
     try {
-      await api.register(name.trim(), email.trim(), password);
+      await api.register(name.trim(), normalizedEmail, password);
       await refresh();
       navigate(from, { replace: true });
     } catch (caught) {
@@ -55,7 +60,7 @@ export function RegisterPage() {
           />
         </label>
         <label className="field">
-          <span>Email</span>
+          <span>Email <em>например, name@mail.ru</em></span>
           <input
             className="input"
             type="email"

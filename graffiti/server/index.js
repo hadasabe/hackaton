@@ -196,8 +196,8 @@ app.post('/api/auth/register', (req, res) => {
     res.status(400).json({ error: 'Имя должно быть не короче 2 символов' });
     return;
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    res.status(400).json({ error: 'Введите корректный email' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    res.status(400).json({ error: 'Введите корректный email, например name@mail.ru' });
     return;
   }
   if (password.length < 8) {
