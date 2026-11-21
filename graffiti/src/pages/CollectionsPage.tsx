@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import type { CollectionSummary } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 import { CollectionFormDialog } from '../components/CollectionFormDialog';
+import { ContentTabs } from '../components/ContentTabs';
 import { formatDate } from '../lib/format';
 
 export function CollectionsPage() {
@@ -67,6 +68,8 @@ export function CollectionsPage() {
           <span>Тема · район · настроение</span>
         </div>
       </section>
+
+      <ContentTabs active="collections" />
 
       <section className="collections-section">
         <div className="feed-toolbar">

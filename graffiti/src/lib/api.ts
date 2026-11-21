@@ -12,6 +12,7 @@ import type {
   StatusReport,
   UserProfileResponse,
   WalkBuilding,
+  WalkPlace,
   WalkRouteSummary,
   Wall,
 } from './types';
@@ -218,6 +219,10 @@ export const api = {
 
   myWalkBuildings() {
     return request<{ items: WalkBuilding[] }>('/api/my/walk-buildings');
+  },
+
+  walkPlaces() {
+    return request<{ items: WalkPlace[] }>('/api/walk-places');
   },
 
   favoriteWalkRoutes() {

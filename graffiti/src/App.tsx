@@ -1,4 +1,4 @@
-import { HashRouter, Link, Route, Routes } from 'react-router-dom';
+import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import { Header } from './components/Header';
@@ -55,7 +55,7 @@ export default function App() {
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:id" element={<CollectionPage />} />
             <Route path="/walls" element={<WallsPage />} />
-            <Route path="/walk" element={<WalkPage />} />
+            <Route path="/walk" element={<Navigate to="/" replace />} />
             <Route path="/r/:slug" element={<WalkPage />} />
             <Route
               path="/walls/new"

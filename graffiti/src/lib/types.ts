@@ -31,6 +31,20 @@ export interface Wall {
   hidden_reason?: string | null;
 }
 
+export interface WalkPlace {
+  id: string;
+  name: string;
+  category: string;
+  address: string;
+  description: string;
+  era?: string;
+  artType?: string;
+  artist?: string;
+  image: string;
+  lat: number | null;
+  lng: number | null;
+}
+
 export interface WalkBuilding {
   id: number;
   title: string;

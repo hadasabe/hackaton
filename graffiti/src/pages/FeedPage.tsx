@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
 import type { FeedStats, Graffiti, ReactionValue, Status, Style } from '../lib/types';
 import { plural } from '../lib/format';
+import { ContentTabs } from '../components/ContentTabs';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { useAuth } from '../context/AuthContext';
 
@@ -122,6 +123,8 @@ export function FeedPage() {
           </div>
         </div>
       </section>
+
+      <ContentTabs active="feed" />
 
       <section id="feed" className="feed-section">
         <div className="feed-toolbar">

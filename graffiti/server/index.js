@@ -746,6 +746,28 @@ function findWalkRoute(slug, req) {
     .get(req.actorId, req.actorId, slug);
 }
 
+app.get('/api/walk-places', (_req, res) => {
+  const hidden = new Set(
+    db.prepare('SELECT place_id FROM hidden_places').all().map((row) => String(row.place_id)),
+  );
+  const items = [...STATIC_PLACES.values()]
+    .filter((place) => !hidden.has(String(place.id)))
+    .map((place) => ({
+      id: String(place.id),
+      name: place.name,
+      category: place.category || '',
+      address: place.address || '',
+      description: place.description || '',
+      era: place.era || '',
+      artType: place.artType || '',
+      artist: place.artist || '',
+      image: place.image ? `/walk-app/${String(place.image).replace(/^\/+/, '')}` : '',
+      lat: Number.isFinite(place.lat) ? place.lat : null,
+      lng: Number.isFinite(place.lng) ? place.lng : null,
+    }));
+  res.json({ items });
+});
+
 function normalizeWalkDuration(value) {
   const minutes = Number(value);
   if (!Number.isFinite(minutes)) return 0;

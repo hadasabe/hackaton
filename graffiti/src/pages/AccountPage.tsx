@@ -1,19 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Map, Plus, ShieldCheck } from 'lucide-react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { ArrowRight, Heart, HeartOff, Map as MapIcon, Plus } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META } from '../lib/constants';
-import type { UserProfileResponse, WalkBuilding, WalkRouteSummary, Wall } from '../lib/types';
+import type { UserProfileResponse, WalkBuilding, WalkPlace, WalkRouteSummary, Wall } from '../lib/types';
 import { formatDate, formatDuration, plural } from '../lib/format';
+import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, removeFavoritePlace } from '../lib/placeFavorites';
 import { useAuth } from '../context/AuthContext';
 
 type ProfileTab = 'walls' | 'buildings' | 'routes' | 'favorites';
+
+function isProfileTab(value: string | null): value is ProfileTab {
+  return value === 'walls' || value === 'buildings' || value === 'routes' || value === 'favorites';
+}
 
 function RouteRow({ route, showAuthor = false }: { route: WalkRouteSummary; showAuthor?: boolean }) {
   const duration = formatDuration(route.duration_minutes);
   return (
     <Link to={`/r/${route.slug}`} className="account-row account-route-row">
-      <span className="account-route-icon"><Map size={24} /></span>
+      <span className="account-route-icon"><MapIcon size={24} /></span>
       <div className="account-row-main">
         <div className="row gap-8 wrap">
           <strong>{route.title}</strong>
@@ -32,28 +37,79 @@ function RouteRow({ route, showAuthor = false }: { route: WalkRouteSummary; show
   );
 }
 
+function PlaceRow({ place, onRemove }: { place: WalkPlace; onRemove: (id: string) => void }) {
+  return (
+    <article className="account-row account-place-row">
+      {place.image ? (
+        <img src={place.image} alt={place.address} />
+      ) : (
+        <span className="account-placeholder" aria-hidden="true"><Heart size={23} /></span>
+      )}
+      <div className="account-row-main">
+        <div className="row gap-8 wrap">
+          <strong>{place.name}</strong>
+          <span className="tag">{place.artType || place.category}</span>
+        </div>
+        <span>{place.address}</span>
+        {place.description ? <small>{place.description}</small> : null}
+      </div>
+      <button
+        type="button"
+        className="text-button account-remove"
+        onClick={() => onRemove(place.id)}
+        aria-label={`Убрать из избранного: ${place.name}`}
+      >
+        <HeartOff size={16} />
+        Убрать
+      </button>
+    </article>
+  );
+}
+
 export function AccountPage() {
   const { user } = useAuth();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [walls, setWalls] = useState<Wall[]>([]);
   const [buildings, setBuildings] = useState<WalkBuilding[]>([]);
   const [routes, setRoutes] = useState<WalkRouteSummary[]>([]);
   const [favorites, setFavorites] = useState<WalkRouteSummary[]>([]);
+  const [places, setPlaces] = useState<WalkPlace[]>([]);
+  const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
-  const [tab, setTab] = useState<ProfileTab>('walls');
+  const [tab, setTab] = useState<ProfileTab>(() => {
+    const requested = searchParams.get('tab');
+    return isProfileTab(requested) ? requested : 'walls';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const requested = searchParams.get('tab');
+    if (isProfileTab(requested)) setTab(requested);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const syncFavorites = () => setFavoritePlaceIds(readFavoritePlaceIds());
+    window.addEventListener('storage', syncFavorites);
+    window.addEventListener(PLACE_FAVORITES_EVENT, syncFavorites);
+    return () => {
+      window.removeEventListener('storage', syncFavorites);
+      window.removeEventListener(PLACE_FAVORITES_EVENT, syncFavorites);
+    };
+  }, []);
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError('');
-    const [wallsResult, buildingsResult, routesResult, favoritesResult, profileResult] = await Promise.allSettled([
+    const [wallsResult, buildingsResult, routesResult, favoritesResult, profileResult, placesResult] = await Promise.allSettled([
       api.myWalls(),
       api.myWalkBuildings(),
       api.myWalkRoutes(),
       api.favoriteWalkRoutes(),
       api.userProfile(user.id),
+      api.walkPlaces(),
     ]);
     if (wallsResult.status === 'fulfilled') setWalls(wallsResult.value.items);
     else setError('Не удалось загрузить стены');
@@ -61,6 +117,7 @@ export function AccountPage() {
     if (routesResult.status === 'fulfilled') setRoutes(routesResult.value.items);
     if (favoritesResult.status === 'fulfilled') setFavorites(favoritesResult.value.items);
     if (profileResult.status === 'fulfilled') setProfile(profileResult.value);
+    if (placesResult.status === 'fulfilled') setPlaces(placesResult.value.items);
     setLoading(false);
   }, [user]);
 
@@ -73,6 +130,19 @@ export function AccountPage() {
   const followers = profile?.followers_count || 0;
   const following = profile?.following_count || 0;
   const email = profile?.user.email || user.email;
+  const placeById = new Map(places.map((place) => [place.id, place]));
+  const favoritePlaces = favoritePlaceIds
+    .map((id) => placeById.get(id))
+    .filter((place): place is WalkPlace => Boolean(place));
+
+  function selectTab(next: ProfileTab) {
+    setTab(next);
+    setSearchParams(next === 'walls' ? {} : { tab: next }, { replace: true });
+  }
+
+  function forgetPlace(id: string) {
+    setFavoritePlaceIds(removeFavoritePlace(id));
+  }
 
   return (
     <main className="page account-page">
@@ -91,10 +161,8 @@ export function AccountPage() {
         </div>
         <div className="profile-actions">
           <Link to="/walls/new" className="button button-dark"><Plus size={16} /> Выложить стену</Link>
-          <Link to="/walk" className="button button-outline"><Map size={16} /> Прогулка</Link>
-          {user.role === 'admin' ? (
-            <Link to="/admin" className="button button-outline"><ShieldCheck size={16} /> Модерация</Link>
-          ) : null}
+          <Link to="/account?tab=favorites" className="button button-outline"><Heart size={16} /> Избранное</Link>
+          <Link to="/" className="button button-outline"><MapIcon size={16} /> Прогулка</Link>
         </div>
       </header>
 
@@ -107,17 +175,17 @@ export function AccountPage() {
       {error ? <div className="notice error">{error}</div> : null}
 
       <div className="account-tabs">
-        <button type="button" className={`chip${tab === 'walls' ? ' active' : ''}`} onClick={() => setTab('walls')}>
+        <button type="button" className={`chip${tab === 'walls' ? ' active' : ''}`} onClick={() => selectTab('walls')}>
           Стены <span>{walls.length}</span>
         </button>
-        <button type="button" className={`chip${tab === 'buildings' ? ' active' : ''}`} onClick={() => setTab('buildings')}>
+        <button type="button" className={`chip${tab === 'buildings' ? ' active' : ''}`} onClick={() => selectTab('buildings')}>
           Здания <span>{buildings.length}</span>
         </button>
-        <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => setTab('routes')}>
+        <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => selectTab('routes')}>
           Маршруты <span>{routes.length}</span>
         </button>
-        <button type="button" className={`chip${tab === 'favorites' ? ' active' : ''}`} onClick={() => setTab('favorites')}>
-          Избранное <span>{favorites.length}</span>
+        <button type="button" className={`chip${tab === 'favorites' ? ' active' : ''}`} onClick={() => selectTab('favorites')}>
+          Избранное <span>{favoritePlaces.length + favorites.length}</span>
         </button>
       </div>
 
@@ -170,7 +238,7 @@ export function AccountPage() {
           <div className="empty-feed">
             <h3>Вы ещё не добавляли здания</h3>
             <p>Добавьте здание в «Прогулке» — после проверки оно появится на карте и здесь.</p>
-            <Link to="/walk" className="button button-dark"><Map size={16} /> Перейти в прогулку</Link>
+            <Link to="/" className="button button-dark"><MapIcon size={16} /> Перейти в прогулку</Link>
           </div>
         ) : (
           <div className="account-list">
@@ -206,25 +274,46 @@ export function AccountPage() {
           <div className="empty-feed">
             <h3>Маршрутов пока нет</h3>
             <p>Соберите прогулку в разделе «Прогулка» и опубликуйте её — она появится здесь.</p>
-            <Link to="/walk" className="button button-dark"><Map size={16} /> Перейти в прогулку</Link>
+            <Link to="/" className="button button-dark"><MapIcon size={16} /> Перейти в прогулку</Link>
           </div>
         ) : (
           <div className="account-list">
             {routes.map((route) => <RouteRow route={route} key={route.id} />)}
           </div>
         )
+      ) : favoritePlaces.length === 0 && favorites.length === 0 ? (
+        <div className="empty-feed">
+          <h3>В избранном пока пусто</h3>
+          <p>Сохраняйте места и маршруты в «Прогулке» — они будут ждать вас здесь.</p>
+          <Link to="/" className="button button-dark"><MapIcon size={16} /> Смотреть прогулку</Link>
+        </div>
       ) : (
-        favorites.length === 0 ? (
-          <div className="empty-feed">
-            <h3>В избранном пока пусто</h3>
-            <p>Сохраняйте маршруты в «Прогулке» — они будут ждать вас здесь.</p>
-            <Link to="/walk" className="button button-dark"><Map size={16} /> Смотреть маршруты</Link>
-          </div>
-        ) : (
-          <div className="account-list">
-            {favorites.map((route) => <RouteRow route={route} showAuthor key={route.id} />)}
-          </div>
-        )
+        <div className="account-favorites">
+          {favoritePlaces.length ? (
+            <section className="account-favorite-group">
+              <div className="account-favorite-head">
+                <h2>Места</h2>
+                <span>{favoritePlaces.length}</span>
+              </div>
+              <div className="account-list">
+                {favoritePlaces.map((place) => (
+                  <PlaceRow place={place} onRemove={forgetPlace} key={place.id} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {favorites.length ? (
+            <section className="account-favorite-group">
+              <div className="account-favorite-head">
+                <h2>Маршруты</h2>
+                <span>{favorites.length}</span>
+              </div>
+              <div className="account-list">
+                {favorites.map((route) => <RouteRow route={route} showAuthor key={route.id} />)}
+              </div>
+            </section>
+          ) : null}
+        </div>
       )}
     </main>
   );

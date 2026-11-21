@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Bookmark, Images, Map, SprayCan, User } from 'lucide-react';
+import { Images, Map, SprayCan, User } from 'lucide-react';
 
 export function BottomNav() {
   const location = useLocation();
@@ -13,15 +13,15 @@ export function BottomNav() {
 
   if (hidden) return null;
 
+  const artSection = location.pathname === '/graffiti'
+    || location.pathname.startsWith('/g/')
+    || location.pathname.startsWith('/collections');
+
   return (
     <nav className="bottom-nav" aria-label="Разделы сайта">
-      <NavLink to="/graffiti" end>
+      <NavLink to="/graffiti" className={() => (artSection ? 'active' : '')}>
         <Images size={20} />
         <span>Граффити</span>
-      </NavLink>
-      <NavLink to="/collections">
-        <Bookmark size={20} />
-        <span>Коллекции</span>
       </NavLink>
       <NavLink to="/" className="bottom-nav-mode">
         <Map size={20} />

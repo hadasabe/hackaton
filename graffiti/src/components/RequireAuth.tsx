@@ -21,9 +21,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
         <div className="auth-required">
           <div className="login-icon"><LockKeyhole size={24} /></div>
           <span className="section-kicker">Нужен аккаунт</span>
-          <h1>Войдите, чтобы предложить работу</h1>
+          <h1>Войдите в аккаунт</h1>
           <p>
-            Граффити открыто для всех, а заявки, лайки и комментарии привязаны к аккаунту.
+            Профиль, избранное, заявки и комментарии привязаны к аккаунту.
             Так проще бороться со спамом и накрутками.
           </p>
           <div className="row gap-10 wrap center">

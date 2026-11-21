@@ -58,9 +58,7 @@ export function WallsPage() {
                 <Plus size={17} /> Войти и выложить
               </Link>
             )}
-            <Link to="/account" className="button button-outline">
-              Мои стены
-            </Link>
+
           </div>
         </div>
         <div className="walls-hero-art">
