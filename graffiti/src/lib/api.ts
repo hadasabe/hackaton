@@ -10,6 +10,7 @@ import type {
   Status,
   StatusReport,
   UserProfileResponse,
+  WalkBuilding,
   WalkRouteSummary,
   Wall,
 } from './types';
@@ -212,6 +213,10 @@ export const api = {
 
   myWalkRoutes() {
     return request<{ items: WalkRouteSummary[] }>('/api/walk-routes?scope=mine');
+  },
+
+  myWalkBuildings() {
+    return request<{ items: WalkBuilding[] }>('/api/my/walk-buildings');
   },
 
   favoriteWalkRoutes() {

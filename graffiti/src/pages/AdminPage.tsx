@@ -34,7 +34,7 @@ const TAB_LABEL: Record<Tab, string> = {
   pending: 'На модерации',
   published: 'Опубликованные',
   rejected: 'Отклонённые',
-  walls: 'Стены',
+  walls: 'Стены и здания',
   status: 'Статусы',
   users: 'Пользователи',
 };
@@ -207,7 +207,7 @@ export function AdminPage() {
         <div>
           <span className="section-kicker"><ShieldCheck size={14} /> Администратор</span>
           <h1>Заявки и публикации</h1>
-          <p>Проверяйте работы и стены: фото, адреса, теги и контакты. Одобренные сразу появляются на сайте.</p>
+          <p>Проверяйте работы, стены и здания: фото, адреса, теги и координаты. Одобренные объекты сразу появляются на сайте.</p>
         </div>
         <button type="button" className="button button-outline" onClick={() => void load()}>
           <RefreshCw size={15} /> Обновить
@@ -394,8 +394,8 @@ function WallsPanel({
     return (
       <div className="empty-admin">
         <Clock3 size={32} />
-        <h3>Стен пока нет</h3>
-        <p>Когда владелец добавит стену, она появится здесь на проверке.</p>
+        <h3>Объектов пока нет</h3>
+        <p>Когда пользователь добавит стену или здание, заявка появится здесь на проверке.</p>
       </div>
     );
   }
@@ -417,6 +417,15 @@ function WallsPanel({
             </div>
             <h3><MapPin size={15} /> {wall.title}</h3>
             <p className="admin-description">{wall.address}</p>
+            {wall.kind === 'building' ? (
+              <p className="admin-description">
+                <span className="moderation-badge published">здание</span>
+                {wall.category ? ` · ${wall.category}` : ''}
+                {Number.isFinite(wall.lat) && Number.isFinite(wall.lng)
+                  ? ` · ${Number(wall.lat).toFixed(5)}, ${Number(wall.lng).toFixed(5)}`
+                  : ''}
+              </p>
+            ) : null}
             <p className="admin-description">{wall.description}</p>
             <div className="admin-meta">
               <span>{wall.owner_name}</span>

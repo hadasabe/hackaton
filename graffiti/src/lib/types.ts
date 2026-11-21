@@ -24,6 +24,25 @@ export interface Wall {
   published_at?: string | null;
   created_at: string;
   owner_name: string;
+  kind?: 'wall' | 'building';
+  category?: string;
+  lat?: number | null;
+  lng?: number | null;
+}
+
+export interface WalkBuilding {
+  id: number;
+  title: string;
+  address: string;
+  category: string;
+  description: string;
+  lat: number | null;
+  lng: number | null;
+  image_path: string;
+  moderation_status: 'pending' | 'published' | 'rejected';
+  reject_reason: string;
+  published_at?: string | null;
+  created_at: string;
 }
 
 export interface AiCheck {

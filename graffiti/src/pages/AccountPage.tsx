@@ -3,11 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Map, Plus, ShieldCheck } from 'lucide-react';
 import { api } from '../lib/api';
 import { WALL_TERMS_META } from '../lib/constants';
-import type { UserProfileResponse, WalkRouteSummary, Wall } from '../lib/types';
+import type { UserProfileResponse, WalkBuilding, WalkRouteSummary, Wall } from '../lib/types';
 import { formatDate, formatDuration, plural } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
 
-type ProfileTab = 'walls' | 'routes' | 'favorites';
+type ProfileTab = 'walls' | 'buildings' | 'routes' | 'favorites';
 
 function RouteRow({ route, showAuthor = false }: { route: WalkRouteSummary; showAuthor?: boolean }) {
   const duration = formatDuration(route.duration_minutes);
@@ -36,6 +36,7 @@ export function AccountPage() {
   const { user } = useAuth();
   const location = useLocation();
   const [walls, setWalls] = useState<Wall[]>([]);
+  const [buildings, setBuildings] = useState<WalkBuilding[]>([]);
   const [routes, setRoutes] = useState<WalkRouteSummary[]>([]);
   const [favorites, setFavorites] = useState<WalkRouteSummary[]>([]);
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -47,14 +48,16 @@ export function AccountPage() {
     if (!user) return;
     setLoading(true);
     setError('');
-    const [wallsResult, routesResult, favoritesResult, profileResult] = await Promise.allSettled([
+    const [wallsResult, buildingsResult, routesResult, favoritesResult, profileResult] = await Promise.allSettled([
       api.myWalls(),
+      api.myWalkBuildings(),
       api.myWalkRoutes(),
       api.favoriteWalkRoutes(),
       api.userProfile(user.id),
     ]);
     if (wallsResult.status === 'fulfilled') setWalls(wallsResult.value.items);
     else setError('Не удалось загрузить стены');
+    if (buildingsResult.status === 'fulfilled') setBuildings(buildingsResult.value.items);
     if (routesResult.status === 'fulfilled') setRoutes(routesResult.value.items);
     if (favoritesResult.status === 'fulfilled') setFavorites(favoritesResult.value.items);
     if (profileResult.status === 'fulfilled') setProfile(profileResult.value);
@@ -107,6 +110,9 @@ export function AccountPage() {
         <button type="button" className={`chip${tab === 'walls' ? ' active' : ''}`} onClick={() => setTab('walls')}>
           Стены <span>{walls.length}</span>
         </button>
+        <button type="button" className={`chip${tab === 'buildings' ? ' active' : ''}`} onClick={() => setTab('buildings')}>
+          Здания <span>{buildings.length}</span>
+        </button>
         <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => setTab('routes')}>
           Маршруты <span>{routes.length}</span>
         </button>
@@ -157,6 +163,40 @@ export function AccountPage() {
                 </Link>
               );
             })}
+          </div>
+        )
+      ) : tab === 'buildings' ? (
+        buildings.length === 0 ? (
+          <div className="empty-feed">
+            <h3>Вы ещё не добавляли здания</h3>
+            <p>Добавьте здание в «Прогулке» — после проверки оно появится на карте и здесь.</p>
+            <Link to="/walk" className="button button-dark"><Map size={16} /> Перейти в прогулку</Link>
+          </div>
+        ) : (
+          <div className="account-list">
+            {buildings.map((building) => (
+              <div className="account-row" key={building.id}>
+                <img src={building.image_path} alt={building.address} />
+                <div className="account-row-main">
+                  <div className="row gap-8 wrap">
+                    <strong>{building.title}</strong>
+                    <span className={`moderation-badge ${building.moderation_status}`}>
+                      {building.moderation_status === 'pending'
+                        ? 'на проверке'
+                        : building.moderation_status === 'published'
+                          ? 'опубликовано'
+                          : 'отклонено'}
+                    </span>
+                    <span className="tag">{building.category}</span>
+                  </div>
+                  <span>{building.address}</span>
+                  <small>{formatDate(building.created_at)}</small>
+                  {building.moderation_status === 'rejected' && building.reject_reason ? (
+                    <small className="reject-reason">Причина: {building.reject_reason}</small>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         )
       ) : tab === 'routes' ? (

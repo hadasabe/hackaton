@@ -124,6 +124,10 @@ db.exec(`
     reject_reason TEXT NOT NULL DEFAULT '',
     published_at TEXT,
     created_at TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'wall',
+    category TEXT NOT NULL DEFAULT '',
+    lat REAL,
+    lng REAL,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
@@ -258,6 +262,10 @@ ensureColumn('comments', 'parent_id', 'INTEGER');
 ensureColumn('walk_route_comments', 'parent_id', 'INTEGER');
 ensureColumn('walk_routes', 'duration_minutes', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('walls', 'contact', "TEXT NOT NULL DEFAULT ''");
+ensureColumn('walls', 'kind', "TEXT NOT NULL DEFAULT 'wall'");
+ensureColumn('walls', 'category', "TEXT NOT NULL DEFAULT ''");
+ensureColumn('walls', 'lat', 'REAL');
+ensureColumn('walls', 'lng', 'REAL');
 {
   const wallColumns = db.prepare('PRAGMA table_info(walls)').all();
   const hadModeration = wallColumns.some((column) => column.name === 'moderation_status');

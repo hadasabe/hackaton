@@ -63,12 +63,43 @@ async function loadStenaGraffiti(){
   document.querySelectorAll('.total-places').forEach(el=>el.textContent=String(places.length));
  }catch(_error){}
 }
+async function loadWalkBuildings(){
+ try{
+  const response=await fetch('/api/walk-buildings',{headers:{Accept:'application/json'}});
+  if(!response.ok)return;
+  const data=await response.json();
+  for(const item of data.items||[]){
+   const id=`building-${item.id}`;
+   if(!item?.id||places.some(p=>p.id===id))continue;
+   places.push({
+    id,
+    name:item.title,
+    category:item.category||'Архитектура',
+    address:item.address,
+    era:'Добавлено пользователем',
+    description:item.description||'Здание, добавленное пользователем.',
+    story:item.description||'',
+    city:'САРАТОВ',
+    artist:item.owner_name||'',
+    image:item.image_path,
+    lat:Number(item.lat),
+    lng:Number(item.lng),
+    glyph:'building',
+    sources:[{title:'Туристический Саратов',url:'/'}],
+    source:'/',
+    userBuilding:true
+   });
+  }
+  document.querySelectorAll('.total-places').forEach(el=>el.textContent=String(places.length));
+ }catch(_error){}
+}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5000);}
 function allowedNarration(){return state.source==='demo'||(state.source==='gps'&&!state.gpsIssue&&geo.reliable(state.fix));}
 
 // The only network map dependency: visible OSM tiles. Library and all text are local.
 let map,personMarker,radiusCircle,accuracyCircle,demoLine,tileLayer,plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker,routeDrawRequest=0;
 const markers=new Map();
+let activeCategory='';
 function initMap(){
  if(!window.L){$('map-alert').hidden=false;$('map-alert').textContent='Не найдена библиотека карты. Проверьте папку vendor.';return;}
  map=L.map('map',{zoomControl:false,attributionControl:true,scrollWheelZoom:true}).setView([51.5305,46.0375],15);
@@ -116,12 +147,16 @@ async function showPlannedRoute(ids){
  map.fitBounds(L.latLngBounds(latlngs),{padding:[65,95],maxZoom:16});
  if(!routed)toast('Маршрут по дорогам недоступен. Показано направление по прямой.');
 }
+function updateMapFilterUI(){document.querySelectorAll('[data-map-category]').forEach(button=>{const active=button.dataset.mapCategory===activeCategory;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});const button=$('map-filter');if(button){button.classList.toggle('active',Boolean(activeCategory));button.setAttribute('aria-expanded',String(!$('map-filter-panel')?.hidden));}}
+function setCategory(value){activeCategory=value||'';const select=$('category-filter');if(select)select.value=activeCategory;document.querySelectorAll('[data-category]').forEach(button=>{const active=button.dataset.category===activeCategory;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});updateMapFilterUI();hideMapPreview();renderCards();updateMap();}
+function toggleMapFilter(force){const panel=$('map-filter-panel'),button=$('map-filter');if(!panel||!button)return;const open=typeof force==='boolean'?force:panel.hidden;panel.hidden=!open;button.setAttribute('aria-expanded',String(open));}
 function acceptHeading(fix){
  state.heading=geo.resolveHeading(state.headingAnchor,fix,state.heading);
  if(geo.reliable(fix)&&(!geo.reliable(state.headingAnchor)||geo.meters(state.headingAnchor,fix)>Math.max(8,state.headingAnchor.accuracy+fix.accuracy)))state.headingAnchor=fix;
 }
 function updateMap(){
  if(!map)return;
+ for(const [id,marker] of markers){const p=find(id),visible=!activeCategory||p?.category===activeCategory;if(visible){if(!map.hasLayer(marker))marker.addTo(map);}else if(map.hasLayer(marker))marker.remove();}
  for(const p of places){const marker=markers.get(p.id);if(!marker)continue;const key=`${state.selected===p.id}-${state.near.some(n=>n.id===p.id)}`;if(marker._ryadomKey!==key){marker.setIcon(markerIcon(p));marker._ryadomKey=key;}}
  if(!state.fix){for(const layer of [personMarker,radiusCircle,accuracyCircle])if(layer)layer.remove();personMarker=radiusCircle=accuracyCircle=null;return;}
  const latlng=[state.fix.lat,state.fix.lng];
@@ -155,8 +190,9 @@ const expandedDetails=new Set();
 function rememberDetails(){for(const el of $('place-list').querySelectorAll('details[data-memory]')){if(el.open)expandedDetails.add(el.dataset.memory);else expandedDetails.delete(el.dataset.memory);}}
 function refreshCardDistances(){for(const el of $('place-list').querySelectorAll('[data-distance]')){const p=find(el.dataset.distance);el.hidden=!state.fix;el.querySelector('span').textContent=`${displayDistance(distance(p))} от вас`;}for(const el of $('place-list').querySelectorAll('[data-outside]'))el.hidden=!(state.fix&&state.view!=='catalog'&&state.exploring&&state.selected===el.dataset.outside&&distance(find(el.dataset.outside))>200);for(const el of $('place-list').querySelectorAll('[data-place-id]'))el.classList.toggle('selected-card',el.dataset.placeId===state.selected);for(const link of $('place-list').querySelectorAll('.card-yandex-link')){const card=link.closest('[data-place-id]'),p=card?find(card.dataset.placeId):null;if(p)link.href=yandexMapsUrl(p);}}
 function renderCards(){
- const catalog=state.view==='catalog',query=$('search').value.trim().toLowerCase(),category=$('category-filter').value;
- let list=catalog?places.filter(p=>(!query||`${p.name} ${p.address} ${p.artist||''} ${p.artType||''} ${p.description}`.toLowerCase().includes(query))&&(!category||p.category===category)):state.fix?state.near:places.slice();
+ const catalog=state.view==='catalog',query=$('search').value.trim().toLowerCase(),category=activeCategory;
+ let list=catalog?places.filter(p=>(!query||`${p.name} ${p.address} ${p.artist||''} ${p.artType||''} ${p.description}`.toLowerCase().includes(query))):state.fix?state.near:places.slice();
+ if(category)list=list.filter(p=>p.category===category);
  if(catalog&&state.fix)list=list.slice().sort((a,b)=>distance(a)-distance(b));else if(catalog)list=list.slice().sort((a,b)=>Number(Boolean(b.image))-Number(Boolean(a.image)));
  const manual=find(state.selected);if(!catalog&&state.exploring&&manual&&!list.some(p=>p.id===manual.id))list=[manual,...list];
  if(!list.some(p=>p.id===state.selected))state.selected=list[0]?.id||null;
@@ -297,8 +333,13 @@ $('card-mode').addEventListener('click',()=>setMode('cards'));$('voice-mode').ad
 $('audio-play').addEventListener('click',toggleAudio);$('audio-close').addEventListener('click',()=>setMode('cards'));
 $('place-list').addEventListener('click',e=>{const listen=e.target.closest('[data-listen]');if(listen){state.selected=listen.dataset.listen;setMode('voice');return;}const card=e.target.closest('[data-place]');if(card){selectPlace(card.dataset.place,true);if(map){state.follow=false;const p=find(card.dataset.place);map.setView([p.lat,p.lng],17);}setTab('map',false);}});
 for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{const tab=button.dataset.tab;if(tab==='map'&&document.body.classList.contains('sheet-peek')){setTab('nearby');return;}setTab(tab);});
-for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>{$('category-filter').value=chip.dataset.category;renderCards();});
-$('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',renderCards);
+for(const chip of document.querySelectorAll('[data-category]'))chip.addEventListener('click',()=>setCategory(chip.dataset.category));
+$('open-catalog').addEventListener('click',()=>setTab('catalog'));$('search').addEventListener('input',renderCards);$('category-filter').addEventListener('change',()=>setCategory($('category-filter').value));
+$('map-filter')?.addEventListener('click',event=>{event.stopPropagation();toggleMapFilter();});
+$('map-filter-close')?.addEventListener('click',()=>toggleMapFilter(false));
+document.querySelectorAll('[data-map-category]').forEach(button=>button.addEventListener('click',()=>{setCategory(button.dataset.mapCategory);toggleMapFilter(false);}));
+document.addEventListener('click',event=>{const panel=$('map-filter-panel');if(!panel||panel.hidden)return;if(event.target.closest('#map-filter-panel')||event.target.closest('#map-filter'))return;toggleMapFilter(false);});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')toggleMapFilter(false);});
 $('zoom-in').addEventListener('click',()=>map?.zoomIn());$('zoom-out').addEventListener('click',()=>map?.zoomOut());$('center-map').addEventListener('click',()=>{state.follow=true;if(state.fix&&map)map.setView([state.fix.lat,state.fix.lng],17);else beginGPS();});
 function setMapFullscreen(on){document.body.classList.toggle('map-fullscreen',on);const button=$('map-fullscreen');if(button){button.innerHTML=icon(on?'compress':'expand');button.setAttribute('aria-label',on?'Выйти из полноэкранного режима':'Открыть карту на весь экран');button.title=on?'Выйти из полноэкранного режима':'На весь экран';}if(window.parent!==window)window.parent.postMessage({type:'walk:fullscreen',value:on},location.origin);setTimeout(()=>map?.invalidateSize({pan:false}),250);}
 $('map-fullscreen').addEventListener('click',()=>setMapFullscreen(!document.body.classList.contains('map-fullscreen')));
@@ -335,7 +376,7 @@ window.RyadomApp={
  hidePreview:hideMapPreview,
  exitFullscreen:()=>setMapFullscreen(false)
 };
-loadStenaGraffiti().finally(()=>{
- initMap();networkStatus();updateProximity();
+Promise.allSettled([loadStenaGraffiti(),loadWalkBuildings()]).finally(()=>{
+ initMap();networkStatus();updateProximity();updateMapFilterUI();
  window.dispatchEvent(new Event('ryadom:ready'));
 });

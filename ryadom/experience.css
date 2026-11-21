@@ -355,3 +355,28 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-credit{margin:28px 0 0;padding-top:14px;border-top:1px dashed var(--line);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
 
 .dialog-credit{margin:20px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+
+/* Building submission dialog. */
+.building-map{height:220px;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#dfe3d3;position:relative;z-index:1}
+.building-file{padding:8px;font-size:12px}
+.building-point-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;line-height:1.5;color:var(--muted)}
+.building-point-row span{flex:1 1 100%;font-weight:750;color:var(--ink)}
+.building-point-row .text-button{min-height:30px;margin:0;font-size:11px}
+.building-point-row .text-button:last-child{margin-left:auto}
+.building-consent{display:flex;align-items:flex-start;gap:8px;font-size:11px;line-height:1.5;color:var(--muted);margin:7px 0}
+.building-consent input{margin-top:2px;flex:none}
+.building-form-error{color:#a52a43!important}
+.building-pick-marker span{display:block;width:18px;height:18px;border:3px solid var(--ink);border-radius:50%;background:var(--lime);box-shadow:0 2px 8px #0006}
+@media(max-width:760px){.building-map{height:190px}}
+
+/* My submitted buildings in the walk profile. */
+.profile-buildings{margin-top:24px}
+.profile-building-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.profile-building{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;padding:10px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface)}
+.profile-building-photo{width:76px;height:76px;border-radius:10px;overflow:hidden;background:#dfe3d3;display:grid;place-items:center}
+.profile-building-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-building-photo .exp-no-photo{width:100%;height:100%;min-height:0;border:0;border-radius:0}
+.profile-building-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.profile-building-copy h4{font-size:15px;line-height:1.2;margin:0}
+.profile-building-copy p{font-size:11px;line-height:1.45;color:var(--muted);margin:0}
+.profile-building-copy small{font-size:10px;line-height:1.4;color:#a52a43}

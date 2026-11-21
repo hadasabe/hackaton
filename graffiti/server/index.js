@@ -71,6 +71,7 @@ const STATUSES = new Set(['alive', 'erased', 'partial', 'unknown']);
 const STYLES = new Set(['mural', 'graffiti', 'stencil', 'sticker', 'text', 'other']);
 const WALL_TYPES = new Set(['garage', 'facade', 'fence', 'wall', 'other']);
 const WALL_TERMS = new Set(['free', 'materials', 'paid', 'negotiable']);
+const WALK_BUILDING_CATEGORIES = new Set(['Архитектура', 'История', 'Искусство', 'Природа', 'Стрит-арт']);
 const walkRouteCache = new Map();
 
 function publicUser(user) {
@@ -1521,7 +1522,7 @@ function getWallById(id) {
 app.get('/api/walls', (req, res) => {
   const query = cleanText(req.query.q, 80);
   const terms = WALL_TERMS.has(req.query.terms) ? req.query.terms : null;
-  const where = ["w.status = 'open'", "w.moderation_status = 'published'"];
+  const where = ["w.status = 'open'", "w.moderation_status = 'published'", "w.kind = 'wall'"];
   const params = [];
   if (terms) {
     where.push('w.terms = ?');
@@ -1646,11 +1647,95 @@ app.get('/api/my/walls', requireUser, (req, res) => {
     .prepare(`
       SELECT w.*
       FROM walls w
-      WHERE w.owner_id = ?
+      WHERE w.owner_id = ? AND w.kind = 'wall'
       ORDER BY datetime(w.created_at) DESC
     `)
     .all(req.user.id)
     .map(({ vk_url: _vkUrl, ...wall }) => wall);
+  res.json({ items });
+});
+
+app.post('/api/walk-buildings', requireUser, upload.single('photo'), (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: 'Прикрепите фото здания' });
+    return;
+  }
+  const title = cleanUserText(req.body?.title, 100);
+  const address = cleanText(req.body?.address, 160);
+  const description = cleanUserText(req.body?.description, 800);
+  const category = WALK_BUILDING_CATEGORIES.has(req.body?.category)
+    ? req.body.category
+    : 'Архитектура';
+  const lat = Number(req.body?.lat);
+  const lng = Number(req.body?.lng);
+  const consent = String(req.body?.consent || '') === '1';
+  if (!title || !address) {
+    res.status(400).json({ error: 'Заполните название и адрес здания' });
+    return;
+  }
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    res.status(400).json({ error: 'Выберите точку здания на карте' });
+    return;
+  }
+  if (!consent) {
+    res.status(400).json({ error: 'Подтвердите право на публикацию фото' });
+    return;
+  }
+  const mediaInfo = db
+    .prepare('INSERT INTO media (mime, data, created_at) VALUES (?, ?, ?)')
+    .run(req.file.mimetype, req.file.buffer, nowIso());
+  const info = db
+    .prepare(`
+      INSERT INTO walls (
+        owner_id, title, address, description, type, size,
+        terms, price_note, contact, image_path, status,
+        moderation_status, reject_reason, published_at, created_at,
+        kind, category, lat, lng
+      ) VALUES (?, ?, ?, ?, 'building', '', 'negotiable', '', '', ?, 'open', 'pending', '', NULL, ?, 'building', ?, ?, ?)
+    `)
+    .run(
+      req.user.id,
+      title,
+      address,
+      description,
+      `/api/media/${Number(mediaInfo.lastInsertRowid)}`,
+      nowIso(),
+      category,
+      lat,
+      lng,
+    );
+  res.status(201).json({ id: Number(info.lastInsertRowid) });
+});
+
+app.get('/api/walk-buildings', (_req, res) => {
+  const items = db
+    .prepare(`
+      SELECT w.id, w.title, w.address, w.category, w.description,
+             w.lat, w.lng, w.image_path, w.published_at, w.created_at,
+             u.name AS owner_name
+      FROM walls w
+      JOIN users u ON u.id = w.owner_id
+      WHERE w.kind = 'building'
+        AND w.moderation_status = 'published'
+        AND w.status = 'open'
+      ORDER BY datetime(COALESCE(w.published_at, w.created_at)) DESC
+      LIMIT 200
+    `)
+    .all();
+  res.json({ items });
+});
+
+app.get('/api/my/walk-buildings', requireUser, (req, res) => {
+  const items = db
+    .prepare(`
+      SELECT w.id, w.title, w.address, w.category, w.description,
+             w.lat, w.lng, w.image_path, w.moderation_status,
+             w.reject_reason, w.published_at, w.created_at
+      FROM walls w
+      WHERE w.owner_id = ? AND w.kind = 'building'
+      ORDER BY datetime(w.created_at) DESC
+    `)
+    .all(req.user.id);
   res.json({ items });
 });
 

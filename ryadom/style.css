@@ -471,3 +471,20 @@ dialog .support-line a{color:var(--ink);font-weight:800;text-underline-offset:3p
 body.map-fullscreen .map-preview{z-index:2600;bottom:34px}
 
 .sidebar-footer .sidebar-credit{flex:0 0 100%;margin:4px 0 0 29px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a8f7b}
+
+/* Add a community building from the walk feed. */
+#add-building{margin-top:8px;background:var(--ink);color:var(--lime);border-color:var(--ink);font-size:14px;min-height:46px}
+#add-building:hover{background:#2b2b2b}
+#add-building svg{width:18px;height:18px}
+
+/* Object type filter on the map. */
+.map-filter-panel{position:absolute;top:20px;right:74px;z-index:900;width:min(228px,calc(100% - 92px));padding:12px;border:2px solid var(--ink);border-radius:16px;background:var(--surface);box-shadow:4px 4px 0 var(--ink)}
+.map-filter-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.map-filter-head strong{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.map-filter-head button{display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:var(--paper);color:var(--ink)}
+.map-filter-head svg{width:15px;height:15px}
+.map-filter-options{display:flex;flex-wrap:wrap;gap:5px}
+.map-filter-options button{min-height:30px;padding:5px 8px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font-size:10px;font-weight:750;line-height:1.2}
+.map-filter-options button.active{background:var(--lime)}
+#map-filter.active{background:var(--lime);color:var(--ink)}
+@media(max-width:760px){.map-filter-panel{top:15px;right:70px;width:min(228px,calc(100% - 86px))}}
