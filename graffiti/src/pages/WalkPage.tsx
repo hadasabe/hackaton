@@ -8,7 +8,7 @@ export function WalkPage() {
     return () => document.body.classList.remove('walk-route');
   }, []);
 
-  const src = `/walk-app/?embed=1&v=51${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
+  const src = `/walk-app/?embed=1&v=52${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
 
   return (
     <main className="walk-embed-page">
