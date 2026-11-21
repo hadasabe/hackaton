@@ -25,6 +25,8 @@ const EXACT = new Set([
   'motherfucking', 'shit', 'shitty', 'bullshit', 'bitch', 'bitches', 'bitchy',
   'cunt', 'cunts', 'asshole', 'assholes', 'dick', 'dicks', 'dickhead', 'dickheads',
   'pussy', 'pussies', 'whore', 'whores', 'slut', 'sluts', 'bastard', 'bastards',
+  'prick', 'pricks', 'twat', 'twats', 'wanker', 'wankers', 'bollocks', 'bugger', 'buggers',
+  'arse', 'arsehole', 'arseholes', 'crap',
 ]);
 
 const CONTAINS = [
@@ -34,7 +36,7 @@ const CONTAINS = [
   'муда', 'муди', 'мудозвон',
   'пидор', 'пидар', 'пидрил',
   'гандон', 'залуп', 'говн', 'жоп', 'дроч', 'шлюх', 'мраз', 'долбоеб',
-  'херн', 'срак', 'сран', 'срал', 'срать', 'срущ', 'срут',
+  'херн', 'херов', 'срак', 'сран', 'срал', 'срать', 'срач', 'срущ', 'срут', 'ссач', 'мудень',
   'ссать', 'ссал', 'ссака', 'ссани', 'ссущ',
   'перд', 'сучар', 'сучон', 'сучен', 'мандавош', 'тварюг',
 ];
