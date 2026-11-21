@@ -3890,12 +3890,6 @@ button.profile-stat {
   text-underline-offset: 3px;
 }
 
-@media (min-width: 761px) {
-  body.has-bottom-nav .site-footer {
-    margin-bottom: 92px;
-  }
-}
-
 .admin-building-meta {
   display: flex;
   align-items: center;
