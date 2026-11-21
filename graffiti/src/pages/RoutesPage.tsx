@@ -126,7 +126,7 @@ export function RoutesPage() {
               <Plus size={16} /> Опубликовать маршрут
             </button>
           ) : null}
-          <Link to="/map" className="button button-outline"><MapIcon size={16} /> Собрать на карте</Link>
+          <Link to="/map" className="button button-outline"><MapIcon size={16} /> Карта</Link>
         </div>
       </div>
 
