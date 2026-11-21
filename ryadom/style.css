@@ -469,3 +469,5 @@ dialog .support-line a{color:var(--ink);font-weight:800;text-underline-offset:3p
   .map-preview.open{transform:translate(-50%,0)}
 }
 body.map-fullscreen .map-preview{z-index:2600;bottom:34px}
+
+.sidebar-footer .sidebar-credit{flex:0 0 100%;margin:4px 0 0 29px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a8f7b}

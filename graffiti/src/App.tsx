@@ -35,6 +35,7 @@ function Footer() {
         Архив пополняют горожане. Фото принадлежат авторам, работы — художникам.
       </p>
       {!user ? <Link to="/login">Вход для администратора</Link> : null}
+      <p className="site-footer-credit">product by team «НАПИШИ 123» © 2026</p>
     </footer>
   );
 }
