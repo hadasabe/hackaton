@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Map as MapIcon, Plus, Route as RouteIcon, Search } from 'lucide-react';
+import { Heart, HeartOff, Map as MapIcon, MessageCircle, Plus, Route as RouteIcon, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { api } from '../lib/api';
 import type { WalkRouteSummary } from '../lib/types';
 import { useCityObjects } from '../lib/cityObjects';
 import { formatDate, formatDuration, plural } from '../lib/format';
-import { readPlan } from '../lib/plan';
+import { readPlan, writePlan } from '../lib/plan';
 import { useAuth } from '../context/AuthContext';
 
 export function RoutesPage() {
@@ -56,6 +56,46 @@ export function RoutesPage() {
     } finally {
       setSending(false);
     }
+  }
+
+  async function reactRoute(route: WalkRouteSummary, value: 'like' | 'dislike') {
+    if (!user) {
+      navigate('/login', { state: { from: '/routes' } });
+      return;
+    }
+    const nextReaction = route.my_reaction === value ? null : value;
+    let likes = route.likes;
+    let dislikes = route.dislikes;
+    if (route.my_reaction === 'like') likes -= 1;
+    if (route.my_reaction === 'dislike') dislikes -= 1;
+    if (nextReaction === 'like') likes += 1;
+    if (nextReaction === 'dislike') dislikes += 1;
+    setRoutes((current) => current.map((entry) => entry.id === route.id ? { ...entry, likes, dislikes, my_reaction: nextReaction } : entry));
+    try {
+      const result = await api.reactWalkRoute(route.id, value);
+      setRoutes((current) => current.map((entry) => entry.id === route.id ? { ...entry, ...result } : entry));
+    } catch {
+      setRoutes((current) => current.map((entry) => entry.id === route.id ? route : entry));
+    }
+  }
+
+  async function favoriteRoute(route: WalkRouteSummary) {
+    if (!user) {
+      navigate('/login', { state: { from: '/routes' } });
+      return;
+    }
+    setRoutes((current) => current.map((entry) => entry.id === route.id ? { ...entry, favorite: !entry.favorite } : entry));
+    try {
+      const result = await api.toggleWalkRouteFavorite(route.id);
+      setRoutes((current) => current.map((entry) => entry.id === route.id ? { ...entry, favorite: result.favorite } : entry));
+    } catch {
+      setRoutes((current) => current.map((entry) => entry.id === route.id ? route : entry));
+    }
+  }
+
+  function showRouteOnMap(route: WalkRouteSummary) {
+    writePlan(route.stops);
+    navigate('/map?plan=1');
   }
 
   const byId = new Map(objects.map((object) => [object.id, object]));
@@ -151,25 +191,59 @@ export function RoutesPage() {
             const stops = route.stops.map((id) => byId.get(id)).filter(Boolean);
             const cover = stops.find((stop) => stop?.image)?.image;
             return (
-              <Link to={`/r/${route.slug}`} className="route-card" key={route.id}>
-                <div className="route-card-cover">
-                  {cover ? <img src={cover} alt="" loading="lazy" /> : <RouteIcon size={30} />}
-                  <span>{route.stops.length} {plural(route.stops.length, 'остановка', 'остановки', 'остановок')}</span>
+              <article className="graffiti-card route-feed-card" key={route.id}>
+                <div className="place-card-media">
+                  <Link to={`/r/${route.slug}`} className="card-image-link" aria-label={`Открыть маршрут: ${route.title}`}>
+                    {cover ? <img src={cover} alt="" loading="lazy" /> : <span className="route-cover-placeholder"><RouteIcon size={30} /></span>}
+                  </Link>
+                  <span className="route-stops-badge">{route.stops.length} {plural(route.stops.length, 'остановка', 'остановки', 'остановок')}</span>
+                  <button
+                    type="button"
+                    className={`place-card-heart${route.favorite ? ' active' : ''}`}
+                    onClick={() => void favoriteRoute(route)}
+                    aria-pressed={route.favorite}
+                    aria-label={`${route.favorite ? 'Убрать из избранного' : 'Сохранить в избранное'}: ${route.title}`}
+                  >
+                    <Heart size={18} />
+                  </button>
                 </div>
-                <div className="route-card-body">
-                  <span className="section-kicker">{formatDuration(route.duration_minutes) || 'Прогулка'}</span>
-                  <h2>{route.title}</h2>
-                  {route.description ? <p>{route.description}</p> : null}
-                  <div className="route-card-meta">
-                    <span>{route.owner_name}</span>
-                    <span>{formatDate(route.created_at)}</span>
+                <div className="card-body">
+                  <div className="card-topline">
+                    <span className="card-address"><RouteIcon size={13} /> {route.owner_name}</span>
+                    <span className="card-time">{formatDate(route.created_at)}</span>
                   </div>
-                  <div className="route-card-stats">
-                    <span>{route.likes} ♥</span>
-                    <span>{route.comments_count} 💬</span>
+                  <div className="tags">
+                    <span className="tag tag-style">{formatDuration(route.duration_minutes) || 'Прогулка'}</span>
+                    <span className="tag">{route.visibility === 'link' ? 'по ссылке' : 'для всех'}</span>
+                  </div>
+                  <h3><Link to={`/r/${route.slug}`}>{route.title}</Link></h3>
+                  {route.description ? <p className="card-description">{route.description}</p> : null}
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className={`reaction${route.my_reaction === 'like' ? ' active like' : ''}`}
+                      onClick={() => void reactRoute(route, 'like')}
+                      aria-label="Нравится"
+                    >
+                      <ThumbsUp size={16} /> {route.likes}
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction${route.my_reaction === 'dislike' ? ' active dislike' : ''}`}
+                      onClick={() => void reactRoute(route, 'dislike')}
+                      aria-label="Не нравится"
+                    >
+                      <ThumbsDown size={16} /> {route.dislikes}
+                    </button>
+                    <Link to={`/r/${route.slug}`} className="reaction place-comments-link">
+                      <MessageCircle size={16} /> {route.comments_count}
+                    </Link>
+                    <button type="button" className="reaction comments-link" onClick={() => showRouteOnMap(route)}>
+                      <MapIcon size={16} /> На карте
+                    </button>
                   </div>
                 </div>
-              </Link>
+              </article>
             );
           })}
         </div>
