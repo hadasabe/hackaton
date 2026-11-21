@@ -5782,3 +5782,22 @@ a.people-row:hover {
     padding: 9px 13px;
   }
 }
+
+.comment-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.comment-author-link strong {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+.comment-author-link:hover strong {
+  color: var(--muted);
+}

@@ -376,6 +376,11 @@ function cleanUserText(value, max) {
   return maskProfanity(cleanText(value, max));
 }
 
+function commentAuthorId(actorId) {
+  const match = /^user:(\d+)$/.exec(String(actorId || ''));
+  return match ? Number(match[1]) : null;
+}
+
 function visibleCommentRows(rows) {
   const byId = new Map(rows.map((row) => [row.id, row]));
   const keep = new Set();
@@ -863,6 +868,7 @@ function walkPlaceComments(placeId, req) {
       return {
         id: comment.id,
         parent_id: comment.parent_id,
+        author_id: deleted ? null : commentAuthorId(comment.actor_id),
         author_name: deleted ? 'Комментарий удалён' : comment.author_name,
         avatar_url: deleted ? '' : (comment.avatar_url || ''),
         body: deleted ? '' : comment.body,
@@ -973,6 +979,7 @@ app.post('/api/walk-places/:id/comments', requireUser, (req, res) => {
   res.status(201).json({
     id: Number(info.lastInsertRowid),
     parent_id: parent ? parent.id : null,
+    author_id: req.user.id,
     author_name: req.user.name,
     avatar_url: req.user.avatar_path || '',
     body,
@@ -1114,6 +1121,7 @@ app.get('/api/walk-routes/:slug', (req, res) => {
     return {
       id: comment.id,
       parent_id: comment.parent_id,
+      author_id: deleted ? null : commentAuthorId(comment.actor_id),
       author_name: deleted ? 'Комментарий удалён' : comment.author_name,
       avatar_url: deleted ? '' : (comment.avatar_url || ''),
       body: deleted ? '' : comment.body,
@@ -1337,6 +1345,7 @@ app.post('/api/walk-routes/:id/comments', requireUser, (req, res) => {
   res.status(201).json({
     id: Number(info.lastInsertRowid),
     parent_id: parent ? parent.id : null,
+    author_id: req.user.id,
     author_name: req.user.name,
     body,
     created_at: createdAt,
@@ -1627,6 +1636,7 @@ app.get('/api/graffiti/:id', (req, res) => {
     return {
       id: comment.id,
       parent_id: comment.parent_id,
+      author_id: deleted ? null : commentAuthorId(comment.actor_id),
       author_name: deleted ? 'Комментарий удалён' : comment.author_name,
       avatar_url: deleted ? '' : (comment.avatar_url || ''),
       body: deleted ? '' : comment.body,
@@ -1730,6 +1740,7 @@ app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
   res.status(201).json({
     id: Number(info.lastInsertRowid),
     parent_id: parent ? parent.id : null,
+    author_id: req.user.id,
     author_name: authorName,
     avatar_url: req.user.avatar_path || '',
     body,
@@ -2546,11 +2557,24 @@ app.post('/api/admin/users/:id/ban', requireAdmin, (req, res) => {
     res.status(400).json({ error: 'Нельзя ограничить администратора' });
     return;
   }
-  db.prepare('UPDATE users SET shadow_banned = ?, banned = ? WHERE id = ?').run(
-    type === 'shadow' ? 1 : 0,
-    type === 'full' ? 1 : 0,
-    id,
-  );
+  const removeComments = db.transaction(() => {
+    db.prepare('UPDATE users SET shadow_banned = ?, banned = ? WHERE id = ?').run(
+      type === 'shadow' ? 1 : 0,
+      type === 'full' ? 1 : 0,
+      id,
+    );
+    if (type !== 'none') {
+      const actorId = `user:${id}`;
+      const deletedAt = nowIso();
+      db.prepare('UPDATE comments SET deleted_at = ? WHERE actor_id = ? AND deleted_at IS NULL')
+        .run(deletedAt, actorId);
+      db.prepare('UPDATE walk_route_comments SET deleted_at = ? WHERE actor_id = ? AND deleted_at IS NULL')
+        .run(deletedAt, actorId);
+      db.prepare('UPDATE walk_place_comments SET deleted_at = ? WHERE actor_id = ? AND deleted_at IS NULL')
+        .run(deletedAt, actorId);
+    }
+  });
+  removeComments();
   res.json({ ok: true, shadow_banned: type === 'shadow', banned: type === 'full' });
 });
 

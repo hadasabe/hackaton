@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Reply, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
 import type { Comment, ReactionValue } from '../lib/types';
 import { formatDate } from '../lib/format';
@@ -88,8 +88,17 @@ export function CommentThread({
     return (
       <article className={`comment${deleted ? ' deleted' : ''}`} key={comment.id}>
         <div className="comment-head">
-          <CommentAvatar name={comment.author_name} avatarUrl={comment.avatar_url} />
-          <strong>{comment.author_name}</strong>
+          {!deleted && comment.author_id ? (
+            <Link to={`/u/${comment.author_id}`} className="comment-author-link">
+              <CommentAvatar name={comment.author_name} avatarUrl={comment.avatar_url} />
+              <strong>{comment.author_name}</strong>
+            </Link>
+          ) : (
+            <>
+              <CommentAvatar name={comment.author_name} avatarUrl={comment.avatar_url} />
+              <strong>{comment.author_name}</strong>
+            </>
+          )}
           <span>{formatDate(comment.created_at)}</span>
           {comment.reply_to_name ? <span className="comment-reply-to">в ответ {comment.reply_to_name}</span> : null}
           {comment.can_delete && !deleted ? (

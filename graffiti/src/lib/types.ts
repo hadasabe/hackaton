@@ -120,6 +120,7 @@ export interface Graffiti {
 export interface Comment {
   id: number;
   parent_id?: number | null;
+  author_id?: number | null;
   author_name: string;
   avatar_url?: string;
   body: string;
