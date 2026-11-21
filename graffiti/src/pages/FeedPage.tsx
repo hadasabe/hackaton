@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Heart, MapPin, Map as MapIcon, MessageCircle, Plus, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Heart, MapPin, Map as MapIcon, MessageCircle, Plus, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { api } from '../lib/api';
 import type { CityObject } from '../lib/cityObjects';
 import { useCityObjects } from '../lib/cityObjects';
@@ -281,17 +281,6 @@ export function FeedPage() {
             ))}
           </div>
         )}
-      </section>
-
-      <section className="submit-banner">
-        <div>
-          <span className="section-kicker">Ленту пополняют люди</span>
-          <h2>Знаете место или работу, которых нет в ленте?</h2>
-          <p>Пришлите фото граффити — или добавьте своё здание на карте.</p>
-        </div>
-        <Link to="/submit" className="button button-lime">
-          Предложить граффити <ArrowRight size={17} />
-        </Link>
       </section>
     </main>
   );
