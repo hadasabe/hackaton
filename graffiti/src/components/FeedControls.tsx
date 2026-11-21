@@ -27,13 +27,13 @@ export function FeedControls({ active }: { active: 'objects' | 'collections' }) 
       <nav className="feed-switch" aria-label="Объекты и коллекции">
         <Link
           to={{ pathname: '/', search }}
-          className={`chip${active === 'objects' ? ' active' : ''}`}
+          className={`button ${active === 'objects' ? 'button-dark' : 'button-outline'}`}
         >
           Объекты
         </Link>
         <Link
           to={{ pathname: '/collections', search }}
-          className={`chip${active === 'collections' ? ' active' : ''}`}
+          className={`button ${active === 'collections' ? 'button-dark' : 'button-outline'}`}
         >
           Коллекции
         </Link>

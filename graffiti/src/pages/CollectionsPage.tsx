@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Images, Plus } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Images } from 'lucide-react';
 import { api } from '../lib/api';
 import type { CollectionSummary } from '../lib/types';
-import { useAuth } from '../context/AuthContext';
-import { CollectionFormDialog } from '../components/CollectionFormDialog';
 import { FeedControls } from '../components/FeedControls';
 import { formatDate } from '../lib/format';
 
 export function CollectionsPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const query = (searchParams.get('q') || '').trim().toLowerCase();
   const [items, setItems] = useState<CollectionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,12 +30,6 @@ export function CollectionsPage() {
     void load();
   }, [load]);
 
-  async function create(payload: { title: string; description: string }) {
-    const { collection } = await api.createCollection(payload);
-    setCreating(false);
-    navigate(`/collections/${collection.id}`);
-  }
-
   const visibleItems = query
     ? items.filter((item) => [item.title, item.description, item.owner_name].some((value) => String(value || '').toLowerCase().includes(query)))
     : items;
@@ -50,17 +39,6 @@ export function CollectionsPage() {
       <FeedControls active="collections" />
 
       <section className="collections-section">
-        <div className="collections-toolbar">
-          <span className="collections-count">{query ? `${items.filter((item) => [item.title, item.description, item.owner_name].some((value) => String(value || '').toLowerCase().includes(query))).length} найдено` : `${items.length} подборок`}</span>
-          {user ? (
-            <button type="button" className="button button-dark" onClick={() => setCreating(true)}>
-              <Plus size={16} /> Создать коллекцию
-            </button>
-          ) : (
-            <Link to="/login" className="button button-dark"><Plus size={16} /> Создать коллекцию</Link>
-          )}
-        </div>
-
         {error ? <div className="notice error">{error}</div> : null}
 
         {loading ? (
@@ -102,14 +80,6 @@ export function CollectionsPage() {
           </div>
         )}
       </section>
-
-      {creating ? (
-        <CollectionFormDialog
-          mode="create"
-          onClose={() => setCreating(false)}
-          onSubmit={create}
-        />
-      ) : null}
     </main>
   );
 }

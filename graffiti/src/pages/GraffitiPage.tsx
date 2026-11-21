@@ -10,7 +10,6 @@ import {
   Heart,
   HeartOff,
   MapPin,
-  MessageCircle,
   Reply,
   Send,
   Share2,
@@ -296,6 +295,7 @@ export function GraffitiPage() {
               type="button"
               className={`reaction big ${item.my_reaction === 'like' ? 'active like' : ''}`}
               onClick={() => void handleReact('like')}
+              aria-label="Нравится"
             >
               <ThumbsUp size={18} /> {item.likes}
             </button>
@@ -303,34 +303,37 @@ export function GraffitiPage() {
               type="button"
               className={`reaction big ${item.my_reaction === 'dislike' ? 'active dislike' : ''}`}
               onClick={() => void handleReact('dislike')}
+              aria-label="Не нравится"
             >
               <ThumbsDown size={18} /> {item.dislikes}
             </button>
-            <span className="comments-count">
-              <MessageCircle size={17} /> {comments.length}
-            </span>
             <button
               type="button"
               className={`button ${item.favorite ? 'button-dark' : 'button-outline'}`}
               onClick={() => void toggleFavorite()}
+              aria-label={item.favorite ? 'Убрать из избранного' : 'В избранное'}
+              title={item.favorite ? 'Убрать из избранного' : 'В избранное'}
             >
               {item.favorite ? <HeartOff size={17} /> : <Heart size={17} />}
-              {item.favorite ? 'В избранном' : 'В избранное'}
             </button>
             <button
               type="button"
               className="button button-outline"
               onClick={() => void shareGraffiti()}
+              aria-label="Поделиться"
+              title="Поделиться"
             >
-              <Share2 size={17} /> Поделиться
+              <Share2 size={17} />
             </button>
             {user ? (
               <button
                 type="button"
                 className="button button-outline detail-collection"
                 onClick={() => setPickerOpen(true)}
+                aria-label="В коллекцию"
+                title="В коллекцию"
               >
-                <FolderPlus size={17} /> В коллекцию
+                <FolderPlus size={17} />
               </button>
             ) : null}
           </div>

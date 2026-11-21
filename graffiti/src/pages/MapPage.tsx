@@ -88,6 +88,8 @@ export function MapPage() {
   const markerLayer = useRef<L.MarkerClusterGroup | null>(null);
   const planLine = useRef<L.Polyline | null>(null);
   const markers = useRef(new Map<string, L.Marker>());
+  const selectedIdRef = useRef<string | null>(null);
+  selectedIdRef.current = selectedId;
 
   useEffect(() => {
     if (!mapNode.current || mapRef.current) return;
@@ -191,12 +193,11 @@ export function MapPage() {
     if (!mapRef.current || !markerLayer.current) return;
     markerLayer.current.clearLayers();
     markers.current.clear();
-    const map = mapRef.current;
 
     for (const object of visibleObjects) {
       if (object.lat == null || object.lng == null) continue;
       const icon = L.divIcon({
-        className: `map-object-pin${selected?.id === object.id ? ' selected' : ''}`,
+        className: `map-object-pin${selectedIdRef.current === object.id ? ' selected' : ''}`,
         html: object.image
           ? `<span class="map-pin-photo"><img src="${object.image}" alt="" loading="lazy"></span><span class="map-pin-dot"></span>`
           : '<span class="map-pin-dot"></span>',
@@ -204,12 +205,14 @@ export function MapPage() {
         iconAnchor: [21, 44],
       });
       const marker = L.marker([object.lat, object.lng], { icon, title: object.name, keyboard: true })
-        .bindTooltip(object.name, { direction: 'top', offset: [0, -34] })
         .addTo(markerLayer.current)
         .on('click', () => setSelectedId(object.id));
       markers.current.set(object.id, marker);
     }
+  }, [objects, visibleObjects]);
 
+  useEffect(() => {
+    if (!mapRef.current) return;
     planLine.current?.remove();
     planLine.current = null;
     const planPoints = plan
@@ -222,26 +225,29 @@ export function MapPage() {
         weight: 5,
         opacity: 0.75,
         dashArray: '2 8',
-      }).addTo(map);
+      }).addTo(mapRef.current);
     }
     return () => {
       planLine.current?.remove();
       planLine.current = null;
     };
-  }, [objects, plan, selected?.id, visibleObjects]);
+  }, [objects, plan]);
 
   useEffect(() => {
+    for (const marker of markers.current.values()) {
+      marker.getElement()?.classList.remove('selected');
+    }
     if (!selected || selected.lat == null || selected.lng == null || !mapRef.current) return;
     const map = mapRef.current;
     const marker = markers.current.get(selected.id);
     if (marker && markerLayer.current) {
       markerLayer.current.zoomToShowLayer(marker, () => {
-        marker.openTooltip();
-        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 16), { duration: 0.6 });
+        marker.getElement()?.classList.add('selected');
+        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 16), { duration: 0.45 });
       });
       return;
     }
-    map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
+    map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 15), { duration: 0.45 });
   }, [selected]);
 
   function toggleFavorite(id: string) {
