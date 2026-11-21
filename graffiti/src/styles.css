@@ -6296,3 +6296,8 @@ a.people-row:hover {
 .route-create-actions .button {
   flex: 1 1 220px;
 }
+
+.route-create-hint {
+  color: var(--muted);
+  font-size: 12px;
+}

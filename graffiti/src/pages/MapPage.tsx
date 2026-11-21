@@ -25,7 +25,7 @@ import {
   readFavoritePlaceIds,
   writeFavoritePlaceIds,
 } from '../lib/placeFavorites';
-import { readPlan, writePlan } from '../lib/plan';
+import { readPlan, readRouteDraft, writePlan, writeRouteDraft } from '../lib/plan';
 import { tagsForObject } from '../lib/tags';
 import { TagFilters } from '../components/TagFilters';
 
@@ -185,7 +185,7 @@ export function MapPage() {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('place'));
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
-  const [plan, setPlan] = useState<string[]>(() => readPlan());
+  const [plan, setPlan] = useState<string[]>(() => (routeMode ? readRouteDraft() : readPlan()));
   const [showPlan, setShowPlan] = useState(() => searchParams.get('plan') === '1');
   const [dragPlanId, setDragPlanId] = useState<string | null>(null);
   const [dragPlanInsert, setDragPlanInsert] = useState<number | null>(null);
@@ -205,6 +205,12 @@ export function MapPage() {
   const markers = useRef(new Map<string, L.Marker>());
   const selectedIdRef = useRef<string | null>(null);
   selectedIdRef.current = selectedId;
+
+  useEffect(() => {
+    setPlan(routeMode ? readRouteDraft() : readPlan());
+    setWalkStarted(false);
+    setPlanGeometry(null);
+  }, [routeMode]);
 
   useEffect(() => {
     if (!mapNode.current || mapRef.current) return;
@@ -438,10 +444,6 @@ export function MapPage() {
     if (place) setSelectedId(place);
   }, [searchParams]);
 
-  useEffect(() => {
-    setPlan(readPlan());
-  }, []);
-
   const requestedTag = searchParams.get('tag');
   const availableTags = new Set(objects.flatMap((object) => [...tagsForObject(object)]));
   const activeTag = requestedTag && availableTags.has(requestedTag) ? requestedTag : null;
@@ -471,6 +473,12 @@ export function MapPage() {
       setSelectedId(null);
     }
   }, [loading, selectedId, visibleObjects]);
+
+  function savePlan(next: string[]) {
+    if (routeMode) writeRouteDraft(next);
+    else writePlan(next);
+    setPlan(next);
+  }
 
   function selectTag(tag: string | null) {
     const next = new URLSearchParams(searchParams);
@@ -594,8 +602,7 @@ export function MapPage() {
   function togglePlan(id: string) {
     const next = plan.includes(id) ? plan.filter((planId) => planId !== id) : [...plan, id];
     if (!next.length) setWalkStarted(false);
-    writePlan(next);
-    setPlan(next);
+    savePlan(next);
   }
 
   function startPlanDrag(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
@@ -647,8 +654,7 @@ export function MapPage() {
     const next = [...plan];
     const [moved] = next.splice(from, 1);
     next.splice(target, 0, moved);
-    writePlan(next);
-    setPlan(next);
+    savePlan(next);
   }
 
   function cancelPlanDrag() {
@@ -701,8 +707,7 @@ export function MapPage() {
       }
       const missing = plan.filter((id) => !ordered.includes(id));
       const next = [...ordered, ...missing];
-      writePlan(next);
-      setPlan(next);
+      savePlan(next);
     } finally {
       setPlanOptimizing(false);
     }
@@ -818,8 +823,7 @@ export function MapPage() {
                     </button>
                   ) : null}
                   <button type="button" className="button button-outline" onClick={() => {
-                    writePlan([]);
-                    setPlan([]);
+                    savePlan([]);
                     setWalkStarted(false);
                   }}>
                     {routeMode ? 'Очистить маршрут' : 'Очистить прогулку'}

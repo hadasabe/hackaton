@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import type { WalkRouteSummary } from '../lib/types';
 import { useCityObjects } from '../lib/cityObjects';
 import { formatDate, formatDuration, plural } from '../lib/format';
-import { readPlan, writePlan } from '../lib/plan';
+import { clearRouteDraft, readRouteDraft, writePlan } from '../lib/plan';
 import { useAuth } from '../context/AuthContext';
 import { ReportButton } from '../components/ReportButton';
 import { cardLinkProps } from '../lib/cardLink';
@@ -15,12 +15,12 @@ export function RoutesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [plan] = useState<string[]>(() => readPlan());
+  const [plan, setPlan] = useState<string[]>(() => readRouteDraft());
   const [routes, setRoutes] = useState<WalkRouteSummary[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showCreate, setShowCreate] = useState(() => searchParams.get('create') === '1' && plan.length >= 2);
+  const [showCreate, setShowCreate] = useState(() => searchParams.get('create') === '1');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState('30');
@@ -52,6 +52,8 @@ export function RoutesPage() {
         visibility,
         stops: plan,
       });
+      clearRouteDraft();
+      setPlan([]);
       navigate(`/r/${data.route.slug}`);
     } catch (caught) {
       setCreateError(caught instanceof Error ? caught.message : 'Не удалось создать маршрут');
@@ -121,11 +123,16 @@ export function RoutesPage() {
           />
         </label>
         <div className="routes-toolbar-actions">
-          {plan.length >= 2 ? (
-            <button type="button" className="button button-dark" onClick={() => setShowCreate((value) => !value)}>
-              <Plus size={16} /> Опубликовать маршрут
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="button button-dark"
+            onClick={() => {
+              setPlan(readRouteDraft());
+              setShowCreate(true);
+            }}
+          >
+            <Plus size={16} /> Опубликовать маршрут
+          </button>
           <Link to="/map" className="button button-outline"><MapIcon size={16} /> Карта</Link>
         </div>
       </div>
@@ -161,11 +168,14 @@ export function RoutesPage() {
             </div>
           </div>
           {createError ? <div className="notice error">{createError}</div> : null}
+          {plan.length < 2 ? (
+            <p className="route-create-hint">Добавьте минимум 2 остановки, чтобы опубликовать маршрут.</p>
+          ) : null}
           <div className="route-create-actions">
             <Link to="/map?plan=1&mode=route" className="button button-outline">
               <MapIcon size={16} /> Выбрать места
             </Link>
-            <button type="submit" className="button button-dark" disabled={sending}>
+            <button type="submit" className="button button-dark" disabled={sending || plan.length < 2}>
               {sending ? 'Создаём…' : 'Создать маршрут'}
             </button>
           </div>
