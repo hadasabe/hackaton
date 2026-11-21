@@ -6248,3 +6248,42 @@ a.people-row:hover {
     bottom: 24px;
   }
 }
+
+.map-user-pin {
+  background: transparent;
+  border: 0;
+}
+
+.map-user-pin-dot {
+  position: absolute;
+  inset: 7px;
+  z-index: 2;
+  display: block;
+  border: 2px solid var(--card);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 2px var(--ink), 2px 2px 0 rgba(17, 17, 17, 0.25);
+}
+
+.map-user-pin-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(77, 124, 255, 0.35);
+  animation: map-user-pulse 2s ease-out infinite;
+}
+
+@keyframes map-user-pulse {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}

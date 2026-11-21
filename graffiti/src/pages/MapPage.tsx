@@ -94,6 +94,7 @@ export function MapPage() {
   const mapRef = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.MarkerClusterGroup | null>(null);
   const planLine = useRef<L.Polyline | null>(null);
+  const userMarker = useRef<L.Marker | null>(null);
   const [planGeometry, setPlanGeometry] = useState<[number, number][] | null>(null);
   const markers = useRef(new Map<string, L.Marker>());
   const selectedIdRef = useRef<string | null>(null);
@@ -140,11 +141,39 @@ export function MapPage() {
     resize.observe(mapNode.current);
     return () => {
       resize.disconnect();
+      userMarker.current?.remove();
+      userMarker.current = null;
       map.remove();
       mapRef.current = null;
       markerLayer.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (!userPoint) {
+      userMarker.current?.remove();
+      userMarker.current = null;
+      return;
+    }
+    const position: [number, number] = [userPoint.lat, userPoint.lng];
+    if (userMarker.current) {
+      userMarker.current.setLatLng(position);
+      return;
+    }
+    const icon = L.divIcon({
+      className: 'map-user-pin',
+      html: '<span class="map-user-pin-pulse"></span><span class="map-user-pin-dot"></span>',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+    userMarker.current = L.marker(position, {
+      icon,
+      interactive: false,
+      zIndexOffset: 1200,
+    }).addTo(map);
+  }, [userPoint]);
 
   useEffect(() => {
     if (!window.matchMedia('(pointer: coarse)').matches) return;
