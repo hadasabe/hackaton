@@ -170,7 +170,7 @@ export function RoutePage() {
           </div>
           <div className="route-detail-actions">
             <button type="button" className="button button-dark" onClick={startRoute}><MapIcon size={16} /> Пройти маршрут</button>
-            <Link to="/map" className="button button-outline"><MapPin size={16} /> Карта</Link>
+            <button type="button" className="button button-outline" onClick={startRoute}><MapPin size={16} /> Карта</button>
           </div>
         </div>
       </article>
