@@ -23,7 +23,6 @@ import {
 } from '../lib/placeFavorites';
 import { readPlan, writePlan } from '../lib/plan';
 
-type MapKind = 'all' | 'places' | 'graffiti';
 
 function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const rad = Math.PI / 180;
@@ -73,7 +72,6 @@ function MapObjectRow({
 export function MapPage() {
   const { objects, loading, error } = useCityObjects();
   const [searchParams] = useSearchParams();
-  const [kind, setKind] = useState<MapKind>('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('place'));
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
@@ -151,8 +149,6 @@ export function MapPage() {
   const visibleObjects = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return objects.filter((object) => {
-      if (kind === 'places' && object.kind === 'graffiti') return false;
-      if (kind === 'graffiti' && object.kind !== 'graffiti') return false;
       if (!needle) return true;
       return [
         object.name,
@@ -164,7 +160,7 @@ export function MapPage() {
         object.artist,
       ].some((value) => String(value || '').toLowerCase().includes(needle));
     });
-  }, [kind, objects, query]);
+  }, [objects, query]);
 
   const selected = objects.find((object) => object.id === selectedId) || null;
 
@@ -264,23 +260,6 @@ export function MapPage() {
 
   return (
     <main className="page map-page">
-      <header className="map-page-head">
-        <div>
-          <span className="eyebrow">Саратов · карта объектов</span>
-          <h1>Карта города</h1>
-          <p>Все места и граффити из ленты. Выберите объект на карте или в списке.</p>
-        </div>
-        <div className="map-head-actions">
-          <Link to="/routes" className="button button-outline"><Route size={16} /> Маршруты</Link>
-          <button type="button" className="button button-dark" onClick={() => setShowPlan((value) => !value)}>
-            Моя прогулка · {plan.length}
-          </button>
-          <button type="button" className="button button-outline" onClick={locate} disabled={locating}>
-            <Navigation size={16} /> {locating ? 'Ищу…' : 'Рядом'}
-          </button>
-        </div>
-      </header>
-
       <div className="map-page-tools">
         <label className="search-box">
           <Search size={16} />
@@ -291,15 +270,13 @@ export function MapPage() {
             aria-label="Поиск объектов на карте"
           />
         </label>
-        <div className="chip-row" role="group" aria-label="Тип объекта">
-          <button type="button" className={`chip ${kind === 'all' ? 'active' : ''}`} onClick={() => setKind('all')}>
-            Все · {objects.length}
+        <div className="map-head-actions">
+          <Link to="/routes" className="button button-outline"><Route size={16} /> Маршруты</Link>
+          <button type="button" className="button button-dark" onClick={() => setShowPlan((value) => !value)}>
+            Моя прогулка · {plan.length}
           </button>
-          <button type="button" className={`chip ${kind === 'places' ? 'active' : ''}`} onClick={() => setKind('places')}>
-            Места · {objects.filter((object) => object.kind !== 'graffiti').length}
-          </button>
-          <button type="button" className={`chip ${kind === 'graffiti' ? 'active' : ''}`} onClick={() => setKind('graffiti')}>
-            Граффити · {objects.filter((object) => object.kind === 'graffiti').length}
+          <button type="button" className="button button-outline" onClick={locate} disabled={locating}>
+            <Navigation size={16} /> {locating ? 'Ищу…' : 'Рядом'}
           </button>
         </div>
       </div>

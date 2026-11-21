@@ -5610,3 +5610,30 @@ body.map-is-fullscreen {
     flex-wrap: wrap;
   }
 }
+
+.wall-feed-card .card-body h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.wall-feed-card .card-body h3 a {
+  color: var(--ink);
+}
+
+.wall-card-owner,
+.wall-card-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.map-page-tools {
+  margin-top: 6px;
+}
