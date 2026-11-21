@@ -351,3 +351,5 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 .exp-route-nearby svg{width:12px;height:12px;stroke-width:2.2}
 .exp-route-distance{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;background:#e9edde;color:var(--ink);font-size:9px;font-weight:850;letter-spacing:.2px;text-transform:none;white-space:nowrap}
 .exp-route-distance svg{width:11px;height:11px}
+
+.exp-credit{margin:28px 0 0;padding-top:14px;border-top:1px dashed var(--line);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
