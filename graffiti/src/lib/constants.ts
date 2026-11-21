@@ -25,6 +25,7 @@ export const WALL_TYPE_META: Record<WallType, { label: string }> = {
   fence: { label: 'Забор' },
   wall: { label: 'Стена' },
   other: { label: 'Другое' },
+  building: { label: 'Здание' },
 };
 
 export const WALL_TERMS_META: Record<

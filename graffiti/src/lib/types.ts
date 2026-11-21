@@ -3,7 +3,7 @@ export type Style = 'mural' | 'graffiti' | 'stencil' | 'sticker' | 'text' | 'oth
 export type ModerationStatus = 'pending' | 'published' | 'rejected';
 export type ReactionValue = 'like' | 'dislike';
 
-export type WallType = 'garage' | 'facade' | 'fence' | 'wall' | 'other';
+export type WallType = 'garage' | 'facade' | 'fence' | 'wall' | 'other' | 'building';
 export type WallTerms = 'free' | 'materials' | 'paid' | 'negotiable';
 
 export interface Wall {
