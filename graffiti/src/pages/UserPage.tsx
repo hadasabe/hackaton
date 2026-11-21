@@ -142,14 +142,14 @@ export function UserPage() {
       {actionError ? <div className="notice error">{actionError}</div> : null}
 
       <div className="account-tabs">
-        <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => setTab('routes')}>
-          Маршруты <span>{profile.routes.length}</span>
-        </button>
         <button type="button" className={`chip${tab === 'walls' ? ' active' : ''}`} onClick={() => setTab('walls')}>
           Стены <span>{profile.walls.length}</span>
         </button>
         <button type="button" className={`chip${tab === 'buildings' ? ' active' : ''}`} onClick={() => setTab('buildings')}>
           Здания <span>{profile.buildings.length}</span>
+        </button>
+        <button type="button" className={`chip${tab === 'routes' ? ' active' : ''}`} onClick={() => setTab('routes')}>
+          Маршруты <span>{profile.routes.length}</span>
         </button>
       </div>
 

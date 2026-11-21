@@ -89,6 +89,7 @@ export function MapPage() {
   const mapRef = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.MarkerClusterGroup | null>(null);
   const planLine = useRef<L.Polyline | null>(null);
+  const [planGeometry, setPlanGeometry] = useState<[number, number][] | null>(null);
   const markers = useRef(new Map<string, L.Marker>());
   const selectedIdRef = useRef<string | null>(null);
   selectedIdRef.current = selectedId;
@@ -348,13 +349,41 @@ export function MapPage() {
   }, [objects, visibleObjects]);
 
   useEffect(() => {
-    if (!mapRef.current) return;
-    planLine.current?.remove();
-    planLine.current = null;
-    const planPoints = plan
+    const points = plan
       .map((id) => objects.find((object) => object.id === id))
       .filter((object): object is CityObject => Boolean(object && object.lat != null && object.lng != null))
       .map((object) => [object.lat as number, object.lng as number] as [number, number]);
+    if (points.length < 2) {
+      setPlanGeometry(null);
+      return;
+    }
+    const controller = new AbortController();
+    const coordinates = points.map(([lat, lng]) => `${lng},${lat}`).join(';');
+    fetch(
+      `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coordinates}?overview=full&geometries=geojson`,
+      { signal: controller.signal },
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { routes?: Array<{ geometry?: { coordinates?: [number, number][] } }> } | null) => {
+        const coordinatesList = data?.routes?.[0]?.geometry?.coordinates;
+        if (!Array.isArray(coordinatesList) || coordinatesList.length < 2) return;
+        setPlanGeometry(coordinatesList.map(([lng, lat]) => [lat, lng] as [number, number]));
+      })
+      .catch(() => {
+        // Keep the straight fallback when routing is unavailable.
+      });
+    return () => controller.abort();
+  }, [objects, plan]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    planLine.current?.remove();
+    planLine.current = null;
+    const straightPoints = plan
+      .map((id) => objects.find((object) => object.id === id))
+      .filter((object): object is CityObject => Boolean(object && object.lat != null && object.lng != null))
+      .map((object) => [object.lat as number, object.lng as number] as [number, number]);
+    const planPoints = planGeometry && planGeometry.length > 1 ? planGeometry : straightPoints;
     if (planPoints.length > 1) {
       planLine.current = L.polyline(planPoints, {
         color: '#111111',
@@ -367,7 +396,7 @@ export function MapPage() {
       planLine.current?.remove();
       planLine.current = null;
     };
-  }, [objects, plan]);
+  }, [objects, plan, planGeometry]);
 
   useEffect(() => {
     for (const marker of markers.current.values()) {
