@@ -81,7 +81,7 @@ function initMap(){
  const routePane=map.createPane('routePane');routePane.style.zIndex=800;
  new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('map-region'));
 }
-function markerIcon(p){const near=state.near.some(n=>n.id===p.id),photo=Boolean(p.image),position=p.markerPosition||'50% 35%';return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${photo?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async" style="object-position:${esc(position)}">`:''}</span>${photo?`<span class="poi-glyph">${icon(p.glyph)}</span>`:''}<span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
+function markerIcon(p){const near=state.near.some(n=>n.id===p.id),photo=Boolean(p.image),position=p.markerPosition||'50% 50%';return L.divIcon({className:`poi-icon photo-poi ${near?'near':''} ${state.selected===p.id?'selected':''}`,html:`<span class="poi-photo">${icon(p.glyph)}${photo?`<img src="${esc(p.image)}" alt="" loading="lazy" decoding="async" style="object-position:${esc(position)}">`:''}</span>${photo?`<span class="poi-glyph">${icon(p.glyph)}</span>`:''}<span class="poi-stem"></span>`,iconSize:[54,62],iconAnchor:[27,59]});}
 function clearPlannedRoute(){
  for(const layer of [plannedRouteLine,plannedRouteCasing,routeStartMarker,routeEndMarker])if(layer)layer.remove();
  plannedRouteLine=plannedRouteCasing=routeStartMarker=routeEndMarker=null;

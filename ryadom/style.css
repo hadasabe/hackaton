@@ -170,7 +170,7 @@ select{min-height:48px;border:1px solid #cdd0c0;border-radius:14px;padding:10px 
 .photo-poi{filter:drop-shadow(0 3px 6px #05080565)}
 .poi-photo{display:grid;place-items:center;width:54px;height:54px;border:4px solid var(--surface);border-radius:50%;position:relative;overflow:hidden;background:#414b35;box-shadow:0 0 0 1px #151c0d}
 .poi-photo>svg{position:absolute;width:24px;height:24px;color:var(--lime)}
-.poi-photo>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%}
+.leaflet-container .leaflet-marker-pane .poi-photo>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
 .poi-glyph{position:absolute;right:-2px;bottom:18px;z-index:3;display:grid;place-items:center;width:19px;height:19px;border:2px solid var(--surface);border-radius:50%;background:var(--lime);color:#151c0d;box-shadow:0 1px 3px #05080560;pointer-events:none}
 .poi-glyph>svg{width:11px;height:11px}
 .poi-stem{display:block;background:var(--surface);width:9px;height:9px;transform:rotate(45deg);margin:-5px auto 0;border-radius:0 0 2px 0}
