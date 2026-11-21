@@ -31,15 +31,37 @@ export interface Wall {
   hidden_reason?: string | null;
 }
 
+export interface SourceLink {
+  title: string;
+  url: string;
+}
+
+export interface PhotoMeta {
+  src: string;
+  author: string;
+  license: string;
+  licenseUrl?: string;
+  source: string;
+  title?: string;
+  modified?: string;
+  width?: number;
+  height?: number;
+}
+
 export interface WalkPlace {
   id: string;
   name: string;
   category: string;
   address: string;
   description: string;
+  story?: string;
+  lookFor?: string;
   era?: string;
   artType?: string;
   artist?: string;
+  city?: string;
+  sources?: SourceLink[];
+  photo?: PhotoMeta | null;
   image: string;
   lat: number | null;
   lng: number | null;
@@ -79,6 +101,8 @@ export interface Graffiti {
   dislikes: number;
   comments_count: number;
   my_reaction: ReactionValue | null;
+  lat?: number | null;
+  lng?: number | null;
   submitted_by?: { id: number; name: string; email: string } | null;
 }
 

@@ -213,6 +213,47 @@ export const api = {
     return request<{ items: Wall[] }>('/api/my/walls');
   },
 
+  walkRoutes(scope: 'all' | 'public' | 'mine' = 'public') {
+    return request<{ items: WalkRouteSummary[] }>(`/api/walk-routes?scope=${scope}`);
+  },
+
+  walkRoute(slug: string) {
+    return request<{ route: WalkRouteSummary; comments: Comment[] }>(
+      `/api/walk-routes/${encodeURIComponent(slug)}`,
+    );
+  },
+
+  createWalkRoute(payload: {
+    title: string;
+    description: string;
+    duration_minutes: number;
+    visibility: 'public' | 'link';
+    stops: string[];
+  }) {
+    return request<{ route: WalkRouteSummary }>('/api/walk-routes', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  toggleWalkRouteFavorite(id: number) {
+    return request<{ favorite: boolean }>(`/api/walk-routes/${id}/favorite`, { method: 'POST' });
+  },
+
+  reactWalkRoute(id: number, value: ReactionValue) {
+    return request<{ likes: number; dislikes: number; my_reaction: ReactionValue | null }>(
+      `/api/walk-routes/${id}/reaction`,
+      { method: 'POST', body: JSON.stringify({ value }) },
+    );
+  },
+
+  addWalkRouteComment(id: number, body: string, parentId?: number | null) {
+    return request<Comment>(`/api/walk-routes/${id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body, parent_id: parentId || null }),
+    });
+  },
+
   myWalkRoutes() {
     return request<{ items: WalkRouteSummary[] }>('/api/walk-routes?scope=mine');
   },

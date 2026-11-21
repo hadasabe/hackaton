@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { HashRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfirmProvider } from './components/ConfirmDialog';
@@ -20,8 +21,12 @@ import { SubmitPage } from './pages/SubmitPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AdminPage } from './pages/AdminPage';
-import { WalkPage } from './pages/WalkPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+
+const MapPage = lazy(() => import('./pages/MapPage').then((module) => ({ default: module.MapPage })));
+const ObjectPage = lazy(() => import('./pages/ObjectPage').then((module) => ({ default: module.ObjectPage })));
+const RoutePage = lazy(() => import('./pages/RoutePage').then((module) => ({ default: module.RoutePage })));
+const RoutesPage = lazy(() => import('./pages/RoutesPage').then((module) => ({ default: module.RoutesPage })));
 
 function Footer() {
   const { user } = useAuth();
@@ -48,16 +53,20 @@ export default function App() {
           <div className="app-shell">
           <ScrollToTop />
           <Header />
+          <Suspense fallback={<main className="page"><div className="detail-skeleton" /></main>}>
           <Routes>
             <Route path="/" element={<FeedPage />} />
-            <Route path="/map" element={<WalkPage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/routes" element={<RoutesPage />} />
             <Route path="/graffiti" element={<Navigate to="/" replace />} />
             <Route path="/g/:id" element={<GraffitiPage />} />
+            <Route path="/object/:id" element={<ObjectPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:id" element={<CollectionPage />} />
             <Route path="/walls" element={<WallsPage />} />
             <Route path="/walk" element={<Navigate to="/map" replace />} />
-            <Route path="/r/:slug" element={<WalkPage />} />
+            <Route path="/r/:slug" element={<RoutePage />} />
+            <Route path="/routes/:slug" element={<RoutePage />} />
             <Route
               path="/walls/new"
               element={(
@@ -95,6 +104,7 @@ export default function App() {
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
           <SupportNote />
           <Footer />
           <BottomNav />

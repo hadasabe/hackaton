@@ -56,7 +56,7 @@
 
 - **Frontend:** React 19, TypeScript, Vite, React Router.
 - **Backend:** Node.js, Express 5, better-sqlite3, JWT/cookie-аутентификация, multer, sharp.
-- **Прогулка:** ванильный JavaScript, Leaflet, OpenStreetMap, service worker.
+- **Карта:** Leaflet, OpenStreetMap, геолокация и маршруты.
 - **Хранение:** один SQLite-файл, изображения — в таблице `media`.
 - **Продакшен:** Nginx, HTTPS, systemd.
 
@@ -64,15 +64,12 @@
 
 ```text
 .
-├── graffiti/          # React-приложение, API и админка
+├── graffiti/          # единое React-приложение, API и админка
 │   ├── server/        # Express, SQLite, модерация, загрузка фото
-│   ├── src/           # страницы, компоненты и стили
-│   └── public/        # favicon, OG-изображение
-├── ryadom/            # прогулка: карта, маршруты, аудиогид, PWA
-│   ├── data/          # каталог мест
-│   ├── app.js         # карта, геолокация, карточки
-│   ├── experience.js  # маршруты, профиль, коллекции, заявки
-│   └── style.css      # оформление прогулки
+│   ├── src/           # лента, карта, маршруты, профиль, стили
+│   ├── content/       # каталог мест и исходные метаданные
+│   ├── public/        # фото мест, аудио, favicon, OG-изображение
+│   └── tools/         # сборка каталога
 └── README.md
 ```
 
@@ -92,15 +89,6 @@ npm run dev
 - карта: `http://localhost:5173/#/map`
 - API: `http://localhost:3001`
 
-Отдельный запуск прогулки без общего сайта:
-
-```bash
-cd ryadom
-python3 server.py
-```
-
-- автономная версия: `http://127.0.0.1:8765`
-
 ## Деплой
 
 Production-сборка:
@@ -117,7 +105,6 @@ NODE_ENV=production npm start
 ## Документация
 
 - [graffiti/README.md](graffiti/README.md) — API, модерация и работа с базой.
-- [ryadom/README.md](ryadom/README.md) — карта, GPS, маршруты и аудиогид.
 
 ## Лицензия
 

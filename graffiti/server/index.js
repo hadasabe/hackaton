@@ -5,7 +5,6 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
-import vm from 'node:vm';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -20,17 +19,11 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET || 'stena-dev-cookie-secret';
 const JWT_SECRET = process.env.JWT_SECRET || 'stena-dev-jwt-secret';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
-const RYADOM_DIR = path.join(__dirname, '..', '..', 'ryadom');
 
 function loadStaticPlaces() {
   try {
-    const filePath = path.join(RYADOM_DIR, 'data', 'places.js');
-    const sandbox = {};
-    vm.runInNewContext(fs.readFileSync(filePath, 'utf8'), sandbox, {
-      timeout: 2000,
-      filename: filePath,
-    });
-    const list = Array.isArray(sandbox.RYADOM_PLACES) ? sandbox.RYADOM_PLACES : [];
+    const filePath = path.join(__dirname, '..', 'content', 'places.json');
+    const list = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return new Map(list.map((place) => [String(place.id), place]));
   } catch (error) {
     console.error('[stena] static places catalog failed', error.message);
@@ -40,6 +33,38 @@ function loadStaticPlaces() {
 
 const STATIC_PLACES = loadStaticPlaces();
 const SESSION_COOKIE = 'stena_session';
+
+function normalizePlaceAddress(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9]+/g, ' ')
+    .replace(/\b(улица|ул|проспект|пр|набережная|сквер|район|дом|д)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicPlaceImage(value) {
+  if (!value) return '';
+  const name = path.basename(String(value));
+  return `/places/${encodeURIComponent(name)}`;
+}
+
+function findPlaceByAddress(address) {
+  const normalized = normalizePlaceAddress(address);
+  if (!normalized) return null;
+  const house = normalized.match(/\d+/)?.[0];
+  for (const place of STATIC_PLACES.values()) {
+    if (!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) continue;
+    const candidate = normalizePlaceAddress(place.address);
+    if (candidate === normalized) return place;
+    if (!house || !candidate.split(' ').includes(house)) continue;
+    if (normalized.split(' ').some((token) => token.length > 3 && !/^\d+$/.test(token) && candidate.includes(token))) {
+      return place;
+    }
+  }
+  return null;
+}
 
 seedDatabase();
 void backfillMediaHashes().catch((error) => {
@@ -59,7 +84,7 @@ app.use((req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; media-src 'self'; font-src 'self' data:; worker-src 'self'; manifest-src 'self'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://tile.openstreetmap.de https://*.tile.openstreetmap.de; connect-src 'self' https://routing.openstreetmap.de; frame-src 'none'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; media-src 'self'; font-src 'self' data:; worker-src 'self'; manifest-src 'self'",
     );
   }
   next();
@@ -67,22 +92,6 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(COOKIE_SECRET));
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '30d', immutable: true }));
-app.use(
-  '/walk-app',
-  (req, res, next) => {
-    if (/^\/(tools|tests)\//.test(req.path) || /\.(md|py|cjs|cmd|zip)$/i.test(req.path)) {
-      res.status(404).end();
-      return;
-    }
-    next();
-  },
-  express.static(RYADOM_DIR, {
-    maxAge: '1h',
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
-    },
-  }),
-);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -485,9 +494,17 @@ app.get('/api/feed', (req, res) => {
     params.push(like, like, like);
   }
 
-  const items = db
+  const rows = db
     .prepare(`${GRAFFITI_SELECT} WHERE ${where.join(' AND ')} ORDER BY datetime(COALESCE(g.published_at, g.created_at)) DESC LIMIT 200`)
     .all(...params);
+  const items = rows.map((item) => {
+    const place = findPlaceByAddress(item.address);
+    return {
+      ...item,
+      lat: place?.lat ?? null,
+      lng: place?.lng ?? null,
+    };
+  });
 
   res.json({ items, stats: publicStats() });
 });
@@ -758,10 +775,20 @@ app.get('/api/walk-places', (_req, res) => {
       category: place.category || '',
       address: place.address || '',
       description: place.description || '',
+      story: place.story || '',
+      lookFor: place.lookFor || '',
       era: place.era || '',
       artType: place.artType || '',
       artist: place.artist || '',
-      image: place.image ? `/walk-app/${String(place.image).replace(/^\/+/, '')}` : '',
+      city: place.city || 'САРАТОВ',
+      sources: place.sources || [],
+      photo: place.photo
+        ? {
+            ...place.photo,
+            src: publicPlaceImage(place.photo.src),
+          }
+        : null,
+      image: publicPlaceImage(place.image),
       lat: Number.isFinite(place.lat) ? place.lat : null,
       lng: Number.isFinite(place.lng) ? place.lng : null,
     }));

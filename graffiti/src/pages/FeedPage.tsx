@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Heart, MapPin, Map as MapIcon, Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
-import type { FeedStats, Graffiti, ReactionValue, WalkBuilding, WalkPlace } from '../lib/types';
+import type { CityObject } from '../lib/cityObjects';
+import { useCityObjects } from '../lib/cityObjects';
+import type { Graffiti, ReactionValue } from '../lib/types';
 import { plural } from '../lib/format';
 import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
 import { ContentTabs } from '../components/ContentTabs';
@@ -11,39 +13,23 @@ import { useAuth } from '../context/AuthContext';
 
 type FeedKind = 'all' | 'places' | 'graffiti';
 
-type FeedEntry =
-  | { kind: 'place'; key: string; place: WalkPlace }
-  | { kind: 'graffiti'; key: string; item: Graffiti };
-
-function buildingToPlace(building: WalkBuilding): WalkPlace {
-  return {
-    id: `building-${building.id}`,
-    name: building.title,
-    category: building.category || 'Здание',
-    address: building.address,
-    description: building.description,
-    era: 'Добавлено горожанами',
-    image: building.image_path,
-    lat: building.lat,
-    lng: building.lng,
-  };
-}
-
 function PlaceCard({
-  place,
+  object,
   isFavorite,
   onToggleFavorite,
 }: {
-  place: WalkPlace;
+  object: CityObject;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
 }) {
-  const href = `/map?place=${encodeURIComponent(place.id)}`;
+  const place = object.place;
+  const mapHref = `/map?place=${encodeURIComponent(object.id)}`;
+
   return (
     <article className="graffiti-card place-feed-card">
-      <Link to={href} className="card-image-link" aria-label={`Открыть на карте: ${place.name}`}>
-        {place.image ? (
-          <img src={place.image} alt={place.name} loading="lazy" />
+      <Link to={object.detailPath} className="card-image-link" aria-label={`Открыть объект: ${object.name}`}>
+        {object.image ? (
+          <img src={object.image} alt={object.name} loading="lazy" />
         ) : (
           <span className="place-feed-placeholder"><MapPin size={30} /></span>
         )}
@@ -53,32 +39,32 @@ function PlaceCard({
         <div className="card-topline">
           <span className="card-address">
             <MapPin size={13} />
-            {place.address}
+            {object.address}
           </span>
-          <span className="card-time">на карте</span>
+          <span className="card-time">{place ? 'место' : 'здание'}</span>
         </div>
 
         <div className="tags">
           <span className="tag tag-place">МЕСТО</span>
-          {place.category ? <span className="tag tag-style">{place.category}</span> : null}
+          {object.category ? <span className="tag tag-style">{object.category}</span> : null}
         </div>
 
-        <h3>{place.name}</h3>
-        {place.artist ? <p className="card-author">{place.artist}</p> : null}
-        {place.description ? <p className="card-description">{place.description}</p> : null}
+        <h3>{object.name}</h3>
+        {object.artist ? <p className="card-author">{object.artist}</p> : null}
+        {object.description ? <p className="card-description">{object.description}</p> : null}
 
         <div className="card-actions">
           <button
             type="button"
             className={`reaction place-favorite${isFavorite ? ' active like' : ''}`}
-            onClick={() => onToggleFavorite(place.id)}
+            onClick={() => onToggleFavorite(object.id)}
             aria-pressed={isFavorite}
-            aria-label={`${isFavorite ? 'Убрать из избранного' : 'Сохранить в избранное'}: ${place.name}`}
+            aria-label={`${isFavorite ? 'Убрать из избранного' : 'Сохранить в избранное'}: ${object.name}`}
           >
             <Heart size={16} />
             {isFavorite ? 'В избранном' : 'В избранное'}
           </button>
-          <Link to={href} className="reaction comments-link">
+          <Link to={mapHref} className="reaction comments-link">
             <MapIcon size={16} />
             На карте
           </Link>
@@ -91,14 +77,10 @@ function PlaceCard({
 export function FeedPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [items, setItems] = useState<Graffiti[]>([]);
-  const [places, setPlaces] = useState<WalkPlace[]>([]);
-  const [stats, setStats] = useState<FeedStats | null>(null);
+  const { objects, places, graffiti, stats, loading, error, updateGraffiti } = useCityObjects();
   const [kind, setKind] = useState<FeedKind>('all');
   const [query, setQuery] = useState('');
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const syncFavorites = () => setFavoritePlaceIds(readFavoritePlaceIds());
@@ -109,40 +91,6 @@ export function FeedPage() {
       window.removeEventListener(PLACE_FAVORITES_EVENT, syncFavorites);
     };
   }, []);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    const [feedResult, placesResult, buildingsResult] = await Promise.allSettled([
-      api.feed(),
-      api.walkPlaces(),
-      api.walkBuildings(),
-    ]);
-
-    if (feedResult.status === 'fulfilled') {
-      setItems(feedResult.value.items);
-      setStats(feedResult.value.stats);
-    } else {
-      setError('Не удалось загрузить граффити');
-    }
-
-    if (placesResult.status === 'fulfilled') {
-      const buildings = buildingsResult.status === 'fulfilled'
-        ? buildingsResult.value.items.map(buildingToPlace)
-        : [];
-      setPlaces([...placesResult.value.items, ...buildings]);
-    } else if (buildingsResult.status === 'fulfilled') {
-      setPlaces(buildingsResult.value.items.map(buildingToPlace));
-    } else {
-      setError((current) => current || 'Не удалось загрузить места');
-    }
-
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   async function handleReact(item: Graffiti, value: ReactionValue) {
     if (!user) {
@@ -165,19 +113,13 @@ export function FeedPage() {
       myReaction = value;
     }
 
-    setItems((current) =>
-      current.map((entry) =>
-        entry.id === item.id ? { ...entry, likes, dislikes, my_reaction: myReaction } : entry,
-      ),
-    );
+    updateGraffiti(item.id, { likes, dislikes, my_reaction: myReaction });
 
     try {
       const result = await api.react(item.id, value);
-      setItems((current) =>
-        current.map((entry) => (entry.id === item.id ? { ...entry, ...result } : entry)),
-      );
+      updateGraffiti(item.id, result);
     } catch {
-      void load();
+      updateGraffiti(item.id, item);
     }
   }
 
@@ -190,31 +132,22 @@ export function FeedPage() {
   }
 
   const needle = query.trim().toLowerCase();
-  const filteredPlaces = places.filter((place) => {
+  const visibleObjects = objects.filter((object) => {
+    if (kind === 'places' && object.kind === 'graffiti') return false;
+    if (kind === 'graffiti' && object.kind !== 'graffiti') return false;
     if (!needle) return true;
-    return [place.name, place.address, place.description, place.category, place.era, place.artType, place.artist]
-      .some((value) => String(value || '').toLowerCase().includes(needle));
-  });
-  const filteredGraffiti = items.filter((item) => {
-    if (!needle) return true;
-    return [item.address, item.author_name, item.description]
-      .some((value) => String(value || '').toLowerCase().includes(needle));
+    return [
+      object.name,
+      object.address,
+      object.description,
+      object.category,
+      object.era,
+      object.artType,
+      object.artist,
+    ].some((value) => String(value || '').toLowerCase().includes(needle));
   });
 
-  const visiblePlaces = kind === 'graffiti' ? [] : filteredPlaces;
-  const visibleGraffiti = kind === 'places' ? [] : filteredGraffiti;
-  const entries: FeedEntry[] = [];
-  const maxLength = Math.max(visiblePlaces.length, visibleGraffiti.length);
-  for (let index = 0; index < maxLength; index += 1) {
-    if (visiblePlaces[index]) {
-      entries.push({ kind: 'place', key: `place-${visiblePlaces[index].id}`, place: visiblePlaces[index] });
-    }
-    if (visibleGraffiti[index]) {
-      entries.push({ kind: 'graffiti', key: `graffiti-${visibleGraffiti[index].id}`, item: visibleGraffiti[index] });
-    }
-  }
-
-  const totalObjects = places.length + items.length;
+  const totalObjects = objects.length;
   const graffitiAlive = stats?.alive ?? 0;
 
   return (
@@ -252,8 +185,8 @@ export function FeedPage() {
             <span>{plural(places.length, 'место', 'места', 'мест')}</span>
           </div>
           <div className="hero-stat">
-            <strong>{items.length}</strong>
-            <span>{plural(items.length, 'граффити', 'граффити', 'граффити')}</span>
+            <strong>{graffiti.length}</strong>
+            <span>{plural(graffiti.length, 'граффити', 'граффити', 'граффити')}</span>
           </div>
           <div className="hero-stat">
             <strong>{graffitiAlive}</strong>
@@ -301,7 +234,7 @@ export function FeedPage() {
               className={`chip ${kind === 'graffiti' ? 'active' : ''}`}
               onClick={() => setKind('graffiti')}
             >
-              Граффити · {items.length}
+              Граффити · {graffiti.length}
             </button>
           </div>
         </div>
@@ -314,7 +247,7 @@ export function FeedPage() {
               <div className="card-skeleton" key={index} />
             ))}
           </div>
-        ) : entries.length === 0 ? (
+        ) : visibleObjects.length === 0 ? (
           <div className="empty-feed">
             <h3>Пока ничего не нашлось</h3>
             <p>Измените запрос или добавьте объект в ленту.</p>
@@ -325,19 +258,19 @@ export function FeedPage() {
           </div>
         ) : (
           <div className="feed-grid">
-            {entries.map((entry) => (
-              entry.kind === 'place' ? (
-                <PlaceCard
-                  key={entry.key}
-                  place={entry.place}
-                  isFavorite={favoritePlaceIds.includes(entry.place.id)}
-                  onToggleFavorite={toggleFavoritePlace}
+            {visibleObjects.map((object) => (
+              object.kind === 'graffiti' && object.graffiti ? (
+                <GraffitiCard
+                  key={object.key}
+                  item={object.graffiti}
+                  onReact={(value) => void handleReact(object.graffiti!, value)}
                 />
               ) : (
-                <GraffitiCard
-                  key={entry.key}
-                  item={entry.item}
-                  onReact={(value) => void handleReact(entry.item, value)}
+                <PlaceCard
+                  key={object.key}
+                  object={object}
+                  isFavorite={favoritePlaceIds.includes(object.id)}
+                  onToggleFavorite={toggleFavoritePlace}
                 />
               )
             ))}

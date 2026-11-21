@@ -1,8 +1,7 @@
-/* Verified local Piper/Denis recordings. No network TTS or credentials. */
-window.RYADOM_AUDIO = {
+{
   "files": {
     "conservatory": {
-      "src": "audio/conservatory.mp3",
+      "src": "/audio/conservatory.mp3",
       "voice": "denis",
       "text_sha256": "09178d012fb432dafb94712f49e12396b21cb73a2dabd83b9471cc7b75f7c027",
       "synthesizedText_sha256": "09178d012fb432dafb94712f49e12396b21cb73a2dabd83b9471cc7b75f7c027",
@@ -14,7 +13,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "chernyshevsky": {
-      "src": "audio/chernyshevsky.mp3",
+      "src": "/audio/chernyshevsky.mp3",
       "voice": "denis",
       "text_sha256": "fa7f2435f0fb23496f724b99bcf58fc6faf170f03d40a275bf3da78d091a6785",
       "synthesizedText_sha256": "fa7f2435f0fb23496f724b99bcf58fc6faf170f03d40a275bf3da78d091a6785",
@@ -26,7 +25,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "lipki": {
-      "src": "audio/lipki.mp3",
+      "src": "/audio/lipki.mp3",
       "voice": "denis",
       "text_sha256": "0ad83fb43ac74b58dc25505f637516f9f8b04e73bf2c2557b7d5b68618a84e4c",
       "synthesizedText_sha256": "0ad83fb43ac74b58dc25505f637516f9f8b04e73bf2c2557b7d5b68618a84e4c",
@@ -38,7 +37,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "radishchev": {
-      "src": "audio/radishchev.mp3",
+      "src": "/audio/radishchev.mp3",
       "voice": "denis",
       "text_sha256": "f70ed990e94bd63833822a776af9d043f02af78e4306b029c78691cadec0248b",
       "synthesizedText_sha256": "f70ed990e94bd63833822a776af9d043f02af78e4306b029c78691cadec0248b",
@@ -50,7 +49,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "utoli": {
-      "src": "audio/utoli.mp3",
+      "src": "/audio/utoli.mp3",
       "voice": "denis",
       "text_sha256": "4c9fe7252233defcbeb4e72a09216fee806a8691943e924c99373a988d7e497a",
       "synthesizedText_sha256": "4c9fe7252233defcbeb4e72a09216fee806a8691943e924c99373a988d7e497a",
@@ -62,7 +61,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "schmidt": {
-      "src": "audio/schmidt.mp3",
+      "src": "/audio/schmidt.mp3",
       "voice": "denis",
       "text_sha256": "64be5f576b6cb7b73ccf5058adf664f83ee2335bf9cb114864a62e369d08e02d",
       "synthesizedText_sha256": "64be5f576b6cb7b73ccf5058adf664f83ee2335bf9cb114864a62e369d08e02d",
@@ -74,7 +73,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 5
     },
     "fedin": {
-      "src": "audio/fedin.mp3",
+      "src": "/audio/fedin.mp3",
       "voice": "denis",
       "text_sha256": "b52111ef0b22b5cdd7006ccfe2a8dc80fb41634f8359b60cf5cb64d40f734ba5",
       "synthesizedText_sha256": "b52111ef0b22b5cdd7006ccfe2a8dc80fb41634f8359b60cf5cb64d40f734ba5",
@@ -86,7 +85,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "embankment": {
-      "src": "audio/embankment.mp3",
+      "src": "/audio/embankment.mp3",
       "voice": "denis",
       "text_sha256": "048f651bb815a64b286ad1d10e202dbb826b660d23b959d40124112b3690f3dd",
       "synthesizedText_sha256": "048f651bb815a64b286ad1d10e202dbb826b660d23b959d40124112b3690f3dd",
@@ -98,7 +97,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "local-history": {
-      "src": "audio/local-history.mp3",
+      "src": "/audio/local-history.mp3",
       "voice": "denis",
       "text_sha256": "e292538e5721fb74edd5c352487363418ebc6becb37129679ddcbd1ace4926bd",
       "synthesizedText_sha256": "e292538e5721fb74edd5c352487363418ebc6becb37129679ddcbd1ace4926bd",
@@ -110,7 +109,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "trinity": {
-      "src": "audio/trinity.mp3",
+      "src": "/audio/trinity.mp3",
       "voice": "denis",
       "text_sha256": "1556643175ee7353bb84384d89c12b41f9fa82687accd36cd2ad191325b17cdb",
       "synthesizedText_sha256": "1556643175ee7353bb84384d89c12b41f9fa82687accd36cd2ad191325b17cdb",
@@ -122,7 +121,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "book-house": {
-      "src": "audio/book-house.mp3",
+      "src": "/audio/book-house.mp3",
       "voice": "denis",
       "text_sha256": "4d3df2c6fffb1787aa139fe36256b51c31b451130b89b849b4a9c84c5b486b03",
       "synthesizedText_sha256": "4d3df2c6fffb1787aa139fe36256b51c31b451130b89b849b4a9c84c5b486b03",
@@ -134,7 +133,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "volga-hotel": {
-      "src": "audio/volga-hotel.mp3",
+      "src": "/audio/volga-hotel.mp3",
       "voice": "denis",
       "text_sha256": "e1820cf528f92d89dd53fc75feb627659c9d57d5643719c35d06ddf4357053e9",
       "synthesizedText_sha256": "e1820cf528f92d89dd53fc75feb627659c9d57d5643719c35d06ddf4357053e9",
@@ -146,7 +145,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "circus": {
-      "src": "audio/circus.mp3",
+      "src": "/audio/circus.mp3",
       "voice": "denis",
       "text_sha256": "261155591b4574f2858466017e39ee7b843d910228c389f5883028c2c905055e",
       "synthesizedText_sha256": "261155591b4574f2858466017e39ee7b843d910228c389f5883028c2c905055e",
@@ -158,7 +157,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "estate": {
-      "src": "audio/estate.mp3",
+      "src": "/audio/estate.mp3",
       "voice": "denis",
       "text_sha256": "04e6fadfa0a38493df83c579ca04241153f15a85cb792fcc3dbb9609cf5fe837",
       "synthesizedText_sha256": "04e6fadfa0a38493df83c579ca04241153f15a85cb792fcc3dbb9609cf5fe837",
@@ -170,7 +169,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "cranes": {
-      "src": "audio/cranes.mp3",
+      "src": "/audio/cranes.mp3",
       "voice": "denis",
       "text_sha256": "d2871816c559e77a412b0e0556ebbcb16cc0c6d88d16120560111bf85823189c",
       "synthesizedText_sha256": "d2871816c559e77a412b0e0556ebbcb16cc0c6d88d16120560111bf85823189c",
@@ -182,7 +181,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "city-park": {
-      "src": "audio/city-park.mp3",
+      "src": "/audio/city-park.mp3",
       "voice": "denis",
       "text_sha256": "82319b27e4a4b11f392f02ac54a00cc9483ec38f4e592c6ffdb5faef1670c502",
       "synthesizedText_sha256": "82319b27e4a4b11f392f02ac54a00cc9483ec38f4e592c6ffdb5faef1670c502",
@@ -194,7 +193,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 4
     },
     "catalog-khram-soroka-sevastiyskikh-muchenikov": {
-      "src": "audio/catalog-khram-soroka-sevastiyskikh-muchenikov.mp3",
+      "src": "/audio/catalog-khram-soroka-sevastiyskikh-muchenikov.mp3",
       "voice": "denis",
       "text_sha256": "2eedd49ff40e38dcb4240955e188c43bb2e0b1baef134d633839e03fcde3877f",
       "synthesizedText_sha256": "2eedd49ff40e38dcb4240955e188c43bb2e0b1baef134d633839e03fcde3877f",
@@ -206,7 +205,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-svyatitelya-i-chudotvortsa-nikolaya": {
-      "src": "audio/catalog-khram-svyatitelya-i-chudotvortsa-nikolaya.mp3",
+      "src": "/audio/catalog-khram-svyatitelya-i-chudotvortsa-nikolaya.mp3",
       "voice": "denis",
       "text_sha256": "74e4dcf7afbdcf368217039c90c4f970d6a0ed56df487ff1bcfb77065b45622d",
       "synthesizedText_sha256": "74e4dcf7afbdcf368217039c90c4f970d6a0ed56df487ff1bcfb77065b45622d",
@@ -218,7 +217,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-svyatitelya-nikolaya-yaponskogo": {
-      "src": "audio/catalog-khram-svyatitelya-nikolaya-yaponskogo.mp3",
+      "src": "/audio/catalog-khram-svyatitelya-nikolaya-yaponskogo.mp3",
       "voice": "denis",
       "text_sha256": "a136a1da698e042a720fdbfdfbd6ff4fb040fabaeb35a81b52e50c8aeac2dc98",
       "synthesizedText_sha256": "a136a1da698e042a720fdbfdfbd6ff4fb040fabaeb35a81b52e50c8aeac2dc98",
@@ -230,7 +229,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-svyatogo-proroka-ilii": {
-      "src": "audio/catalog-khram-svyatogo-proroka-ilii.mp3",
+      "src": "/audio/catalog-khram-svyatogo-proroka-ilii.mp3",
       "voice": "denis",
       "text_sha256": "bc1d1e9d9da5cf58d63cfb8cf96ced82f1f2839b7491a7f40599d45d82390a1f",
       "synthesizedText_sha256": "bc1d1e9d9da5cf58d63cfb8cf96ced82f1f2839b7491a7f40599d45d82390a1f",
@@ -242,7 +241,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-svyatogo-velikomuchenika-georgiya-pobedonostsa": {
-      "src": "audio/catalog-khram-svyatogo-velikomuchenika-georgiya-pobedonostsa.mp3",
+      "src": "/audio/catalog-khram-svyatogo-velikomuchenika-georgiya-pobedonostsa.mp3",
       "voice": "denis",
       "text_sha256": "8de5cf7f564f837f4da2a9ffae088bb784bc587981b59e90f7e0349edda39204",
       "synthesizedText_sha256": "8de5cf7f564f837f4da2a9ffae088bb784bc587981b59e90f7e0349edda39204",
@@ -254,7 +253,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-khram-svyatykh-muchenikov-adriana-i-natalii": {
-      "src": "audio/catalog-khram-svyatykh-muchenikov-adriana-i-natalii.mp3",
+      "src": "/audio/catalog-khram-svyatykh-muchenikov-adriana-i-natalii.mp3",
       "voice": "denis",
       "text_sha256": "dd5cfd6aa593da1b841f1a7c19c9182ef40efeefa7625b3b6cd80adc51fd4036",
       "synthesizedText_sha256": "dd5cfd6aa593da1b841f1a7c19c9182ef40efeefa7625b3b6cd80adc51fd4036",
@@ -266,7 +265,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-v-chest-arkhangela-mikhaila": {
-      "src": "audio/catalog-khram-v-chest-arkhangela-mikhaila.mp3",
+      "src": "/audio/catalog-khram-v-chest-arkhangela-mikhaila.mp3",
       "voice": "denis",
       "text_sha256": "71989146bd6922d43009da78f5b8324fa9dec5a4005c57207ccbc49d6e80c384",
       "synthesizedText_sha256": "71989146bd6922d43009da78f5b8324fa9dec5a4005c57207ccbc49d6e80c384",
@@ -278,7 +277,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-khram-v-chest-kazanskoy-ikony-bozhiey-materi": {
-      "src": "audio/catalog-khram-v-chest-kazanskoy-ikony-bozhiey-materi.mp3",
+      "src": "/audio/catalog-khram-v-chest-kazanskoy-ikony-bozhiey-materi.mp3",
       "voice": "denis",
       "text_sha256": "fedc36fadd1a214979646fc8bd95cb97376d329256b82b02edd72621ba3589fe",
       "synthesizedText_sha256": "fedc36fadd1a214979646fc8bd95cb97376d329256b82b02edd72621ba3589fe",
@@ -290,7 +289,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-khram-v-chest-sreteniya-gospodnya": {
-      "src": "audio/catalog-khram-v-chest-sreteniya-gospodnya.mp3",
+      "src": "/audio/catalog-khram-v-chest-sreteniya-gospodnya.mp3",
       "voice": "denis",
       "text_sha256": "00d15546a6f3021c69622121c9da60d0ee86a9ef9225484b8edd2e72b222ce74",
       "synthesizedText_sha256": "00d15546a6f3021c69622121c9da60d0ee86a9ef9225484b8edd2e72b222ce74",
@@ -302,7 +301,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-khram-vvedeniya-vo-khram-presvyatoy-bogoroditsy": {
-      "src": "audio/catalog-khram-vvedeniya-vo-khram-presvyatoy-bogoroditsy.mp3",
+      "src": "/audio/catalog-khram-vvedeniya-vo-khram-presvyatoy-bogoroditsy.mp3",
       "voice": "denis",
       "text_sha256": "6660224a57ec8f691d4db1eabefdc9aba3ed86a982fe2ad00de784ba64db30be",
       "synthesizedText_sha256": "6660224a57ec8f691d4db1eabefdc9aba3ed86a982fe2ad00de784ba64db30be",
@@ -314,7 +313,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-mechet-amina": {
-      "src": "audio/catalog-mechet-amina.mp3",
+      "src": "/audio/catalog-mechet-amina.mp3",
       "voice": "denis",
       "text_sha256": "f2008ace44b08cd72ec6f3d28fadbdccca7b1ac0a948c6f2d373f0fb59701a0f",
       "synthesizedText_sha256": "f2008ace44b08cd72ec6f3d28fadbdccca7b1ac0a948c6f2d373f0fb59701a0f",
@@ -326,7 +325,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-memorialnyy-kompleks-zhuravli-3": {
-      "src": "audio/catalog-memorialnyy-kompleks-zhuravli-3.mp3",
+      "src": "/audio/catalog-memorialnyy-kompleks-zhuravli-3.mp3",
       "voice": "denis",
       "text_sha256": "c4d67d96dcfca3f1de5f78a1d5321592d09362ac06efa570e9cf3b04e24700ff",
       "synthesizedText_sha256": "c4d67d96dcfca3f1de5f78a1d5321592d09362ac06efa570e9cf3b04e24700ff",
@@ -338,7 +337,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-most-saratov-engels": {
-      "src": "audio/catalog-most-saratov-engels.mp3",
+      "src": "/audio/catalog-most-saratov-engels.mp3",
       "voice": "denis",
       "text_sha256": "aa9e36a1eb52cd45fc6e8f0d1ec7ce13a850b43160b1e16d00c5fcf24dc5a23f",
       "synthesizedText_sha256": "aa9e36a1eb52cd45fc6e8f0d1ec7ce13a850b43160b1e16d00c5fcf24dc5a23f",
@@ -350,7 +349,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-pamyatnik-bortsam-revolyutsii-1917-goda": {
-      "src": "audio/catalog-pamyatnik-bortsam-revolyutsii-1917-goda.mp3",
+      "src": "/audio/catalog-pamyatnik-bortsam-revolyutsii-1917-goda.mp3",
       "voice": "denis",
       "text_sha256": "d82c8136bcfb3d0d75dee812d7024f1d43a91cc577f4d542b2a3da2cabf555aa",
       "synthesizedText_sha256": "d82c8136bcfb3d0d75dee812d7024f1d43a91cc577f4d542b2a3da2cabf555aa",
@@ -362,7 +361,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-pamyatnik-pervoy-uchitelnitse": {
-      "src": "audio/catalog-pamyatnik-pervoy-uchitelnitse.mp3",
+      "src": "/audio/catalog-pamyatnik-pervoy-uchitelnitse.mp3",
       "voice": "denis",
       "text_sha256": "c1f7bbf89d39fcddd8f5d027cfbaef637608b775dfa50f07ba71f1761d98e9e6",
       "synthesizedText_sha256": "c1f7bbf89d39fcddd8f5d027cfbaef637608b775dfa50f07ba71f1761d98e9e6",
@@ -374,7 +373,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-park-pobedy-na-sokolovoy-gore": {
-      "src": "audio/catalog-park-pobedy-na-sokolovoy-gore.mp3",
+      "src": "/audio/catalog-park-pobedy-na-sokolovoy-gore.mp3",
       "voice": "denis",
       "text_sha256": "a9d6432db3e4ae8a4cab9b48026d31650bb38af45e7c63d104d4d7a581716882",
       "synthesizedText_sha256": "a9d6432db3e4ae8a4cab9b48026d31650bb38af45e7c63d104d4d7a581716882",
@@ -386,7 +385,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-prirodnyy-park-kumysnaya-polyana": {
-      "src": "audio/catalog-prirodnyy-park-kumysnaya-polyana.mp3",
+      "src": "/audio/catalog-prirodnyy-park-kumysnaya-polyana.mp3",
       "voice": "denis",
       "text_sha256": "16b129736ff24ec36dd3dd9ef6fa94b374bb5672cf6cb557ab95d563b9e1ab2e",
       "synthesizedText_sha256": "16b129736ff24ec36dd3dd9ef6fa94b374bb5672cf6cb557ab95d563b9e1ab2e",
@@ -398,7 +397,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-prospekt-imeni-petra-stolypina": {
-      "src": "audio/catalog-prospekt-imeni-petra-stolypina.mp3",
+      "src": "/audio/catalog-prospekt-imeni-petra-stolypina.mp3",
       "voice": "denis",
       "text_sha256": "a2c564369b41f422e78798b3670a0738be33e2c08a94c0846e3999b61821b917",
       "synthesizedText_sha256": "a2c564369b41f422e78798b3670a0738be33e2c08a94c0846e3999b61821b917",
@@ -410,7 +409,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-saratovskaya-sobornaya-mechet": {
-      "src": "audio/catalog-saratovskaya-sobornaya-mechet.mp3",
+      "src": "/audio/catalog-saratovskaya-sobornaya-mechet.mp3",
       "voice": "denis",
       "text_sha256": "a905fb49ce07950862eb1ebf0e79b086710e1bf2de6a4bf8afa9d23ea439a6c5",
       "synthesizedText_sha256": "a905fb49ce07950862eb1ebf0e79b086710e1bf2de6a4bf8afa9d23ea439a6c5",
@@ -422,7 +421,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-sinagoga": {
-      "src": "audio/catalog-sinagoga.mp3",
+      "src": "/audio/catalog-sinagoga.mp3",
       "voice": "denis",
       "text_sha256": "43bf50f0e5610a6c79eed0d7cd1f44841fe06b06f05ebd02b1aabb1949dcaebf",
       "synthesizedText_sha256": "43bf50f0e5610a6c79eed0d7cd1f44841fe06b06f05ebd02b1aabb1949dcaebf",
@@ -434,7 +433,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-sobor-pokrova-presvyatoy-bogoroditsy": {
-      "src": "audio/catalog-sobor-pokrova-presvyatoy-bogoroditsy.mp3",
+      "src": "/audio/catalog-sobor-pokrova-presvyatoy-bogoroditsy.mp3",
       "voice": "denis",
       "text_sha256": "d7faf64151e9fc12a1e2d752e62aa65c06763db28bf45a53b6c7b0c7eef85ab3",
       "synthesizedText_sha256": "d7faf64151e9fc12a1e2d752e62aa65c06763db28bf45a53b6c7b0c7eef85ab3",
@@ -446,7 +445,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "catalog-svyatiteley-vasiliya-velikogo-grigoriya-bogoslova-i-ioanna-zlatoustogo": {
-      "src": "audio/catalog-svyatiteley-vasiliya-velikogo-grigoriya-bogoslova-i-ioanna-zlatoustogo.mp3",
+      "src": "/audio/catalog-svyatiteley-vasiliya-velikogo-grigoriya-bogoslova-i-ioanna-zlatoustogo.mp3",
       "voice": "denis",
       "text_sha256": "c67593c83b20f7445daceb97ac0eec363c473dc1918c37dc7a6dc0ac99480db6",
       "synthesizedText_sha256": "c67593c83b20f7445daceb97ac0eec363c473dc1918c37dc7a6dc0ac99480db6",
@@ -458,7 +457,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "catalog-zolotoordynskiy-gorod-ukek-uvekskoe-gorodishche-xii-xivvv-n-e": {
-      "src": "audio/catalog-zolotoordynskiy-gorod-ukek-uvekskoe-gorodishche-xii-xivvv-n-e.mp3",
+      "src": "/audio/catalog-zolotoordynskiy-gorod-ukek-uvekskoe-gorodishche-xii-xivvv-n-e.mp3",
       "voice": "denis",
       "text_sha256": "970be8744c92f8951ea39c237e02abc7218fd5cd1d7ab5f874513e4dc98aa275",
       "synthesizedText_sha256": "970be8744c92f8951ea39c237e02abc7218fd5cd1d7ab5f874513e4dc98aa275",
@@ -470,7 +469,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-time-face": {
-      "src": "audio/art-time-face.mp3",
+      "src": "/audio/art-time-face.mp3",
       "voice": "denis",
       "text_sha256": "dd5b262347dd761e2f574ec557b4aae0d73323218f8f1c6f5c3a4eb77272f181",
       "synthesizedText_sha256": "dd5b262347dd761e2f574ec557b4aae0d73323218f8f1c6f5c3a4eb77272f181",
@@ -482,7 +481,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-saratov-cat": {
-      "src": "audio/art-saratov-cat.mp3",
+      "src": "/audio/art-saratov-cat.mp3",
       "voice": "denis",
       "text_sha256": "ed2cd99809977e028749a8b7aea502df9bcbc23ba8926d6adb2315a750a3df72",
       "synthesizedText_sha256": "ed2cd99809977e028749a8b7aea502df9bcbc23ba8926d6adb2315a750a3df72",
@@ -494,7 +493,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-flowers-of-life": {
-      "src": "audio/art-flowers-of-life.mp3",
+      "src": "/audio/art-flowers-of-life.mp3",
       "voice": "denis",
       "text_sha256": "684401cdd392837626ee03cff879cf111c0944d9a3f5778bd70f6b0d30665538",
       "synthesizedText_sha256": "684401cdd392837626ee03cff879cf111c0944d9a3f5778bd70f6b0d30665538",
@@ -506,7 +505,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-garmoshka": {
-      "src": "audio/art-garmoshka.mp3",
+      "src": "/audio/art-garmoshka.mp3",
       "voice": "denis",
       "text_sha256": "5b91b5b1122c6120a9b4a0583a209b4a8bfe1fb7a9c7a12d19fda79703fdfb09",
       "synthesizedText_sha256": "5b91b5b1122c6120a9b4a0583a209b4a8bfe1fb7a9c7a12d19fda79703fdfb09",
@@ -518,7 +517,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-golden-lights": {
-      "src": "audio/art-golden-lights.mp3",
+      "src": "/audio/art-golden-lights.mp3",
       "voice": "denis",
       "text_sha256": "d56eb308786d77871c6834063b89e50590c3544b843a815c43ae738a84e0f8d1",
       "synthesizedText_sha256": "d56eb308786d77871c6834063b89e50590c3544b843a815c43ae738a84e0f8d1",
@@ -530,7 +529,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-gorodovoy": {
-      "src": "audio/art-gorodovoy.mp3",
+      "src": "/audio/art-gorodovoy.mp3",
       "voice": "denis",
       "text_sha256": "a0c20ebc13bf1359ca0143e313c1331b39ac14ef0c6fd72bbef2add50cf2d96a",
       "synthesizedText_sha256": "a0c20ebc13bf1359ca0143e313c1331b39ac14ef0c6fd72bbef2add50cf2d96a",
@@ -542,7 +541,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-tabakov": {
-      "src": "audio/art-tabakov.mp3",
+      "src": "/audio/art-tabakov.mp3",
       "voice": "denis",
       "text_sha256": "f5331eafb9efcfeb584ec0f8d4cbb76aa9c2681e6e999b9a590f7a9c41e2e6b8",
       "synthesizedText_sha256": "f5331eafb9efcfeb584ec0f8d4cbb76aa9c2681e6e999b9a590f7a9c41e2e6b8",
@@ -554,7 +553,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-call-mom": {
-      "src": "audio/art-call-mom.mp3",
+      "src": "/audio/art-call-mom.mp3",
       "voice": "denis",
       "text_sha256": "9428f0a0be1be64797b0635906c420054ee136792ce4fd2562bd92e837fd1417",
       "synthesizedText_sha256": "9428f0a0be1be64797b0635906c420054ee136792ce4fd2562bd92e837fd1417",
@@ -566,7 +565,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-student": {
-      "src": "audio/art-student.mp3",
+      "src": "/audio/art-student.mp3",
       "voice": "denis",
       "text_sha256": "528e1cfbcc110c26dbdd9bc5351508378e30132a74f41c2252e9c84db9b0583d",
       "synthesizedText_sha256": "528e1cfbcc110c26dbdd9bc5351508378e30132a74f41c2252e9c84db9b0583d",
@@ -578,7 +577,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-stolypin-32-courtyard": {
-      "src": "audio/art-stolypin-32-courtyard.mp3",
+      "src": "/audio/art-stolypin-32-courtyard.mp3",
       "voice": "denis",
       "text_sha256": "0f259c0dab8ce2ff33cf4ac81320839b6fd3e352f0f241e802ab290d5f5d6f10",
       "synthesizedText_sha256": "0f259c0dab8ce2ff33cf4ac81320839b6fd3e352f0f241e802ab290d5f5d6f10",
@@ -590,7 +589,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-grigorieva-53": {
-      "src": "audio/art-grigorieva-53.mp3",
+      "src": "/audio/art-grigorieva-53.mp3",
       "voice": "denis",
       "text_sha256": "52b7771ef2903bdd7099e7bc007346a7d4abaa7b0af99323d673e94b18986631",
       "synthesizedText_sha256": "52b7771ef2903bdd7099e7bc007346a7d4abaa7b0af99323d673e94b18986631",
@@ -602,7 +601,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-school-of-future": {
-      "src": "audio/art-school-of-future.mp3",
+      "src": "/audio/art-school-of-future.mp3",
       "voice": "denis",
       "text_sha256": "886254c12514fc4b68f0a48d8dfeffbd5bc59acb0947db52d7dba20b60300fed",
       "synthesizedText_sha256": "886254c12514fc4b68f0a48d8dfeffbd5bc59acb0947db52d7dba20b60300fed",
@@ -614,7 +613,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 2
     },
     "art-yankovsky-munchausen": {
-      "src": "audio/art-yankovsky-munchausen.mp3",
+      "src": "/audio/art-yankovsky-munchausen.mp3",
       "voice": "denis",
       "text_sha256": "4417fec294727c92096ca6c964aa800f9ec63b5008d59d6f05690822cd8ee84b",
       "synthesizedText_sha256": "4417fec294727c92096ca6c964aa800f9ec63b5008d59d6f05690822cd8ee84b",
@@ -626,7 +625,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-liberated-labor": {
-      "src": "audio/art-liberated-labor.mp3",
+      "src": "/audio/art-liberated-labor.mp3",
       "voice": "denis",
       "text_sha256": "02b45e9f89e4ba1713d064b349b153ccc7e850732235f7b2daf268621a74b666",
       "synthesizedText_sha256": "02b45e9f89e4ba1713d064b349b153ccc7e850732235f7b2daf268621a74b666",
@@ -638,7 +637,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-lenin-print": {
-      "src": "audio/art-lenin-print.mp3",
+      "src": "/audio/art-lenin-print.mp3",
       "voice": "denis",
       "text_sha256": "67b13685623183adbd13704a2be057c6eaaa08e7d5b719bb7bd9bc5b75aefdb2",
       "synthesizedText_sha256": "67b13685623183adbd13704a2be057c6eaaa08e7d5b719bb7bd9bc5b75aefdb2",
@@ -650,7 +649,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-greetings-saratov": {
-      "src": "audio/art-greetings-saratov.mp3",
+      "src": "/audio/art-greetings-saratov.mp3",
       "voice": "denis",
       "text_sha256": "d727d8e8cb8c83405ee334b80284765c16d57c1cb7367f7fbad4b4322a0b2566",
       "synthesizedText_sha256": "d727d8e8cb8c83405ee334b80284765c16d57c1cb7367f7fbad4b4322a0b2566",
@@ -662,7 +661,7 @@ window.RYADOM_AUDIO = {
       "paragraphs": 3
     },
     "art-prince-vladimir-mosaic": {
-      "src": "audio/art-prince-vladimir-mosaic.mp3",
+      "src": "/audio/art-prince-vladimir-mosaic.mp3",
       "voice": "denis",
       "text_sha256": "ba8da8dd019f1424403f7a01ed913ec78d13ccbe603a08581b1dc77d07b8b205",
       "synthesizedText_sha256": "ba8da8dd019f1424403f7a01ed913ec78d13ccbe603a08581b1dc77d07b8b205",
@@ -695,4 +694,4 @@ window.RYADOM_AUDIO = {
   "publicModelUrl": "https://huggingface.co/rhasspy/piper-voices/resolve/main/ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx",
   "model_sha256": "879bc365cb14d1380e3f5ed6044162ccf54c99f6161871569b7f830aec3ce841",
   "sample_rate": 22050
-};
+}

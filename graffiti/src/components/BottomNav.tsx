@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+
 import { Map, Rows3, SprayCan, User } from 'lucide-react';
 
 export function BottomNav() {
   const location = useLocation();
-  const hidden = location.pathname === '/map' || location.pathname.startsWith('/walk') || location.pathname.startsWith('/r/');
+  const hidden = false;
 
   useEffect(() => {
     document.body.classList.toggle('has-bottom-nav', !hidden);
@@ -15,7 +16,9 @@ export function BottomNav() {
 
   const artSection = location.pathname === '/'
     || location.pathname.startsWith('/g/')
+    || location.pathname.startsWith('/object/')
     || location.pathname.startsWith('/collections');
+  const mapSection = location.pathname.startsWith('/routes') || location.pathname.startsWith('/r/');
 
   return (
     <nav className="bottom-nav" aria-label="Разделы сайта">
@@ -23,7 +26,7 @@ export function BottomNav() {
         <Rows3 size={20} />
         <span>Лента</span>
       </NavLink>
-      <NavLink to="/map">
+      <NavLink to="/map" className={({ isActive }) => (isActive || mapSection ? 'active' : '')}>
         <Map size={20} />
         <span>Карта</span>
       </NavLink>
