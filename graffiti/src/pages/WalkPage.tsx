@@ -20,7 +20,7 @@ export function WalkPage() {
     };
   }, []);
 
-  const src = `/walk-app/?embed=1&v=75${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
+  const src = `/walk-app/?embed=1&v=76${slug ? `&route=${encodeURIComponent(slug)}` : ''}`;
 
   return (
     <main className="walk-embed-page">

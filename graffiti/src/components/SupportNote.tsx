@@ -7,9 +7,10 @@ export function SupportNote() {
 
   return (
     <div className="support-note">
-      <span className="support-note-icon"><Send size={14} /></span>
-      <span>Чат с поддержкой</span>
-      <a href="https://t.me/Xx_TimoxA_xX" target="_blank" rel="noreferrer">@Xx_TimoxA_xX</a>
+      <a href="https://t.me/Xx_TimoxA_xX" target="_blank" rel="noreferrer">
+        <span className="support-note-icon"><Send size={14} /></span>
+        <span>Чат с поддержкой</span>
+      </a>
     </div>
   );
 }
