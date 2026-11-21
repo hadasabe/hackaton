@@ -290,7 +290,7 @@ async function toggleAudio(){
  const id=voiceState.id||state.selected||state.near[0]?.id;if(id)startNarration(id);
 }
 
-$('gps-button').addEventListener('click',beginGPS);initSheetDrag();
+$('gps-button').addEventListener('click',()=>{if(state.source==='gps'&&locator.active){beginGPS();return;}window.dispatchEvent(new Event('ryadom:open-plan'));});initSheetDrag();
 $('toggle-walk').addEventListener('click',()=>{if(state.demoProgress>=100)beginDemo();setRunning(!state.running);});
 $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListener('click',beginDemo);
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});
