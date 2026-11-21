@@ -126,6 +126,7 @@ export function RoutesPage() {
               <Plus size={16} /> Опубликовать прогулку
             </button>
           ) : null}
+          <Link to="/map" className="button button-outline"><MapIcon size={16} /> Собрать на карте</Link>
         </div>
       </div>
 
