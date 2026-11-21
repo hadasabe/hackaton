@@ -6,6 +6,7 @@ import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import {
+  Check,
   Heart,
   HeartOff,
   MapPin,
@@ -920,7 +921,7 @@ export function MapPage() {
                     onClick={() => togglePlan(selected.id)}
                     disabled={selected.lat == null || selected.lng == null}
                   >
-                    <Plus size={16} /> {routeMode
+                    {plan.includes(selected.id) ? <Check size={16} /> : <Plus size={16} />} {routeMode
                       ? (plan.includes(selected.id) ? 'В маршруте' : 'Добавить в маршрут')
                       : (plan.includes(selected.id) ? 'В прогулке' : 'В прогулку')}
                   </button>
