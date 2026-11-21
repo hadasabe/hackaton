@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -11,6 +11,7 @@ import {
   MapPin,
   Maximize2,
   Minimize2,
+  MoreVertical,
   Navigation,
   Plus,
   Route,
@@ -82,6 +83,10 @@ export function MapPage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
   const [plan, setPlan] = useState<string[]>(() => readPlan());
   const [showPlan, setShowPlan] = useState(() => searchParams.get('plan') === '1');
+  const [dragPlanId, setDragPlanId] = useState<string | null>(null);
+  const [dragPlanOver, setDragPlanOver] = useState<number | null>(null);
+  const dragPlanRef = useRef<{ id: string; pointerId: number } | null>(null);
+  const dragPlanTarget = useRef<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -379,6 +384,7 @@ export function MapPage() {
       setPlanGeometry(null);
       return;
     }
+    setPlanGeometry(null);
     const controller = new AbortController();
     const coordinates = points.map(([lat, lng]) => `${lng},${lat}`).join(';');
     fetch(
@@ -449,6 +455,65 @@ export function MapPage() {
     const next = plan.includes(id) ? plan.filter((planId) => planId !== id) : [...plan, id];
     writePlan(next);
     setPlan(next);
+  }
+
+  function startPlanDrag(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    const index = plan.indexOf(id);
+    if (index < 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragPlanRef.current = { id, pointerId: event.pointerId };
+    dragPlanTarget.current = index;
+    setDragPlanId(id);
+    setDragPlanOver(index);
+  }
+
+  function movePlanDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (!dragPlanRef.current) return;
+    event.preventDefault();
+    const rows = [...document.querySelectorAll<HTMLElement>('.map-plan-row[data-plan-id]')];
+    if (!rows.length) return;
+    let target = rows.length - 1;
+    for (let index = 0; index < rows.length; index += 1) {
+      const rect = rows[index].getBoundingClientRect();
+      if (event.clientY < rect.top + rect.height / 2) {
+        target = index;
+        break;
+      }
+    }
+    target = Math.max(0, Math.min(plan.length - 1, target));
+    dragPlanTarget.current = target;
+    setDragPlanOver(target);
+  }
+
+  function endPlanDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    const dragged = dragPlanRef.current;
+    if (!dragged) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const from = plan.indexOf(dragged.id);
+    const target = dragPlanTarget.current ?? from;
+    dragPlanRef.current = null;
+    dragPlanTarget.current = null;
+    if (event.currentTarget.hasPointerCapture(dragged.pointerId)) {
+      event.currentTarget.releasePointerCapture(dragged.pointerId);
+    }
+    setDragPlanId(null);
+    setDragPlanOver(null);
+    if (from < 0 || target === from) return;
+    const next = [...plan];
+    const [moved] = next.splice(from, 1);
+    next.splice(target, 0, moved);
+    writePlan(next);
+    setPlan(next);
+  }
+
+  function cancelPlanDrag() {
+    dragPlanRef.current = null;
+    dragPlanTarget.current = null;
+    setDragPlanId(null);
+    setDragPlanOver(null);
   }
 
   function locate() {
@@ -530,13 +595,29 @@ export function MapPage() {
             planObjects.length ? (
               <div className="map-plan-list">
                 {planObjects.map((object, index) => (
-                  <div className="map-plan-row" key={object.id}>
+                  <div
+                    className={`map-plan-row${dragPlanId === object.id ? ' is-dragging' : ''}${dragPlanId && dragPlanId !== object.id && dragPlanOver === index ? ' is-drop-target' : ''}`}
+                    key={object.id}
+                    data-plan-id={object.id}
+                  >
                     <span>{index + 1}</span>
                     <button type="button" className="map-plan-object" onClick={() => setSelectedId(object.id)}>
                       <strong>{object.name}</strong>
                       <small>{object.address}</small>
                     </button>
-                    <button type="button" className="icon-button" onClick={() => togglePlan(object.id)} aria-label={`Убрать из прогулки: ${object.name}`}>
+                    <button
+                      type="button"
+                      className="map-plan-drag"
+                      onPointerDown={(event) => startPlanDrag(event, object.id)}
+                      onPointerMove={movePlanDrag}
+                      onPointerUp={endPlanDrag}
+                      onPointerCancel={cancelPlanDrag}
+                      aria-label={`Перетащить остановку: ${object.name}`}
+                      title="Перетащить"
+                    >
+                      <MoreVertical size={17} />
+                    </button>
+                    <button type="button" className="icon-button map-plan-remove" onClick={() => togglePlan(object.id)} aria-label={`Убрать из прогулки: ${object.name}`}>
                       <X size={15} />
                     </button>
                   </div>

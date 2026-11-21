@@ -4157,11 +4157,23 @@ button.profile-stat {
 
 .map-plan-row {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) 32px;
+  grid-template-columns: 24px minmax(0, 1fr) 24px 32px;
   align-items: center;
-  gap: 8px;
-  padding: 9px 7px;
+  gap: 6px;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 7px;
   border-bottom: 1px solid var(--line);
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.map-plan-row.is-dragging {
+  opacity: 0.55;
+  background: var(--paper-deep);
+}
+
+.map-plan-row.is-drop-target {
+  background: rgba(216, 255, 62, 0.38);
 }
 
 .map-plan-row > span {
@@ -4179,12 +4191,37 @@ button.profile-stat {
 .map-plan-object {
   display: flex;
   min-width: 0;
+  height: 100%;
   flex-direction: column;
+  justify-content: center;
   border: 0;
   background: transparent;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
+}
+
+.map-plan-drag {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-plan-drag:hover {
+  color: var(--ink);
+  background: var(--paper-deep);
+}
+
+.map-plan-drag:active {
+  cursor: grabbing;
 }
 
 .map-plan-object strong {
