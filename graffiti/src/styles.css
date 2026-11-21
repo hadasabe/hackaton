@@ -6186,7 +6186,7 @@ a.people-row:hover {
   white-space: nowrap;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   .header-admin {
     padding: 8px;
   }
