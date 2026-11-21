@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Build the local catalogue from official coordinates and reviewed editorial copy."""
 import json
 from pathlib import Path
