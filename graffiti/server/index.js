@@ -813,6 +813,7 @@ function walkPlaceItem(place) {
   const gallery = parseDbJson(place.gallery_json, []);
   return {
     id: String(place.id),
+    slug: place.public_slug || '',
     name: place.name,
     category: place.category || '',
     address: place.address || '',
@@ -887,8 +888,8 @@ app.get('/api/walk-places', (req, res) => {
 
 app.get('/api/walk-places/:id', (req, res) => {
   const place = db
-    .prepare(`${WALK_PLACE_SELECT} WHERE wp.id = ? AND wp.moderation_status = 'published'`)
-    .get(req.actorId || '', String(req.params.id));
+    .prepare(`${WALK_PLACE_SELECT} WHERE (wp.id = ? OR wp.public_slug = ?) AND wp.moderation_status = 'published'`)
+    .get(req.actorId || '', String(req.params.id), String(req.params.id));
   if (!place) {
     res.status(404).json({ error: 'Объект не найден' });
     return;

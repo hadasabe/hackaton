@@ -50,6 +50,7 @@ export interface PhotoMeta {
 
 export interface WalkPlace {
   id: string;
+  slug?: string;
   name: string;
   category: string;
   address: string;

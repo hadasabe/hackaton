@@ -5645,3 +5645,16 @@ body.map-is-fullscreen {
 .map-page-tools {
   margin-top: 6px;
 }
+
+.map-cluster {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 rgba(17, 17, 17, 0.3);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+}

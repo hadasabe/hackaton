@@ -48,7 +48,7 @@ function placeObject(place: WalkPlace): CityObject {
     era: place.era,
     artType: place.artType,
     artist: place.artist,
-    detailPath: `/object/${encodeURIComponent(place.id)}`,
+    detailPath: `/object/${encodeURIComponent(place.slug || place.id)}`,
     place,
   };
 }

@@ -132,6 +132,7 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS walk_places (
     id TEXT PRIMARY KEY,
+    public_slug TEXT UNIQUE,
     name TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT '',
     address TEXT NOT NULL DEFAULT '',
@@ -798,6 +799,12 @@ if (!userColumns.includes('avatar_path')) {
   db.exec("ALTER TABLE users ADD COLUMN avatar_path TEXT NOT NULL DEFAULT ''");
 }
 
+const placeColumns = db.prepare('PRAGMA table_info(walk_places)').all().map((column) => column.name);
+if (!placeColumns.includes('public_slug')) {
+  db.exec('ALTER TABLE walk_places ADD COLUMN public_slug TEXT');
+}
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_walk_places_public_slug ON walk_places(public_slug)');
+
 const COMMENTS = [
   ['Аня', 'Была здесь вчера — работа на месте, выглядит ещё ярче вживую.'],
   ['Марк', 'Жаль, если закрасят. Это уже часть города.'],
@@ -1034,14 +1041,27 @@ function seedWalkPlaces() {
   if (!Array.isArray(places)) return;
 
   const now = new Date().toISOString();
+  const usedSlugs = new Set(
+    db.prepare("SELECT public_slug FROM walk_places WHERE public_slug IS NOT NULL AND public_slug != ''")
+      .all()
+      .map((row) => row.public_slug),
+  );
+  function makeSlug() {
+    let slug;
+    do {
+      slug = crypto.randomBytes(5).toString('base64url');
+    } while (usedSlugs.has(slug));
+    usedSlugs.add(slug);
+    return slug;
+  }
   const upsert = db.prepare(`
     INSERT INTO walk_places (
-      id, name, category, address, description, story, look_for, era,
+      id, public_slug, name, category, address, description, story, look_for, era,
       art_type, artist, city, tags_json, sources_json, photo_json,
       gallery_json, image_path, lat, lng, source_url, glyph, verified,
       moderation_status, created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
       'published', ?, ?
     )
     ON CONFLICT(id) DO UPDATE SET
@@ -1075,6 +1095,7 @@ function seedWalkPlaces() {
       const tags = [place.category, place.artType].filter(Boolean);
       upsert.run(
         String(place.id),
+        makeSlug(),
         place.name,
         place.category || '',
         place.address || '',
@@ -1102,6 +1123,12 @@ function seedWalkPlaces() {
     }
   });
   save();
+
+  const updateSlug = db.prepare('UPDATE walk_places SET public_slug = ? WHERE id = ?');
+  for (const row of db.prepare("SELECT id FROM walk_places WHERE public_slug IS NULL OR public_slug = ''").all()) {
+    updateSlug.run(makeSlug(), row.id);
+  }
+
   console.log(`[stena] checked ${checked} walk places`);
 }
 

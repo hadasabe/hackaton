@@ -52,7 +52,7 @@ export function ObjectPage() {
       .catch(() => setComments([]));
   }, [id, updatePlace]);
 
-  const object = objects.find((item) => item.id === id || item.key === id);
+  const object = objects.find((item) => item.id === id || item.key === id || item.place?.slug === id);
   if (loading) {
     return <main className="page"><div className="detail-skeleton" /></main>;
   }

@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import {
   Heart,
   HeartOff,
@@ -82,7 +85,7 @@ export function MapPage() {
   const [fullscreen, setFullscreen] = useState(false);
   const mapNode = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markerLayer = useRef<L.LayerGroup | null>(null);
+  const markerLayer = useRef<L.MarkerClusterGroup | null>(null);
   const planLine = useRef<L.Polyline | null>(null);
   const markers = useRef(new Map<string, L.Marker>());
 
@@ -101,7 +104,17 @@ export function MapPage() {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
-    markerLayer.current = L.layerGroup().addTo(map);
+    markerLayer.current = L.markerClusterGroup({
+      maxClusterRadius: 38,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => L.divIcon({
+        className: 'map-cluster',
+        html: `<span>${cluster.getChildCount()}</span>`,
+        iconSize: [40, 40],
+      }),
+    }).addTo(map);
     mapRef.current = map;
 
     const resize = new ResizeObserver(() => map.invalidateSize({ pan: false }));
@@ -209,10 +222,16 @@ export function MapPage() {
 
   useEffect(() => {
     if (!selected || selected.lat == null || selected.lng == null || !mapRef.current) return;
-    mapRef.current.flyTo([selected.lat, selected.lng], Math.max(mapRef.current.getZoom(), 15), {
-      duration: 0.6,
-    });
-    markers.current.get(selected.id)?.openTooltip();
+    const map = mapRef.current;
+    const marker = markers.current.get(selected.id);
+    if (marker && markerLayer.current) {
+      markerLayer.current.zoomToShowLayer(marker, () => {
+        marker.openTooltip();
+        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 16), { duration: 0.6 });
+      });
+      return;
+    }
+    map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, [selected]);
 
   function toggleFavorite(id: string) {
