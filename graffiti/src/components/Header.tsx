@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Building2, Heart, LogOut, ShieldCheck } from 'lucide-react';
+import { Building2, Heart, LogOut, Map, Rows3, ShieldCheck, SprayCan } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
@@ -8,6 +8,13 @@ export function Header() {
   const isAdmin = user?.role === 'admin';
   const location = useLocation();
   const [hidden, setHidden] = useState(false);
+  const artSection = location.pathname === '/'
+    || location.pathname.startsWith('/g/')
+    || location.pathname.startsWith('/object/')
+    || location.pathname.startsWith('/collections');
+  const mapSection = location.pathname.startsWith('/map')
+    || location.pathname.startsWith('/routes')
+    || location.pathname.startsWith('/r/');
 
   useEffect(() => {
     setHidden(false);
@@ -40,6 +47,24 @@ export function Header() {
           <small>Саратов</small>
         </span>
       </Link>
+
+      <nav className="main-nav header-main-nav" aria-label="Основные разделы">
+        <NavLink
+          to="/"
+          className={({ isActive }) => (isActive || artSection ? 'active' : '')}
+        >
+          <Rows3 size={17} /> Лента
+        </NavLink>
+        <NavLink
+          to="/map"
+          className={({ isActive }) => (isActive || mapSection ? 'active' : '')}
+        >
+          <Map size={17} /> Карта
+        </NavLink>
+        <NavLink to="/walls">
+          <SprayCan size={17} /> Стены
+        </NavLink>
+      </nav>
 
       <div className="header-side">
         {user ? (

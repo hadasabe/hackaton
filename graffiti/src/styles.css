@@ -165,6 +165,14 @@ p {
   flex: 1;
 }
 
+.header-main-nav {
+  justify-content: center;
+}
+
+.header-main-nav a {
+  text-decoration: none;
+}
+
 .main-nav a {
   display: inline-flex;
   align-items: center;
@@ -3721,11 +3729,11 @@ button.profile-stat {
 /* Desktop bottom dock */
 @media (min-width: 761px) {
   body.has-bottom-nav .app-shell {
-    padding-bottom: 104px;
+    padding-bottom: 0;
   }
 
   .bottom-nav {
-    display: flex;
+    display: none;
     position: fixed;
     left: 50%;
     bottom: 18px;
