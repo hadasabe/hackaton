@@ -279,6 +279,23 @@ function cleanUserText(value, max) {
   return maskProfanity(cleanText(value, max));
 }
 
+function visibleCommentRows(rows) {
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const keep = new Set();
+  for (const row of rows) {
+    if (row.deleted_at) continue;
+    keep.add(row.id);
+    let parentId = row.parent_id;
+    const seen = new Set();
+    while (parentId && byId.has(parentId) && !seen.has(parentId)) {
+      seen.add(parentId);
+      keep.add(parentId);
+      parentId = byId.get(parentId).parent_id;
+    }
+  }
+  return rows.filter((row) => keep.has(row.id));
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -704,30 +721,36 @@ app.get('/api/walk-routes/:slug', (req, res) => {
     res.status(404).json({ error: 'Маршрут не найден' });
     return;
   }
-  const comments = db
+  const rows = db
     .prepare(`
-      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at,
+      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at, c.deleted_at,
         (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
         (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
         (SELECT cr.value FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
         (SELECT p.author_name FROM walk_route_comments p WHERE p.id = c.parent_id) AS reply_to_name
       FROM walk_route_comments c
-      WHERE c.route_id = ? AND c.deleted_at IS NULL
+      WHERE c.route_id = ?
       ORDER BY datetime(c.created_at) ASC
     `)
-    .all(req.actorId, row.id)
-    .map((comment) => ({
+    .all(req.actorId, row.id);
+  const byId = new Map(rows.map((comment) => [comment.id, comment]));
+  const comments = visibleCommentRows(rows).map((comment) => {
+    const deleted = Boolean(comment.deleted_at);
+    const parent = comment.parent_id ? byId.get(comment.parent_id) : null;
+    return {
       id: comment.id,
       parent_id: comment.parent_id,
-      author_name: comment.author_name,
-      body: comment.body,
+      author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+      body: deleted ? '' : comment.body,
       created_at: comment.created_at,
-      likes: Number(comment.likes || 0),
-      dislikes: Number(comment.dislikes || 0),
-      my_reaction: comment.my_reaction || null,
-      reply_to_name: comment.reply_to_name || null,
-      can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
-    }));
+      deleted,
+      likes: deleted ? 0 : Number(comment.likes || 0),
+      dislikes: deleted ? 0 : Number(comment.dislikes || 0),
+      my_reaction: deleted ? null : (comment.my_reaction || null),
+      reply_to_name: parent?.deleted_at ? 'удалённому комментарию' : (comment.reply_to_name || null),
+      can_delete: !deleted && (comment.actor_id === req.actorId || req.user?.role === 'admin'),
+    };
+  });
   res.json({ route: walkRouteSummary(row, req), comments });
 });
 
@@ -1141,31 +1164,37 @@ app.get('/api/graffiti/:id', (req, res) => {
     res.status(404).json({ error: 'Работа не найдена' });
     return;
   }
-  const comments = db
+  const rows = db
     .prepare(`
-      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at,
+      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at, c.deleted_at,
         (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
         (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
         (SELECT cr.value FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
         (SELECT p.author_name FROM comments p WHERE p.id = c.parent_id) AS reply_to_name
       FROM comments c
-      WHERE c.graffiti_id = ? AND c.deleted_at IS NULL
+      WHERE c.graffiti_id = ?
         AND (c.hidden = 0 OR c.actor_id = ? OR ? = 1)
       ORDER BY datetime(c.created_at) ASC
     `)
-    .all(req.actorId, id, req.actorId, req.user?.role === 'admin' ? 1 : 0)
-    .map((comment) => ({
+    .all(req.actorId, id, req.actorId, req.user?.role === 'admin' ? 1 : 0);
+  const byId = new Map(rows.map((comment) => [comment.id, comment]));
+  const comments = visibleCommentRows(rows).map((comment) => {
+    const deleted = Boolean(comment.deleted_at);
+    const parent = comment.parent_id ? byId.get(comment.parent_id) : null;
+    return {
       id: comment.id,
       parent_id: comment.parent_id,
-      author_name: comment.author_name,
-      body: comment.body,
+      author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+      body: deleted ? '' : comment.body,
       created_at: comment.created_at,
-      likes: Number(comment.likes || 0),
-      dislikes: Number(comment.dislikes || 0),
-      my_reaction: comment.my_reaction || null,
-      reply_to_name: comment.reply_to_name || null,
-      can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
-    }));
+      deleted,
+      likes: deleted ? 0 : Number(comment.likes || 0),
+      dislikes: deleted ? 0 : Number(comment.dislikes || 0),
+      my_reaction: deleted ? null : (comment.my_reaction || null),
+      reply_to_name: parent?.deleted_at ? 'удалённому комментарию' : (comment.reply_to_name || null),
+      can_delete: !deleted && (comment.actor_id === req.actorId || req.user?.role === 'admin'),
+    };
+  });
   res.json({ item, comments });
 });
 
@@ -1805,6 +1834,62 @@ app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/api/reports', requireUser, (req, res) => {
+  const targetType = String(req.body?.target_type || '');
+  const targetId = cleanText(req.body?.target_id, 120);
+  const targetTitle = cleanUserText(req.body?.target_title, 160);
+  const reason = cleanUserText(req.body?.reason, 120);
+  const details = cleanUserText(req.body?.details, 800);
+  if (!['comment', 'place'].includes(targetType) || !targetId || !reason) {
+    res.status(400).json({ error: 'Укажите объект и причину жалобы' });
+    return;
+  }
+  if (!rateLimit(`report:${req.actorId}`, 10, 60 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много жалоб. Попробуйте позже.' });
+    return;
+  }
+  const info = db
+    .prepare(`
+      INSERT INTO content_reports (
+        target_type, target_id, target_title, reporter_id, reporter_name,
+        reason, details, status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+    `)
+    .run(targetType, targetId, targetTitle, req.user.id, req.user.name, reason, details, nowIso());
+  res.status(201).json({ id: Number(info.lastInsertRowid) });
+});
+
+app.get('/api/admin/reports', requireAdmin, (_req, res) => {
+  const items = db
+    .prepare(`
+      SELECT *
+      FROM content_reports
+      ORDER BY
+        CASE status WHEN 'pending' THEN 0 WHEN 'resolved' THEN 1 ELSE 2 END,
+        datetime(created_at) DESC
+      LIMIT 300
+    `)
+    .all();
+  const pending = db
+    .prepare("SELECT COUNT(*) AS count FROM content_reports WHERE status = 'pending'")
+    .get().count;
+  res.json({ items, counts: { pending } });
+});
+
+app.post('/api/admin/reports/:id/resolve', requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  db.prepare("UPDATE content_reports SET status = 'resolved', reviewed_at = ?, reviewed_by = ? WHERE id = ?")
+    .run(nowIso(), req.user.id, id);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/reports/:id/reject', requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  db.prepare("UPDATE content_reports SET status = 'rejected', reviewed_at = ?, reviewed_by = ? WHERE id = ?")
+    .run(nowIso(), req.user.id, id);
+  res.json({ ok: true });
+});
+
 app.get('/api/admin/buildings', requireAdmin, (_req, res) => {
   const items = db
     .prepare(`
@@ -1840,6 +1925,9 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
   const buildings = db
     .prepare("SELECT COUNT(*) AS count FROM walls WHERE moderation_status = 'pending' AND kind = 'building'")
     .get().count;
+  const reports = db
+    .prepare("SELECT COUNT(*) AS count FROM content_reports WHERE status = 'pending'")
+    .get().count;
   const users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
   res.json({
     pending: graffiti.pending || 0,
@@ -1848,6 +1936,7 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     status,
     walls,
     buildings,
+    reports,
     users,
   });
 });

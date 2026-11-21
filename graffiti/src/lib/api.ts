@@ -4,6 +4,7 @@ import type {
   AuthUser,
   CollectionSummary,
   Comment,
+  ContentReport,
   FeedStats,
   Graffiti,
   ReactionValue,
@@ -237,6 +238,18 @@ export const api = {
 
   adminBuildings() {
     return request<{ items: Wall[] }>('/api/admin/buildings');
+  },
+
+  adminReports() {
+    return request<{ items: ContentReport[]; counts: { pending: number } }>('/api/admin/reports');
+  },
+
+  resolveReport(id: number) {
+    return request<{ ok: true }>(`/api/admin/reports/${id}/resolve`, { method: 'POST' });
+  },
+
+  rejectReport(id: number) {
+    return request<{ ok: true }>(`/api/admin/reports/${id}/reject`, { method: 'POST' });
   },
 
   adminCounts() {

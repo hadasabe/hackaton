@@ -131,6 +131,22 @@ db.exec(`
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS content_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_type TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    target_title TEXT NOT NULL DEFAULT '',
+    reporter_id INTEGER NOT NULL,
+    reporter_name TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    details TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    reviewed_at TEXT,
+    reviewed_by INTEGER,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS collections (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_id INTEGER NOT NULL,

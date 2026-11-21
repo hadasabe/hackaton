@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { AdminCounts, AdminUser, AiCheck, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
+import type { AdminCounts, AdminUser, AiCheck, ContentReport, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
 import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 import { useConfirm } from '../components/ConfirmDialog';
 
-type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'buildings' | 'status' | 'users';
+type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'buildings' | 'reports' | 'status' | 'users';
 type ReportTab = 'pending' | 'approved' | 'rejected';
 type ReasonKind = 'graffiti' | 'wall' | 'report';
 
@@ -36,6 +36,7 @@ const TAB_LABEL: Record<Tab, string> = {
   rejected: 'Отклонённые',
   walls: 'Стены',
   buildings: 'Здания',
+  reports: 'Жалобы',
   status: 'Статусы',
   users: 'Пользователи',
 };
@@ -53,6 +54,7 @@ export function AdminPage() {
   const [items, setItems] = useState<Graffiti[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [buildings, setBuildings] = useState<Wall[]>([]);
+  const [contentReports, setContentReports] = useState<ContentReport[]>([]);
   const [reports, setReports] = useState<StatusReport[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [reportCounts, setReportCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -62,6 +64,7 @@ export function AdminPage() {
     rejected: 0,
     walls: 0,
     buildings: 0,
+    reports: 0,
     status: 0,
     users: 0,
   });
@@ -84,6 +87,9 @@ export function AdminPage() {
       } else if (tab === 'buildings') {
         const data = await api.adminBuildings();
         setBuildings(data.items);
+      } else if (tab === 'reports') {
+        const data = await api.adminReports();
+        setContentReports(data.items);
       } else if (tab === 'users') {
         const data = await api.adminUsers();
         setUsers(data.items);
@@ -158,6 +164,24 @@ export function AdminPage() {
       label: 'Причина отклонения (увидит только владелец)',
       defaultValue: 'Фото или адрес не соответствуют правилам публикации.',
     });
+  }
+
+  async function resolveContentReport(id: number) {
+    try {
+      await api.resolveReport(id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось обновить жалобу');
+    }
+  }
+
+  async function rejectContentReport(id: number) {
+    try {
+      await api.rejectReport(id);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось обновить жалобу');
+    }
   }
 
   async function approveReport(id: number) {
@@ -257,6 +281,13 @@ export function AdminPage() {
           loading={loading}
           onApprove={(id) => void approveWall(id)}
           onReject={(id) => void rejectWall(id)}
+        />
+      ) : tab === 'reports' ? (
+        <ReportsPanel
+          reports={contentReports}
+          loading={loading}
+          onResolve={(id) => void resolveContentReport(id)}
+          onReject={(id) => void rejectContentReport(id)}
         />
       ) : tab === 'status' ? (
         <StatusReportsPanel
@@ -460,6 +491,70 @@ function WallsPanel({
                 <button type="button" className="button button-outline" onClick={() => onReject(wall.id)}>
                   <X size={15} /> Отклонить
                 </button>
+              ) : null}
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ReportsPanel({
+  reports,
+  loading,
+  onResolve,
+  onReject,
+}: {
+  reports: ContentReport[];
+  loading: boolean;
+  onResolve: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="admin-list">
+        {Array.from({ length: 3 }).map((_, index) => <div className="admin-skeleton" key={index} />)}
+      </div>
+    );
+  }
+  if (reports.length === 0) {
+    return (
+      <div className="empty-admin">
+        <ShieldCheck size={32} />
+        <h3>Жалоб пока нет</h3>
+        <p>Когда пользователи пожалуются на комментарий или объект, обращение появится здесь.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="admin-list">
+      {reports.map((report) => (
+        <article className="report-card" key={report.id}>
+          <div className="report-card-body">
+            <div className="admin-card-top">
+              <span className="admin-id">#{report.id}</span>
+              <span className={`moderation-badge ${report.status === 'pending' ? 'pending' : report.status === 'resolved' ? 'published' : 'rejected'}`}>
+                {report.status === 'pending' ? 'на проверке' : report.status === 'resolved' ? 'решена' : 'отклонена'}
+              </span>
+            </div>
+            <h3>{report.target_type === 'comment' ? 'Комментарий' : 'Объект'}: {report.target_title || report.target_id}</h3>
+            <p className="report-reason">Причина: {report.reason}</p>
+            {report.details ? <p className="admin-description">{report.details}</p> : null}
+            <div className="admin-meta">
+              <span>От: {report.reporter_name}</span>
+              <span>{formatDate(report.created_at)}</span>
+            </div>
+            <div className="admin-actions">
+              {report.status === 'pending' ? (
+                <>
+                  <button type="button" className="button button-lime" onClick={() => onResolve(report.id)}>
+                    <Check size={15} /> Решить
+                  </button>
+                  <button type="button" className="button button-outline" onClick={() => onReject(report.id)}>
+                    <X size={15} /> Отклонить
+                  </button>
+                </>
               ) : null}
             </div>
           </div>

@@ -212,7 +212,22 @@ export function GraffitiPage() {
     if (!confirmed) return;
     try {
       await api.deleteComment(commentId);
-      setComments((current) => current.filter((comment) => comment.id !== commentId));
+      setComments((current) => {
+        const hasReplies = current.some((comment) => comment.parent_id === commentId);
+        if (!hasReplies) return current.filter((comment) => comment.id !== commentId);
+        return current.map((comment) => comment.id === commentId
+          ? {
+            ...comment,
+            deleted: true,
+            body: '',
+            author_name: 'Комментарий удалён',
+            can_delete: false,
+            likes: 0,
+            dislikes: 0,
+            my_reaction: null,
+          }
+          : comment);
+      });
       setItem((current) =>
         current ? { ...current, comments_count: Math.max(0, current.comments_count - 1) } : current,
       );
@@ -258,8 +273,9 @@ export function GraffitiPage() {
   const commentTree = buildCommentTree(comments);
 
   function renderComment(comment: CommentNode) {
+    const deleted = Boolean(comment.deleted);
     return (
-      <article className="comment" key={comment.id}>
+      <article className={`comment${deleted ? ' deleted' : ''}`} key={comment.id}>
         <div className="comment-head">
           <strong>{comment.author_name}</strong>
           <span>{timeAgo(comment.created_at)}</span>
@@ -275,8 +291,8 @@ export function GraffitiPage() {
             </button>
           ) : null}
         </div>
-        <p>{comment.body}</p>
-        <div className="comment-actions">
+        {deleted ? <p className="comment-deleted">Комментарий удалён</p> : <p>{comment.body}</p>}
+        {!deleted ? <div className="comment-actions">
           <button
             type="button"
             className={`comment-reaction ${comment.my_reaction === 'like' ? 'active' : ''}`}
@@ -305,9 +321,9 @@ export function GraffitiPage() {
               <Reply size={13} /> Ответить
             </button>
           ) : null}
-        </div>
+        </div> : null}
 
-        {replyTo?.id === comment.id ? (
+        {!deleted && replyTo?.id === comment.id ? (
           <form className="comment-reply-form" onSubmit={(event) => void submitReply(event, comment.id)}>
             <textarea
               className="textarea"

@@ -102,6 +102,7 @@ export interface Comment {
   my_reaction: ReactionValue | null;
   reply_to_name?: string | null;
   can_delete: boolean;
+  deleted?: boolean;
 }
 
 export interface FeedStats {
@@ -125,7 +126,21 @@ export interface AdminCounts {
   status: number;
   walls: number;
   buildings: number;
+  reports: number;
   users: number;
+}
+
+export interface ContentReport {
+  id: number;
+  target_type: 'comment' | 'place';
+  target_id: string;
+  target_title: string;
+  reporter_name: string;
+  reason: string;
+  details: string;
+  status: 'pending' | 'resolved' | 'rejected';
+  created_at: string;
+  reviewed_at?: string | null;
 }
 
 export interface CollectionSummary {
