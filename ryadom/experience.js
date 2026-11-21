@@ -116,7 +116,21 @@
  function toggleFavorite(id){if(!get(id))return;const saved=favorites.includes(id);favorites=saved?favorites.filter(x=>x!==id):[...favorites,id];persist(KEYS.favorites,favorites);syncButtons();if(view==='favorites')renderPanel();if($('gallery-dialog').open)renderGallery();app.toast(saved?'Место убрано из избранного':'Место сохранено в избранном');}
  function togglePlan(id){const p=get(id);if(!p)return;if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng)){app.toast('У этого объекта пока нет координат для маршрута.');return;}const added=plan.includes(id);plan=added?plan.filter(x=>x!==id):[...plan,id];persist(KEYS.plan,plan);app.clearRoute?.();syncButtons();if(view!=='base')renderPanel();if($('gallery-dialog').open)renderGallery();app.toast(added?'Место убрано из прогулки':'Место добавлено в вашу прогулку');}
  function openHistory(id){if(!get(id))return;if($('gallery-dialog').open)$('gallery-dialog').close();closePanel();app.setTab('nearby',false);app.selectPlace(id,true);updateNav('map');}
- function openFullCard(id){app.hidePreview?.();app.exitFullscreen?.();closePanel();app.setTab('nearby',false);setTimeout(()=>{const card=document.querySelector(`[data-place-id="${id}"]`);card?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});},80);}
+ function openFullCard(id){
+ app.hidePreview?.();app.exitFullscreen?.();closePanel();app.setTab('nearby',false);
+ setTimeout(()=>{
+  const card=document.querySelector(`[data-place-id="${id}"]`);if(!card)return;
+  const behavior=matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth';
+  if(innerWidth>760){
+   const explorer=$('explorer');
+   if(explorer){const cardRect=card.getBoundingClientRect(),containerRect=explorer.getBoundingClientRect();explorer.scrollTo({top:explorer.scrollTop+cardRect.top-containerRect.top-12,behavior});return;}
+  }
+  const header=document.querySelector('.header');
+  const headerStyle=header?getComputedStyle(header):null;
+  const headerHeight=headerStyle&&headerStyle.display!=='none'&&['sticky','fixed'].includes(headerStyle.position)?header.getBoundingClientRect().height:0;
+  window.scrollTo({top:scrollY+card.getBoundingClientRect().top-headerHeight-12,behavior});
+ },280);
+}
  function showPlan(start=false){if(!plan.length){showPanel('plan');return;}closePanel();app.setTab(start?'nearby':'map',false);if(typeof app.showRoute==='function')app.showRoute(plan.slice());else if(!start)app.selectPlace(plan[0],false);if(start){app.beginGPS();app.toast('Маршрут от точки А до точки Б подсвечен на карте.');}else app.toast('Маршрут от точки А до точки Б подсвечен по дорогам OpenStreetMap.');updateNav('map');}
  function openGallery(id){photos=allPhotos.filter(p=>p.id===id);if(!photos.length)return;galleryScope='place';galleryReturn=document.activeElement;photoIndex=0;renderGallery();$('gallery-dialog').showModal();document.body.classList.add('gallery-open');}
  function openCityGallery(){photos=allPhotos;if(!photos.length)return;galleryScope='city';galleryReturn=document.activeElement;photoIndex=0;renderGallery();$('gallery-dialog').showModal();document.body.classList.add('gallery-open');}
