@@ -39,18 +39,6 @@ export function hashDistance(a, b) {
   return distance;
 }
 
-export async function prepareForAi(buffer) {
-  try {
-    return await sharp(buffer)
-      .rotate()
-      .resize({ width: 768, height: 768, fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 72 })
-      .toBuffer();
-  } catch {
-    return buffer;
-  }
-}
-
 export async function findDuplicate({ contentHash: hash, dhash }) {
   const exact = db
     .prepare(`
