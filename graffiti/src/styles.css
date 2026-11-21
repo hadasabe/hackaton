@@ -4214,7 +4214,7 @@ button.profile-stat {
 .map-plan-row {
   position: relative;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) 24px 32px;
+  grid-template-columns: 24px minmax(0, 1fr) 24px 24px 32px;
   align-items: center;
   gap: 6px;
   height: 56px;
@@ -6349,4 +6349,69 @@ a.people-row:hover {
 .route-create-hint {
   color: var(--muted);
   font-size: 12px;
+}
+
+.map-plan-menu-button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.map-plan-menu-button:hover {
+  border-color: var(--line);
+  background: var(--paper-deep);
+  color: var(--ink);
+}
+
+.plan-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2550;
+}
+
+.plan-menu {
+  position: fixed;
+  z-index: 2551;
+  width: 176px;
+  padding: 5px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.plan-menu button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-menu button:hover:not(:disabled) {
+  background: var(--paper-deep);
+}
+
+.plan-menu button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.plan-menu .is-danger {
+  color: var(--red);
 }

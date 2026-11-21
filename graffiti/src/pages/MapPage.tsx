@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,6 +7,8 @@ import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   Heart,
   HeartOff,
@@ -190,6 +193,7 @@ export function MapPage() {
   const [showPlan, setShowPlan] = useState(() => searchParams.get('plan') === '1');
   const [dragPlanId, setDragPlanId] = useState<string | null>(null);
   const [dragPlanInsert, setDragPlanInsert] = useState<number | null>(null);
+  const [planMenu, setPlanMenu] = useState<{ id: string; top: number; left: number } | null>(null);
   const dragPlanRef = useRef<{ id: string; pointerId: number } | null>(null);
   const dragPlanTarget = useRef<number | null>(null);
   const [locating, setLocating] = useState(false);
@@ -666,6 +670,30 @@ export function MapPage() {
     setDragPlanInsert(null);
   }
 
+  function movePlanItem(id: string, delta: number) {
+    const from = plan.indexOf(id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= plan.length) return;
+    const next = [...plan];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    savePlan(next);
+    setPlanMenu(null);
+  }
+
+  function openPlanMenu(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const width = 176;
+    const height = 146;
+    const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8);
+    const top = rect.bottom + 6 + height > window.innerHeight
+      ? rect.top - height - 6
+      : rect.bottom + 6;
+    setPlanMenu({ id, top, left });
+  }
+
   async function locate() {
     setLocating(true);
     const point = await readCurrentPoint();
@@ -799,6 +827,15 @@ export function MapPage() {
                       onPointerCancel={cancelPlanDrag}
                       aria-label={`Перетащить остановку: ${object.name}`}
                       title="Перетащить"
+                    >
+                      <MoreVertical size={17} />
+                    </button>
+                    <button
+                      type="button"
+                      className="map-plan-menu-button"
+                      onPointerDown={(event) => openPlanMenu(event, object.id)}
+                      aria-label={`Действия с остановкой: ${object.name}`}
+                      title="Действия"
                     >
                       <MoreVertical size={17} />
                     </button>
@@ -937,6 +974,46 @@ export function MapPage() {
       <p className="map-attribution">
         Карта: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
       </p>
+
+      {planMenu ? createPortal(
+        <>
+          <div className="plan-menu-backdrop" onClick={() => setPlanMenu(null)} />
+          <div
+            className="plan-menu"
+            style={{ top: planMenu.top, left: planMenu.left }}
+            role="menu"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => movePlanItem(planMenu.id, -1)}
+              disabled={plan.indexOf(planMenu.id) <= 0}
+            >
+              <ArrowUp size={15} /> Переместить выше
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => movePlanItem(planMenu.id, 1)}
+              disabled={plan.indexOf(planMenu.id) >= plan.length - 1}
+            >
+              <ArrowDown size={15} /> Переместить ниже
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="is-danger"
+              onClick={() => {
+                togglePlan(planMenu.id);
+                setPlanMenu(null);
+              }}
+            >
+              <X size={15} /> Убрать из {routeMode ? 'маршрута' : 'прогулки'}
+            </button>
+          </div>
+        </>,
+        document.body,
+      ) : null}
     </main>
   );
 }
