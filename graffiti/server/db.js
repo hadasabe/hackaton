@@ -121,6 +121,33 @@ db.exec(`
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS walk_places (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT '',
+    address TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    story TEXT NOT NULL DEFAULT '',
+    look_for TEXT NOT NULL DEFAULT '',
+    era TEXT NOT NULL DEFAULT '',
+    art_type TEXT NOT NULL DEFAULT '',
+    artist TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT 'САРАТОВ',
+    tags_json TEXT NOT NULL DEFAULT '[]',
+    sources_json TEXT NOT NULL DEFAULT '[]',
+    photo_json TEXT NOT NULL DEFAULT 'null',
+    gallery_json TEXT NOT NULL DEFAULT '[]',
+    image_path TEXT NOT NULL DEFAULT '',
+    lat REAL,
+    lng REAL,
+    source_url TEXT NOT NULL DEFAULT '',
+    glyph TEXT NOT NULL DEFAULT 'pin',
+    verified TEXT NOT NULL DEFAULT '',
+    moderation_status TEXT NOT NULL DEFAULT 'published',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS hidden_places (
     place_id TEXT PRIMARY KEY,
     reason TEXT NOT NULL DEFAULT '',
@@ -948,6 +975,91 @@ function seedCollections() {
   console.log(`[stena] checked ${COLLECTION_SAMPLES.length} sample collections`);
 }
 
+function seedWalkPlaces() {
+  const contentDir = path.join(__dirname, '..', 'content');
+  let places;
+  let galleries = {};
+  try {
+    places = JSON.parse(fs.readFileSync(path.join(contentDir, 'places.json'), 'utf8'));
+    galleries = JSON.parse(fs.readFileSync(path.join(contentDir, 'galleries.json'), 'utf8'));
+  } catch (error) {
+    console.error('[stena] walk places catalog failed', error.message);
+    return;
+  }
+  if (!Array.isArray(places)) return;
+
+  const now = new Date().toISOString();
+  const upsert = db.prepare(`
+    INSERT INTO walk_places (
+      id, name, category, address, description, story, look_for, era,
+      art_type, artist, city, tags_json, sources_json, photo_json,
+      gallery_json, image_path, lat, lng, source_url, glyph, verified,
+      moderation_status, created_at, updated_at
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      'published', ?, ?
+    )
+    ON CONFLICT(id) DO UPDATE SET
+      name = excluded.name,
+      category = excluded.category,
+      address = excluded.address,
+      description = excluded.description,
+      story = excluded.story,
+      look_for = excluded.look_for,
+      era = excluded.era,
+      art_type = excluded.art_type,
+      artist = excluded.artist,
+      city = excluded.city,
+      tags_json = excluded.tags_json,
+      sources_json = excluded.sources_json,
+      photo_json = excluded.photo_json,
+      gallery_json = excluded.gallery_json,
+      image_path = excluded.image_path,
+      lat = excluded.lat,
+      lng = excluded.lng,
+      source_url = excluded.source_url,
+      glyph = excluded.glyph,
+      verified = excluded.verified,
+      updated_at = excluded.updated_at
+  `);
+
+  let checked = 0;
+  const save = db.transaction(() => {
+    for (const place of places) {
+      if (!place?.id || !place.name) continue;
+      const tags = [place.category, place.artType].filter(Boolean);
+      upsert.run(
+        String(place.id),
+        place.name,
+        place.category || '',
+        place.address || '',
+        place.description || '',
+        place.story || '',
+        place.lookFor || '',
+        place.era || '',
+        place.artType || '',
+        place.artist || '',
+        place.city || 'САРАТОВ',
+        JSON.stringify(tags),
+        JSON.stringify(place.sources || []),
+        JSON.stringify(place.photo || null),
+        JSON.stringify(galleries[place.id] || []),
+        place.image || '',
+        Number.isFinite(place.lat) ? place.lat : null,
+        Number.isFinite(place.lng) ? place.lng : null,
+        place.source || '',
+        place.glyph || 'pin',
+        place.verified || '',
+        now,
+        now,
+      );
+      checked += 1;
+    }
+  });
+  save();
+  console.log(`[stena] checked ${checked} walk places`);
+}
+
 export function seedDatabase() {
   const name = process.env.ADMIN_NAME || 'Администратор';
   const email = (process.env.ADMIN_EMAIL || 'admin@stena.local').toLowerCase();
@@ -984,6 +1096,7 @@ export function seedDatabase() {
     }
   }
 
+  seedWalkPlaces();
   seedWalls();
   migrateUploadsToMedia();
 

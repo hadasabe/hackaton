@@ -57,7 +57,7 @@
 - **Frontend:** React 19, TypeScript, Vite, React Router.
 - **Backend:** Node.js, Express 5, better-sqlite3, JWT/cookie-аутентификация, multer, sharp.
 - **Карта:** Leaflet, OpenStreetMap, геолокация и маршруты.
-- **Хранение:** один SQLite-файл, изображения — в таблице `media`.
+- **Хранение:** один SQLite-файл; места, здания и граффити хранятся в базе, изображения — в таблице `media`.
 - **Продакшен:** Nginx, HTTPS, systemd.
 
 ## Структура репозитория

@@ -20,48 +20,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'stena-dev-jwt-secret';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 
-function loadStaticPlaces() {
-  try {
-    const filePath = path.join(__dirname, '..', 'content', 'places.json');
-    const list = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    return new Map(list.map((place) => [String(place.id), place]));
-  } catch (error) {
-    console.error('[stena] static places catalog failed', error.message);
-    return new Map();
-  }
-}
-
-const STATIC_PLACES = loadStaticPlaces();
-const PLACE_GALLERIES = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'content', 'galleries.json'), 'utf8'));
-  } catch {
-    return {};
-  }
-})();
 const SESSION_COOKIE = 'stena_session';
 
-function normalizePlaceAddress(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/ё/g, 'е')
-    .replace(/[^a-zа-я0-9]+/g, ' ')
-    .replace(/\b(улица|ул|проспект|пр|набережная|сквер|район|дом|д)\b/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+function parseDbJson(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
-function publicPlaceImage(value) {
-  if (!value) return '';
-  const name = path.basename(String(value));
-  return `/places/${encodeURIComponent(name)}`;
+function placeRows() {
+  return db.prepare('SELECT * FROM walk_places').all();
 }
 
-function findPlaceByAddress(address) {
+function findPlaceByAddress(address, places) {
   const normalized = normalizePlaceAddress(address);
   if (!normalized) return null;
   const house = normalized.match(/\d+/)?.[0];
-  for (const place of STATIC_PLACES.values()) {
+  for (const place of places) {
     if (!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) continue;
     const candidate = normalizePlaceAddress(place.address);
     const name = normalizePlaceAddress(place.name);
@@ -79,6 +56,22 @@ function findPlaceByAddress(address) {
     }
   }
   return null;
+}
+
+function normalizePlaceAddress(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9]+/g, ' ')
+    .replace(/\b(улица|ул|проспект|пр|набережная|сквер|район|дом|д)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicPlaceImage(value) {
+  if (!value) return '';
+  const name = path.basename(String(value));
+  return `/places/${encodeURIComponent(name)}`;
 }
 
 seedDatabase();
@@ -512,8 +505,9 @@ app.get('/api/feed', (req, res) => {
   const rows = db
     .prepare(`${GRAFFITI_SELECT} WHERE ${where.join(' AND ')} ORDER BY datetime(COALESCE(g.published_at, g.created_at)) DESC LIMIT 200`)
     .all(...params);
+  const matchPlaces = placeRows();
   const items = rows.map((item) => {
-    const place = findPlaceByAddress(item.address);
+    const place = findPlaceByAddress(item.address, matchPlaces);
     return {
       ...item,
       lat: place?.lat ?? null,
@@ -782,35 +776,42 @@ app.get('/api/walk-places', (_req, res) => {
   const hidden = new Set(
     db.prepare('SELECT place_id FROM hidden_places').all().map((row) => String(row.place_id)),
   );
-  const items = [...STATIC_PLACES.values()]
+  const rows = db
+    .prepare("SELECT * FROM walk_places WHERE moderation_status = 'published' ORDER BY rowid ASC")
+    .all();
+  const items = rows
     .filter((place) => !hidden.has(String(place.id)))
-    .map((place) => ({
-      id: String(place.id),
-      name: place.name,
-      category: place.category || '',
-      address: place.address || '',
-      description: place.description || '',
-      story: place.story || '',
-      lookFor: place.lookFor || '',
-      era: place.era || '',
-      artType: place.artType || '',
-      artist: place.artist || '',
-      city: place.city || 'САРАТОВ',
-      sources: place.sources || [],
-      photo: place.photo
-        ? {
-            ...place.photo,
-            src: publicPlaceImage(place.photo.src),
-          }
-        : null,
-      gallery: (PLACE_GALLERIES[place.id] || []).map((item) => ({
-        ...item,
-        src: publicPlaceImage(item.src),
-      })),
-      image: publicPlaceImage(place.image),
-      lat: Number.isFinite(place.lat) ? place.lat : null,
-      lng: Number.isFinite(place.lng) ? place.lng : null,
-    }));
+    .map((place) => {
+      const photo = parseDbJson(place.photo_json, null);
+      const gallery = parseDbJson(place.gallery_json, []);
+      return {
+        id: String(place.id),
+        name: place.name,
+        category: place.category || '',
+        address: place.address || '',
+        description: place.description || '',
+        story: place.story || '',
+        lookFor: place.look_for || '',
+        era: place.era || '',
+        artType: place.art_type || '',
+        artist: place.artist || '',
+        city: place.city || 'САРАТОВ',
+        tags: parseDbJson(place.tags_json, []),
+        sources: parseDbJson(place.sources_json, []),
+        photo: photo
+          ? {
+              ...photo,
+              src: publicPlaceImage(photo.src),
+            }
+          : null,
+        gallery: Array.isArray(gallery)
+          ? gallery.map((item) => ({ ...item, src: publicPlaceImage(item.src) }))
+          : [],
+        image: publicPlaceImage(place.image_path),
+        lat: Number.isFinite(place.lat) ? place.lat : null,
+        lng: Number.isFinite(place.lng) ? place.lng : null,
+      };
+    });
   res.json({ items });
 });
 
@@ -1979,7 +1980,7 @@ function deriveReportTarget(type, id) {
         excerpt: graffiti.address || '',
       };
     }
-    const place = STATIC_PLACES.get(targetId);
+    const place = db.prepare('SELECT name, address FROM walk_places WHERE id = ?').get(targetId);
     if (!place) return null;
     return {
       type: 'place',
