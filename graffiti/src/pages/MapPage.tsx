@@ -670,6 +670,16 @@ export function MapPage() {
           >
             {fullscreen ? <Minimize2 size={19} /> : <Maximize2 size={19} />}
           </button>
+          <button
+            type="button"
+            className="map-locate-toggle"
+            onClick={locate}
+            disabled={locating}
+            aria-label="Показать мое местоположение"
+            title="Найти меня"
+          >
+            <Navigation size={18} />
+          </button>
           {selected ? (
             <article className="map-selected-card">
               <button type="button" className="map-selected-close icon-button" onClick={closeSelected} aria-label="Закрыть карточку">
