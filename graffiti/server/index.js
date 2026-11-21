@@ -57,8 +57,16 @@ function findPlaceByAddress(address) {
   for (const place of STATIC_PLACES.values()) {
     if (!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) continue;
     const candidate = normalizePlaceAddress(place.address);
+    const name = normalizePlaceAddress(place.name);
     if (candidate === normalized) return place;
-    if (!house || !candidate.split(' ').includes(house)) continue;
+    if (!house) {
+      if (candidate.length > 5 && (normalized.includes(candidate) || candidate.includes(normalized))) {
+        return place;
+      }
+      if (name.length > 5 && normalized.includes(name)) return place;
+      continue;
+    }
+    if (!candidate.split(' ').includes(house)) continue;
     if (normalized.split(' ').some((token) => token.length > 3 && !/^\d+$/.test(token) && candidate.includes(token))) {
       return place;
     }
