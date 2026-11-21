@@ -124,7 +124,7 @@ const STATUSES = new Set(['alive', 'erased', 'partial', 'unknown']);
 const STYLES = new Set(['mural', 'graffiti', 'stencil', 'sticker', 'text', 'other']);
 const WALL_TYPES = new Set(['garage', 'facade', 'fence', 'wall', 'other']);
 const WALL_TERMS = new Set(['free', 'materials', 'paid', 'negotiable']);
-const WALK_BUILDING_CATEGORIES = new Set(['Архитектура', 'История', 'Искусство', 'Природа', 'Стрит-арт']);
+const WALK_BUILDING_CATEGORIES = new Set(['Архитектура', 'История', 'Природа', 'Стрит-арт']);
 const RESERVED_NAMES = new Set(['администратор', 'редакция', 'admin', 'moderator', 'модератор', 'support', 'поддержка']);
 const walkRouteCache = new Map();
 

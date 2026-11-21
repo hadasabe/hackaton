@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle2, ImagePlus, MapPin, Upload } from 'lucide-react
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
-const CATEGORIES = ['Архитектура', 'История', 'Искусство', 'Природа', 'Стрит-арт'];
+const CATEGORIES = ['Архитектура', 'История', 'Природа', 'Стрит-арт'];
 
 export function AddBuildingPage() {
   const { user } = useAuth();
