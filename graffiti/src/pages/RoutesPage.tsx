@@ -161,9 +161,14 @@ export function RoutesPage() {
             </div>
           </div>
           {createError ? <div className="notice error">{createError}</div> : null}
-          <button type="submit" className="button button-dark" disabled={sending}>
-            {sending ? 'Создаём…' : 'Создать маршрут'}
-          </button>
+          <div className="route-create-actions">
+            <Link to="/map?plan=1" className="button button-outline">
+              <MapIcon size={16} /> Выбрать места
+            </Link>
+            <button type="submit" className="button button-dark" disabled={sending}>
+              {sending ? 'Создаём…' : 'Создать маршрут'}
+            </button>
+          </div>
         </form>
       ) : null}
 

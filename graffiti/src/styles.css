@@ -6286,3 +6286,13 @@ a.people-row:hover {
     opacity: 0;
   }
 }
+
+.route-create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.route-create-actions .button {
+  flex: 1 1 220px;
+}

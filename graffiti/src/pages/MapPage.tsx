@@ -894,7 +894,7 @@ export function MapPage() {
                     onClick={() => togglePlan(selected.id)}
                     disabled={selected.lat == null || selected.lng == null}
                   >
-                    <Plus size={16} /> {plan.includes(selected.id) ? 'В прогулке' : 'В прогулку'}
+                    <Plus size={16} /> {plan.includes(selected.id) ? 'В маршруте' : 'Добавить в маршрут'}
                   </button>
                 </div>
                 {selected.lat == null || selected.lng == null ? (
