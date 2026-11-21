@@ -178,6 +178,15 @@ db.exec(`
     FOREIGN KEY (place_id) REFERENCES walk_places(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS walk_place_comment_reactions (
+    comment_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    value TEXT NOT NULL CHECK (value IN ('like', 'dislike')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (comment_id, actor_id),
+    FOREIGN KEY (comment_id) REFERENCES walk_place_comments(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS hidden_places (
     place_id TEXT PRIMARY KEY,
     reason TEXT NOT NULL DEFAULT '',

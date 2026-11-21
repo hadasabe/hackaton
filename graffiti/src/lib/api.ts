@@ -264,6 +264,17 @@ export const api = {
     });
   },
 
+  reactWalkRouteComment(id: number, value: ReactionValue) {
+    return request<{ likes: number; dislikes: number; my_reaction: ReactionValue | null }>(
+      `/api/walk-routes/comments/${id}/reaction`,
+      { method: 'POST', body: JSON.stringify({ value }) },
+    );
+  },
+
+  deleteWalkRouteComment(id: number) {
+    return request<{ ok: true }>(`/api/walk-routes/comments/${id}`, { method: 'DELETE' });
+  },
+
   myWalkRoutes() {
     return request<{ items: WalkRouteSummary[] }>('/api/walk-routes?scope=mine');
   },
@@ -296,6 +307,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ body, parent_id: parentId || null }),
     });
+  },
+
+  reactWalkPlaceComment(id: number, value: ReactionValue) {
+    return request<{ likes: number; dislikes: number; my_reaction: ReactionValue | null }>(
+      `/api/walk-place-comments/${id}/reaction`,
+      { method: 'POST', body: JSON.stringify({ value }) },
+    );
+  },
+
+  deleteWalkPlaceComment(id: number) {
+    return request<{ ok: true }>(`/api/walk-place-comments/${id}`, { method: 'DELETE' });
   },
 
   walkBuildings() {

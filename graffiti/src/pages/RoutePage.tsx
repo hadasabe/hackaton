@@ -9,7 +9,7 @@ import { formatDate, formatDuration, plural } from '../lib/format';
 import { writePlan } from '../lib/plan';
 import { NotFoundPage } from './NotFoundPage';
 import { BackLink } from '../components/BackLink';
-import { CommentAvatar } from '../components/CommentAvatar';
+import { CommentThread } from '../components/CommentThread';
 
 export function RoutePage() {
   const { slug = '' } = useParams();
@@ -95,6 +95,46 @@ export function RoutePage() {
     }
   }
 
+  async function reactComment(comment: Comment, value: ReactionValue) {
+    if (!user) {
+      navigate('/login', { state: { from: `/r/${slug}` } });
+      return;
+    }
+    try {
+      const result = await api.reactWalkRouteComment(comment.id, value);
+      setComments((current) => current.map((entry) => entry.id === comment.id ? { ...entry, ...result } : entry));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось поставить реакцию');
+    }
+  }
+
+  async function replyComment(parent: Comment, body: string) {
+    if (!user) {
+      navigate('/login', { state: { from: `/r/${slug}` } });
+      return;
+    }
+    try {
+      const created = await api.addWalkRouteComment(currentRoute.id, body, parent.id);
+      setComments((current) => [...current, created]);
+      setRoute((current) => current ? { ...current, comments_count: current.comments_count + 1 } : current);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отправить ответ');
+      throw caught;
+    }
+  }
+
+  async function deleteComment(comment: Comment) {
+    try {
+      await api.deleteWalkRouteComment(comment.id);
+      setComments((current) => current.map((entry) => entry.id === comment.id
+        ? { ...entry, deleted: true, body: '', author_name: 'Комментарий удалён', avatar_url: '', can_delete: false }
+        : entry));
+      setRoute((current) => current ? { ...current, comments_count: Math.max(0, current.comments_count - 1) } : current);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось удалить комментарий');
+    }
+  }
+
   function startRoute() {
     writePlan(currentRoute.stops);
     navigate('/map?plan=1');
@@ -153,20 +193,13 @@ export function RoutePage() {
 
       <section className="route-comments-section">
         <h2><MessageCircle size={18} /> Комментарии · {currentRoute.comments_count}</h2>
-        {comments.length ? (
-          <div className="route-comments-list">
-            {comments.map((item) => (
-              <article key={item.id} className="route-comment">
-                <div className="route-comment-head">
-                  <CommentAvatar name={item.author_name} avatarUrl={item.avatar_url} />
-                  <strong>{item.author_name}</strong>
-                  <span>{formatDate(item.created_at)}</span>
-                </div>
-                <p>{item.body}</p>
-              </article>
-            ))}
-          </div>
-        ) : <p className="route-comments-empty">Пока нет комментариев.</p>}
+        <CommentThread
+          comments={comments}
+          onReact={(comment, value) => void reactComment(comment, value)}
+          onReply={(comment, body) => void replyComment(comment, body)}
+          onDelete={(comment) => void deleteComment(comment)}
+          emptyText="Пока нет комментариев."
+        />
         <form className="route-comment-form" onSubmit={(event) => void submitComment(event)}>
           <textarea
             value={comment}

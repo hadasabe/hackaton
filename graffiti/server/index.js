@@ -848,12 +848,15 @@ function walkPlaceComments(placeId, req) {
   return db
     .prepare(`
       SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at, c.deleted_at,
-        (SELECT u.avatar_path FROM users u WHERE 'user:' || u.id = c.actor_id) AS avatar_url
+        (SELECT u.avatar_path FROM users u WHERE 'user:' || u.id = c.actor_id) AS avatar_url,
+        (SELECT COUNT(*) FROM walk_place_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
+        (SELECT COUNT(*) FROM walk_place_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
+        (SELECT cr.value FROM walk_place_comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction
       FROM walk_place_comments c
-      WHERE place_id = ?
-      ORDER BY datetime(created_at) ASC
+      WHERE c.place_id = ?
+      ORDER BY datetime(c.created_at) ASC
     `)
-    .all(placeId)
+    .all(req.actorId || '', placeId)
     .map((comment) => {
       const deleted = Boolean(comment.deleted_at);
       return {
@@ -864,9 +867,9 @@ function walkPlaceComments(placeId, req) {
         body: deleted ? '' : comment.body,
         created_at: comment.created_at,
         deleted,
-        likes: 0,
-        dislikes: 0,
-        my_reaction: null,
+        likes: deleted ? 0 : Number(comment.likes || 0),
+        dislikes: deleted ? 0 : Number(comment.dislikes || 0),
+        my_reaction: deleted ? null : (comment.my_reaction || null),
         can_delete: !deleted && (comment.actor_id === req.actorId || req.user?.role === 'admin'),
       };
     });
@@ -979,6 +982,61 @@ app.post('/api/walk-places/:id/comments', requireUser, (req, res) => {
     my_reaction: null,
     can_delete: true,
   });
+});
+
+app.post('/api/walk-place-comments/:commentId/reaction', requireUser, (req, res) => {
+  const id = Number(req.params.commentId);
+  const value = req.body?.value;
+  if (!Number.isInteger(id) || !['like', 'dislike'].includes(value)) {
+    res.status(400).json({ error: 'Некорректная реакция' });
+    return;
+  }
+  const comment = db
+    .prepare('SELECT id FROM walk_place_comments WHERE id = ? AND deleted_at IS NULL')
+    .get(id);
+  if (!comment) {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  const current = db
+    .prepare('SELECT value FROM walk_place_comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (current?.value === value) {
+    db.prepare('DELETE FROM walk_place_comment_reactions WHERE comment_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else if (current) {
+    db.prepare('UPDATE walk_place_comment_reactions SET value = ?, created_at = ? WHERE comment_id = ? AND actor_id = ?')
+      .run(value, nowIso(), id, req.actorId);
+  } else {
+    db.prepare('INSERT INTO walk_place_comment_reactions (comment_id, actor_id, value, created_at) VALUES (?, ?, ?, ?)')
+      .run(id, req.actorId, value, nowIso());
+  }
+  const counts = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN value = 'like' THEN 1 ELSE 0 END) AS likes,
+        SUM(CASE WHEN value = 'dislike' THEN 1 ELSE 0 END) AS dislikes
+      FROM walk_place_comment_reactions WHERE comment_id = ?
+    `)
+    .get(id);
+  const mine = db
+    .prepare('SELECT value FROM walk_place_comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  res.json({ likes: counts.likes || 0, dislikes: counts.dislikes || 0, my_reaction: mine?.value || null });
+});
+
+app.delete('/api/walk-place-comments/:commentId', requireUser, (req, res) => {
+  const id = Number(req.params.commentId);
+  const comment = db.prepare('SELECT * FROM walk_place_comments WHERE id = ?').get(id);
+  if (!comment) {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  if (comment.actor_id !== req.actorId && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Можно удалять только свои комментарии' });
+    return;
+  }
+  db.prepare('UPDATE walk_place_comments SET deleted_at = ? WHERE id = ?').run(nowIso(), id);
+  res.json({ ok: true });
 });
 
 function normalizeWalkDuration(value) {

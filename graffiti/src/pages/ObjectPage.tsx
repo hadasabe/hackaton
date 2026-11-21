@@ -13,7 +13,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
 import { BackLink } from '../components/BackLink';
-import { CommentAvatar } from '../components/CommentAvatar';
+import { CommentThread } from '../components/CommentThread';
 
 export function ObjectPage() {
   const { id = '' } = useParams();
@@ -101,6 +101,46 @@ export function ObjectPage() {
     } catch (caught) {
       updatePlace(objectId, { likes: place.likes, dislikes: place.dislikes, my_reaction: place.my_reaction });
       setCommentError(caught instanceof Error ? caught.message : 'Не удалось поставить реакцию');
+    }
+  }
+
+  async function reactComment(comment: Comment, value: ReactionValue) {
+    if (!user) {
+      navigate('/login', { state: { from: `/object/${objectId}` } });
+      return;
+    }
+    try {
+      const result = await api.reactWalkPlaceComment(comment.id, value);
+      setComments((current) => current.map((entry) => entry.id === comment.id ? { ...entry, ...result } : entry));
+    } catch (caught) {
+      setCommentError(caught instanceof Error ? caught.message : 'Не удалось поставить реакцию');
+    }
+  }
+
+  async function replyComment(parent: Comment, body: string) {
+    if (!user) {
+      navigate('/login', { state: { from: `/object/${objectId}` } });
+      return;
+    }
+    try {
+      const created = await api.addWalkPlaceComment(objectId, body, parent.id);
+      setComments((current) => [...current, created]);
+      updatePlace(objectId, { comments_count: (place?.comments_count || 0) + 1 });
+    } catch (caught) {
+      setCommentError(caught instanceof Error ? caught.message : 'Не удалось отправить ответ');
+      throw caught;
+    }
+  }
+
+  async function deleteComment(comment: Comment) {
+    try {
+      await api.deleteWalkPlaceComment(comment.id);
+      setComments((current) => current.map((entry) => entry.id === comment.id
+        ? { ...entry, deleted: true, body: '', author_name: 'Комментарий удалён', avatar_url: '', can_delete: false }
+        : entry));
+      updatePlace(objectId, { comments_count: Math.max(0, (place?.comments_count || 0) - 1) });
+    } catch (caught) {
+      setCommentError(caught instanceof Error ? caught.message : 'Не удалось удалить комментарий');
     }
   }
 
@@ -235,20 +275,13 @@ export function ObjectPage() {
       {place ? (
         <section className="object-comments">
           <h2><MessageCircle size={18} /> Комментарии · {place.comments_count}</h2>
-          {comments.length ? (
-            <div className="object-comments-list">
-              {comments.map((item) => (
-                <article className="route-comment" key={item.id}>
-                  <div className="route-comment-head">
-                    <CommentAvatar name={item.author_name} avatarUrl={item.avatar_url} />
-                    <strong>{item.author_name}</strong>
-                    <span>{new Date(item.created_at).toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <p>{item.body}</p>
-                </article>
-              ))}
-            </div>
-          ) : <p className="route-comments-empty">Пока нет комментариев.</p>}
+          <CommentThread
+            comments={comments}
+            onReact={(comment, value) => void reactComment(comment, value)}
+            onReply={(comment, body) => void replyComment(comment, body)}
+            onDelete={(comment) => void deleteComment(comment)}
+            emptyText="Пока нет комментариев."
+          />
           <form className="route-comment-form" onSubmit={(event) => void submitComment(event)}>
             <textarea
               value={comment}
