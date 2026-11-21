@@ -562,10 +562,11 @@ export function MapPage() {
     const planPoints = planGeometry && planGeometry.length > 1 ? planGeometry : routeWaypoints;
     if (planPoints.length > 1) {
       planLine.current = L.polyline(planPoints, {
-        color: '#d8ff3e',
+        color: '#2f6bff',
         weight: 6,
-        opacity: 1,
-        dashArray: '2 8',
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round',
       }).addTo(mapRef.current);
     }
     return () => {
@@ -802,14 +803,16 @@ export function MapPage() {
                   </div>
                 ))}
                 <div className="map-plan-actions">
-                  {planObjects.length > 0 ? (
+                  {routeMode ? (
+                    <Link to="/routes?create=1" className="button button-dark">Сохранить</Link>
+                  ) : planObjects.length > 0 ? (
                     <button
                       type="button"
                       className="button button-dark"
                       onClick={() => void startWalk()}
                       disabled={locating}
                     >
-                      {routeMode ? 'Начать маршрут' : 'Начать прогулку'}
+                      Начать прогулку
                     </button>
                   ) : null}
                   {planObjects.length >= 2 ? (
@@ -834,6 +837,9 @@ export function MapPage() {
               <div className="map-empty">
                 <Route size={28} />
                 <p>Добавляйте объекты в {routeMode ? 'маршрут' : 'прогулку'} кнопкой на карточке.</p>
+                {routeMode ? (
+                  <Link to="/routes?create=1" className="button button-dark">Сохранить</Link>
+                ) : null}
               </div>
             )
           ) : (
