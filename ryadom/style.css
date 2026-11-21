@@ -446,21 +446,6 @@ body.map-fullscreen .map-tools{top:max(16px,env(safe-area-inset-top));right:max(
   body.map-fullscreen .map-preview{bottom:34px}
 }
 
-/* Floating return-to-top for the long building feed. */
-.back-to-top{display:none}
-@media(max-width:760px){
-  .back-to-top{display:grid;place-items:center;position:fixed;right:16px;bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom));z-index:1200;width:48px;height:48px;padding:0;border:2px solid var(--ink);border-radius:50%;background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
-  .back-to-top.visible{opacity:1;pointer-events:auto;transform:none}
-  .back-to-top svg{width:22px;height:22px;stroke-width:2.4}
-  body.map-fullscreen .back-to-top{display:none}
-}
-@media(min-width:761px){
-  .back-to-top{display:grid;place-items:center;position:fixed;right:24px;bottom:100px;z-index:1200;width:48px;height:48px;padding:0;border:2px solid var(--ink);border-radius:50%;background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
-  .back-to-top.visible{opacity:1;pointer-events:auto;transform:none}
-  .back-to-top svg{width:22px;height:22px;stroke-width:2.4}
-  body.map-fullscreen .back-to-top{display:none}
-}
-
 /* Desktop dock for the walk app */
 @media(min-width:761px){
   .explorer{padding-bottom:104px}

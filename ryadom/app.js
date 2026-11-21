@@ -289,10 +289,6 @@ async function toggleAudio(){
 $('gps-button').addEventListener('click',()=>{if(state.source==='gps'&&locator.active){beginGPS();return;}window.dispatchEvent(new Event('ryadom:open-plan'));});
 $('radius-label').addEventListener('click',()=>{if(!$('radius-label').disabled&&!(state.source==='gps'&&locator.active))beginGPS();});
 initSheetDrag();
-const backToTop=$('back-to-top');let backToTopFrame=0;
-function backToTopSource(){return innerWidth>760?$('explorer'):null;}
-function updateBackToTop(){if(!backToTop)return;const source=backToTopSource();const offset=source?source.scrollTop:window.scrollY;const show=offset>520&&!document.body.classList.contains('experience-view')&&!document.body.classList.contains('map-fullscreen');backToTop.classList.toggle('visible',show);}
-if(backToTop){const onBackToTopScroll=()=>{if(backToTopFrame)return;backToTopFrame=requestAnimationFrame(()=>{updateBackToTop();backToTopFrame=0;});};window.addEventListener('scroll',onBackToTopScroll,{passive:true});$('explorer')?.addEventListener('scroll',onBackToTopScroll,{passive:true});window.addEventListener('resize',updateBackToTop);backToTop.addEventListener('click',()=>{const source=backToTopSource();(source||window).scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});});new MutationObserver(updateBackToTop).observe(document.body,{attributes:true,attributeFilter:['class','data-experience-view']});updateBackToTop();}
 $('toggle-walk').addEventListener('click',()=>{if(state.demoProgress>=100)beginDemo();setRunning(!state.running);});
 $('next-place').addEventListener('click',nextDemo);$('reset-demo').addEventListener('click',beginDemo);
 $('walk-progress').addEventListener('input',e=>{setRunning(false);stopNarration();state.queue.pending=[];state.exploring=false;moveDemo(e.target.value);setRunning(false);});
