@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Heart, MapPin, Map as MapIcon, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { STATUS_META, STYLE_META } from '../lib/constants';
 import type { Graffiti, ReactionValue } from '../lib/types';
 
@@ -81,9 +81,13 @@ export function GraffitiCard({
             <ThumbsDown size={16} />
             {item.dislikes}
           </button>
-          <Link to={`/g/${item.id}`} className="reaction comments-link">
+          <Link to={`/g/${item.id}`} className="reaction place-comments-link">
             <MessageCircle size={16} />
             {item.comments_count}
+          </Link>
+          <Link to={`/map?place=${item.id}`} className="reaction comments-link">
+            <MapIcon size={16} />
+            На карте
           </Link>
         </div>
       </div>
