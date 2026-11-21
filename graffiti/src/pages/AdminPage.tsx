@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { AdminCounts, AdminUser, ContentReport, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
+import type { AdminCounts, AdminPlace, AdminUser, ContentReport, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
 import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 import { useConfirm } from '../components/ConfirmDialog';
 
-type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'buildings' | 'reports' | 'status' | 'users';
+type Tab = 'pending' | 'published' | 'rejected' | 'walls' | 'buildings' | 'places' | 'reports' | 'status' | 'users';
 type ReportTab = 'pending' | 'approved' | 'rejected';
 type ReasonKind = 'graffiti' | 'wall' | 'report';
 
@@ -36,6 +36,7 @@ const TAB_LABEL: Record<Tab, string> = {
   rejected: 'Отклонённые',
   walls: 'Стены',
   buildings: 'Здания',
+  places: 'Объекты',
   reports: 'Жалобы',
   status: 'Статусы',
   users: 'Пользователи',
@@ -54,6 +55,7 @@ export function AdminPage() {
   const [items, setItems] = useState<Graffiti[]>([]);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [buildings, setBuildings] = useState<Wall[]>([]);
+  const [places, setPlaces] = useState<AdminPlace[]>([]);
   const [contentReports, setContentReports] = useState<ContentReport[]>([]);
   const [reports, setReports] = useState<StatusReport[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -64,6 +66,7 @@ export function AdminPage() {
     rejected: 0,
     walls: 0,
     buildings: 0,
+    places: 0,
     reports: 0,
     status: 0,
     users: 0,
@@ -87,6 +90,9 @@ export function AdminPage() {
       } else if (tab === 'buildings') {
         const data = await api.adminBuildings();
         setBuildings(data.items);
+      } else if (tab === 'places') {
+        const data = await api.adminPlaces();
+        setPlaces(data.items);
       } else if (tab === 'reports') {
         const data = await api.adminReports();
         setContentReports(data.items);
@@ -111,6 +117,15 @@ export function AdminPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function togglePlaceHidden(place: AdminPlace) {
+    try {
+      await api.setPlaceHidden(place.id, !place.hidden_reason);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось изменить видимость объекта');
+    }
+  }
 
   async function approve(id: number) {
     try {
@@ -289,6 +304,12 @@ export function AdminPage() {
           onApprove={(id) => void approveWall(id)}
           onReject={(id) => void rejectWall(id)}
         />
+      ) : tab === 'places' ? (
+        <PlacesPanel
+          places={places}
+          loading={loading}
+          onToggleHidden={(place) => void togglePlaceHidden(place)}
+        />
       ) : tab === 'reports' ? (
         <ReportsPanel
           reports={contentReports}
@@ -393,6 +414,71 @@ export function AdminPage() {
         />
       ) : null}
     </main>
+  );
+}
+
+function PlacesPanel({
+  places,
+  loading,
+  onToggleHidden,
+}: {
+  places: AdminPlace[];
+  loading: boolean;
+  onToggleHidden: (place: AdminPlace) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="admin-list">
+        {Array.from({ length: 3 }).map((_, index) => <div className="admin-skeleton" key={index} />)}
+      </div>
+    );
+  }
+  if (places.length === 0) {
+    return (
+      <div className="empty-admin">
+        <MapPin size={32} />
+        <h3>Объектов пока нет</h3>
+        <p>Каталог мест появится здесь после заполнения базы.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="admin-list">
+      {places.map((place) => (
+        <article className="admin-card" key={place.id}>
+          {place.image ? <img src={place.image} alt={place.name} loading="lazy" /> : null}
+          <div className="admin-card-body">
+            <div className="admin-card-top">
+              <span className="admin-id">{place.id}</span>
+              <span className={`moderation-badge ${place.hidden_reason ? 'rejected' : 'published'}`}>
+                {place.hidden_reason ? 'скрыто' : 'опубликовано'}
+              </span>
+            </div>
+            <h3><MapPin size={15} /> {place.name}</h3>
+            <p className="admin-description">{place.address}</p>
+            <div className="admin-building-meta">
+              {place.category ? <span className="moderation-badge published">{place.category}</span> : null}
+              {Number.isFinite(place.lat) && Number.isFinite(place.lng)
+                ? <span>{Number(place.lat).toFixed(5)}, {Number(place.lng).toFixed(5)}</span>
+                : null}
+              <span>{place.likes} ♥ · {place.comments_count} 💬</span>
+            </div>
+            <p className="admin-description">{place.description}</p>
+            {place.hidden_reason ? <p className="report-reason">Скрыто: {place.hidden_reason}</p> : null}
+            <div className="admin-actions">
+              <button
+                type="button"
+                className={`button ${place.hidden_reason ? 'button-dark' : 'button-outline'}`}
+                onClick={() => onToggleHidden(place)}
+              >
+                {place.hidden_reason ? <Check size={15} /> : <X size={15} />}
+                {place.hidden_reason ? 'Вернуть в ленту' : 'Скрыть из ленты'}
+              </button>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 

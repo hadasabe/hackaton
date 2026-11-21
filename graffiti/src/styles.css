@@ -533,15 +533,18 @@ p {
 }
 
 .feed-grid {
-  columns: 3;
-  column-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 
 .graffiti-card {
-  break-inside: avoid;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  margin: 0 0 20px;
+  height: 100%;
+  margin: 0;
   background: var(--card);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
@@ -564,10 +567,12 @@ p {
 .card-image-link img {
   display: block;
   width: 100%;
-  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
 .card-body {
+  flex: 1;
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -658,7 +663,8 @@ p {
 .place-feed-placeholder {
   display: grid;
   place-items: center;
-  min-height: 220px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
   background: var(--paper-deep);
   color: var(--muted);
 }
@@ -669,7 +675,7 @@ p {
   gap: 6px;
   border-top: 1.5px solid var(--line);
   padding-top: 10px;
-  margin-top: 2px;
+  margin-top: auto;
 }
 
 .reaction {
@@ -1881,7 +1887,7 @@ p {
 
 @media (min-width: 1500px) {
   .feed-grid {
-    columns: 4;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .hero-copy h1 {
@@ -1891,7 +1897,7 @@ p {
 
 @media (max-width: 1080px) {
   .feed-grid {
-    columns: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .feed-hero {
@@ -2092,7 +2098,7 @@ p {
 
 @media (max-width: 640px) {
   .feed-grid {
-    columns: 1;
+    grid-template-columns: 1fr;
   }
 }
 

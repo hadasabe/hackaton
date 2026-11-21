@@ -2310,6 +2310,48 @@ app.get('/api/admin/buildings', requireAdmin, (_req, res) => {
   res.json({ items });
 });
 
+app.get('/api/admin/places', requireAdmin, (req, res) => {
+  const rows = db
+    .prepare(`
+      SELECT wp.*, hp.reason AS hidden_reason,
+        (SELECT COUNT(*) FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.value = 'like') AS likes,
+        (SELECT COUNT(*) FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.value = 'dislike') AS dislikes,
+        (SELECT COUNT(*) FROM walk_place_comments c WHERE c.place_id = wp.id AND c.deleted_at IS NULL) AS comments_count,
+        (SELECT r.value FROM walk_place_reactions r WHERE r.place_id = wp.id AND r.actor_id = ?) AS my_reaction
+      FROM walk_places wp
+      LEFT JOIN hidden_places hp ON hp.place_id = wp.id
+      ORDER BY wp.name COLLATE NOCASE
+    `)
+    .all(req.actorId);
+  res.json({
+    items: rows.map((row) => ({
+      ...walkPlaceItem(row),
+      hidden_reason: row.hidden_reason || null,
+    })),
+  });
+});
+
+app.post('/api/admin/places/:id/hidden', requireAdmin, (req, res) => {
+  const id = String(req.params.id);
+  const place = db.prepare('SELECT id FROM walk_places WHERE id = ?').get(id);
+  if (!place) {
+    res.status(404).json({ error: 'Объект не найден' });
+    return;
+  }
+  const hidden = Boolean(req.body?.hidden);
+  if (hidden) {
+    const reason = cleanUserText(req.body?.reason, 300) || 'Скрыто администратором';
+    db.prepare(`
+      INSERT INTO hidden_places (place_id, reason, created_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(place_id) DO UPDATE SET reason = excluded.reason, created_at = excluded.created_at
+    `).run(id, reason, nowIso());
+  } else {
+    db.prepare('DELETE FROM hidden_places WHERE place_id = ?').run(id);
+  }
+  res.json({ ok: true, hidden });
+});
+
 app.get('/api/admin/counts', requireAdmin, (_req, res) => {
   const graffiti = db
     .prepare(`
@@ -2333,6 +2375,7 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     .prepare("SELECT COUNT(*) AS count FROM content_reports WHERE status = 'pending'")
     .get().count;
   const users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+  const places = db.prepare('SELECT COUNT(*) AS count FROM walk_places').get().count;
   res.json({
     pending: graffiti.pending || 0,
     published: graffiti.published || 0,
@@ -2340,6 +2383,7 @@ app.get('/api/admin/counts', requireAdmin, (_req, res) => {
     status,
     walls,
     buildings,
+    places,
     reports,
     users,
   });

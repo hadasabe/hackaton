@@ -72,6 +72,10 @@ export interface WalkPlace {
   my_reaction: ReactionValue | null;
 }
 
+export interface AdminPlace extends WalkPlace {
+  hidden_reason: string | null;
+}
+
 export interface WalkBuilding {
   id: number;
   title: string;
@@ -147,6 +151,7 @@ export interface AdminCounts {
   status: number;
   walls: number;
   buildings: number;
+  places: number;
   reports: number;
   users: number;
 }

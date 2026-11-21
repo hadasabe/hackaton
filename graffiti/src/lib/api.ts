@@ -1,5 +1,6 @@
 import type {
   AdminCounts,
+  AdminPlace,
   AdminUser,
   AuthUser,
   CollectionSummary,
@@ -318,6 +319,17 @@ export const api = {
 
   adminBuildings() {
     return request<{ items: Wall[] }>('/api/admin/buildings');
+  },
+
+  adminPlaces() {
+    return request<{ items: AdminPlace[] }>('/api/admin/places');
+  },
+
+  setPlaceHidden(id: string, hidden: boolean) {
+    return request<{ ok: true; hidden: boolean }>(`/api/admin/places/${encodeURIComponent(id)}/hidden`, {
+      method: 'POST',
+      body: JSON.stringify({ hidden }),
+    });
   },
 
   adminReports() {
