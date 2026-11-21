@@ -5814,7 +5814,6 @@ body.map-is-fullscreen {
   gap: 10px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--line);
 }
 
 .map-plan-actions .button {
