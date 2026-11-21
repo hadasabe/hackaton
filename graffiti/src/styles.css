@@ -259,12 +259,24 @@ body.walk-fullscreen .walk-embed {
   color: var(--ink);
 }
 
-.main-nav .nav-admin {
+.main-nav .nav-admin,
+.header-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
   background: var(--pink);
   color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.main-nav .nav-admin.active {
+.main-nav .nav-admin.active,
+.header-admin.active {
   border-color: var(--ink);
   background: var(--pink);
 }
@@ -274,6 +286,7 @@ body.walk-fullscreen .walk-embed {
   align-items: center;
   gap: 10px;
   flex: none;
+  margin-left: auto;
 }
 
 .auth-links {
@@ -3095,14 +3108,17 @@ body.walk-fullscreen .walk-embed {
 }
 
 .collection-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  columns: 2;
+  column-gap: 18px;
 }
 
 .collection-item {
   position: relative;
   min-width: 0;
+  display: block;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 18px;
 }
 
 .collection-remove {
@@ -3245,9 +3261,12 @@ body.walk-fullscreen .walk-embed {
     transform: none;
   }
 
-  .collections-grid,
-  .collection-grid {
+  .collections-grid {
     grid-template-columns: 1fr;
+  }
+
+  .collection-grid {
+    columns: 1;
   }
 
   .collection-create {

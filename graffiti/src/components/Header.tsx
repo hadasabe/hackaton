@@ -41,16 +41,13 @@ export function Header() {
         </span>
       </Link>
 
-      <nav className="main-nav" aria-label="Основная навигация">
+      <div className="header-side">
         {isAdmin ? (
-          <NavLink to="/admin" className="nav-admin">
+          <NavLink to="/admin" className="nav-admin header-admin">
             <ShieldCheck size={15} />
             Модерация
           </NavLink>
         ) : null}
-      </nav>
-
-      <div className="header-side">
         {user ? (
           <div className="admin-chip">
             <Link to="/account" className="user-chip-name">{user.name}</Link>
