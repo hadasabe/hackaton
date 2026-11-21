@@ -3472,6 +3472,7 @@ body.walk-fullscreen .walk-embed {
 
 .profile-identity h1 {
   margin: 6px 0 4px;
+  word-break: break-word;
 }
 
 .profile-identity p {
@@ -3544,6 +3545,12 @@ button.profile-stat {
   width: 26px;
   height: 26px;
   stroke-width: 2.2;
+}
+
+.account-route-row .account-row-main small {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .tag-lime {
