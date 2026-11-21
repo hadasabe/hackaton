@@ -649,16 +649,30 @@ function findWalkRoute(slug, req) {
     .get(req.actorId, req.actorId, slug);
 }
 
+function normalizeWalkDuration(value) {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes)) return 0;
+  return Math.max(0, Math.min(1440, Math.round(minutes)));
+}
+
 app.get('/api/walk-routes', (req, res) => {
-  const mine = req.query.scope === 'mine';
-  if (mine && !req.user) {
+  const scope = req.query.scope === 'mine' ? 'mine' : req.query.scope === 'public' ? 'public' : 'all';
+  if (scope === 'mine' && !req.user) {
     res.status(401).json({ error: 'Войдите, чтобы увидеть свои маршруты' });
     return;
   }
-  const where = mine ? 'wr.owner_id = ?' : "wr.visibility = 'public'";
-  const params = mine
-    ? [req.actorId, req.actorId, req.user.id]
-    : [req.actorId, req.actorId];
+  let where;
+  let params;
+  if (scope === 'mine') {
+    where = 'wr.owner_id = ?';
+    params = [req.actorId, req.actorId, req.user.id];
+  } else if (scope === 'all' && req.user) {
+    where = "(wr.visibility = 'public' OR wr.owner_id = ?)";
+    params = [req.actorId, req.actorId, req.user.id];
+  } else {
+    where = "wr.visibility = 'public'";
+    params = [req.actorId, req.actorId];
+  }
   const rows = db
     .prepare(`${WALK_ROUTE_SELECT} WHERE ${where} ORDER BY datetime(wr.created_at) DESC LIMIT 100`)
     .all(...params);
@@ -716,6 +730,7 @@ app.get('/api/walk-routes/:slug', (req, res) => {
 app.post('/api/walk-routes', requireUser, (req, res) => {
   const title = cleanUserText(req.body?.title, 80);
   const description = cleanUserText(req.body?.description, 600);
+  const durationMinutes = normalizeWalkDuration(req.body?.duration_minutes);
   const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility) ? req.body.visibility : 'public';
   const stops = normalizeWalkStops(req.body?.stops);
   if (title.length < 2) {
@@ -742,10 +757,10 @@ app.post('/api/walk-routes', requireUser, (req, res) => {
   const create = db.transaction(() => {
     const info = db
       .prepare(`
-        INSERT INTO walk_routes (owner_id, slug, title, description, visibility, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO walk_routes (owner_id, slug, title, description, duration_minutes, visibility, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `)
-      .run(req.user.id, slug, title, description, visibility, createdAt, createdAt);
+      .run(req.user.id, slug, title, description, durationMinutes, visibility, createdAt, createdAt);
     const routeId = Number(info.lastInsertRowid);
     const insertStop = db.prepare(
       'INSERT INTO walk_route_stops (route_id, place_id, position) VALUES (?, ?, ?)',
@@ -771,6 +786,9 @@ app.patch('/api/walk-routes/:id', requireUser, (req, res) => {
   }
   const title = cleanUserText(req.body?.title ?? route.title, 80);
   const description = cleanUserText(req.body?.description ?? route.description, 600);
+  const durationMinutes = req.body?.duration_minutes === undefined
+    ? Number(route.duration_minutes || 0)
+    : normalizeWalkDuration(req.body.duration_minutes);
   const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility)
     ? req.body.visibility
     : route.visibility;
@@ -786,9 +804,9 @@ app.patch('/api/walk-routes/:id', requireUser, (req, res) => {
   const update = db.transaction(() => {
     db.prepare(`
       UPDATE walk_routes
-      SET title = ?, description = ?, visibility = ?, updated_at = ?
+      SET title = ?, description = ?, duration_minutes = ?, visibility = ?, updated_at = ?
       WHERE id = ?
-    `).run(title, description, visibility, nowIso(), id);
+    `).run(title, description, durationMinutes, visibility, nowIso(), id);
     if (stops) {
       db.prepare('DELETE FROM walk_route_stops WHERE route_id = ?').run(id);
       const insertStop = db.prepare(

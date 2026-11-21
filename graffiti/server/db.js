@@ -256,6 +256,7 @@ ensureColumn('users', 'banned', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('comments', 'hidden', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('comments', 'parent_id', 'INTEGER');
 ensureColumn('walk_route_comments', 'parent_id', 'INTEGER');
+ensureColumn('walk_routes', 'duration_minutes', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('walls', 'contact', "TEXT NOT NULL DEFAULT ''");
 {
   const wallColumns = db.prepare('PRAGMA table_info(walls)').all();
