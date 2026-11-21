@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS, STYLE_META, STYLE_OPTIONS } from '../lib/constants';
-import type { AdminCounts, AdminUser, AiCheck, ContentReport, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
+import type { AdminCounts, AdminUser, ContentReport, Graffiti, Status, StatusReport, Style, Wall } from '../lib/types';
 import { formatDate } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 import { useConfirm } from '../components/ConfirmDialog';
@@ -167,6 +167,13 @@ export function AdminPage() {
   }
 
   async function resolveContentReport(id: number) {
+    const confirmed = await confirm({
+      title: 'Принять жалобу?',
+      message: 'Комментарий или объект будет удалён. Отменить это через интерфейс не получится.',
+      confirmLabel: 'Принять и удалить',
+      skipKey: 'resolve-content-report',
+    });
+    if (!confirmed) return;
     try {
       await api.resolveReport(id);
       await load();
@@ -326,7 +333,6 @@ export function AdminPage() {
                 </div>
                 <h3><MapPin size={15} /> {item.address}</h3>
                 <p className="admin-description">{item.description || 'Без описания'}</p>
-                {item.ai ? <AiCheckBadge check={item.ai} /> : null}
                 <div className="admin-meta">
                   <span>Заявка от: {item.submitted_by?.name || 'неизвестный пользователь'}</span>
                   {item.submitted_by?.email ? <span>{item.submitted_by.email}</span> : null}
@@ -387,32 +393,6 @@ export function AdminPage() {
         />
       ) : null}
     </main>
-  );
-}
-
-function AiCheckBadge({ check }: { check: AiCheck }) {
-  const flags = [
-    check.verdict.nsfw ? 'NSFW' : '',
-    check.verdict.violence ? 'насилие' : '',
-    check.verdict.extremism ? 'экстремизм' : '',
-    check.verdict.personalData ? 'персональные данные' : '',
-    check.verdict.isGraffiti === false ? 'не граффити' : '',
-    check.verdict.duplicate ? `дубль #${check.verdict.duplicateOf ?? '?'}` : '',
-    check.verdict.isScreenshot ? 'скриншот' : '',
-    check.verdict.hasWatermark ? 'водяной знак' : '',
-    check.verdict.likelyRepost ? 'похоже на репост' : '',
-    check.verdict.sameAsReference ? 'та же работа с другого ракурса' : '',
-  ].filter(Boolean);
-  const warn = flags.length > 0;
-  return (
-    <div className={`ai-check ${warn ? 'warn' : ''}`}>
-      <div className="ai-check-head">
-        <strong>AI {Math.round(check.confidence * 100)}%</strong>
-        <span>{check.provider}/{check.model}</span>
-      </div>
-      <p>{check.summary || 'Без комментария'}</p>
-      {flags.length > 0 ? <small>Флаги: {flags.join(', ')}</small> : null}
-    </div>
   );
 }
 
@@ -549,7 +529,7 @@ function ReportsPanel({
                 {report.status === 'pending' ? 'на проверке' : report.status === 'resolved' ? 'решена' : 'отклонена'}
               </span>
             </div>
-            <h3>{report.target_type === 'place' ? 'Объект' : 'Комментарий'}: {report.target_title || report.target_id}</h3>
+            <h3>{report.target_type.endsWith('comment') ? 'Комментарий' : 'Объект'}: {report.target_title || report.target_id}</h3>
             {report.target_excerpt ? <blockquote className="report-excerpt">{report.target_excerpt}</blockquote> : null}
             <p className="report-reason">Причина: {report.reason}</p>
             {report.details ? <p className="admin-description">{report.details}</p> : null}

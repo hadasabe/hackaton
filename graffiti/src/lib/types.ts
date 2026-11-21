@@ -47,30 +47,6 @@ export interface WalkBuilding {
   created_at: string;
 }
 
-export interface AiCheck {
-  provider: string;
-  model: string;
-  confidence: number;
-  summary: string;
-  verdict: {
-    isGraffiti?: boolean;
-    nsfw?: boolean;
-    violence?: boolean;
-    extremism?: boolean;
-    personalData?: boolean;
-    textSafe?: boolean;
-    quality?: string;
-    isScreenshot?: boolean;
-    hasWatermark?: boolean;
-    likelyRepost?: boolean;
-    sameAsReference?: boolean | null;
-    duplicate?: boolean;
-    duplicateOf?: number;
-    duplicateDistance?: number;
-    labels?: string[];
-  };
-  created_at: string;
-}
 
 export interface Graffiti {
   id: number;
@@ -90,7 +66,6 @@ export interface Graffiti {
   comments_count: number;
   my_reaction: ReactionValue | null;
   submitted_by?: { id: number; name: string; email: string } | null;
-  ai?: AiCheck;
 }
 
 export interface Comment {
@@ -134,7 +109,7 @@ export interface AdminCounts {
 
 export interface ContentReport {
   id: number;
-  target_type: 'comment' | 'place';
+  target_type: 'comment' | 'route_comment' | 'graffiti_comment' | 'place' | 'building';
   target_id: string;
   target_title: string;
   target_excerpt: string;

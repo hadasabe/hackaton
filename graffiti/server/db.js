@@ -95,17 +95,7 @@ db.exec(`
     FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
   );
 
-  CREATE TABLE IF NOT EXISTS moderation_checks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    graffiti_id INTEGER NOT NULL,
-    provider TEXT NOT NULL,
-    model TEXT NOT NULL,
-    verdict TEXT NOT NULL,
-    confidence REAL NOT NULL DEFAULT 0,
-    summary TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
-  );
+
 
   CREATE TABLE IF NOT EXISTS walls (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -253,9 +243,7 @@ db.exec(`
     ON reactions(graffiti_id);
   CREATE INDEX IF NOT EXISTS idx_status_reports
     ON status_reports(moderation_status, created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_moderation_checks
-    ON moderation_checks(graffiti_id, created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_walls_status
+    CREATE INDEX IF NOT EXISTS idx_walls_status
     ON walls(status, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_collections_owner
     ON collections(owner_id, created_at DESC);

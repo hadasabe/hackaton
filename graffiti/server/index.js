@@ -5,17 +5,12 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
+import vm from 'node:vm';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db, seedDatabase } from './db.js';
-import { aiConfig, canAutoPublish, moderateImage } from './moderation.js';
-import {
-  backfillMediaHashes,
-  contentHash,
-  dHash,
-  findDuplicate,
-} from './image-check.js';
+import { backfillMediaHashes } from './image-check.js';
 import { maskProfanity } from './profanity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -26,6 +21,24 @@ const JWT_SECRET = process.env.JWT_SECRET || 'stena-dev-jwt-secret';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 const RYADOM_DIR = path.join(__dirname, '..', '..', 'ryadom');
+
+function loadStaticPlaces() {
+  try {
+    const filePath = path.join(RYADOM_DIR, 'data', 'places.js');
+    const sandbox = {};
+    vm.runInNewContext(fs.readFileSync(filePath, 'utf8'), sandbox, {
+      timeout: 2000,
+      filename: filePath,
+    });
+    const list = Array.isArray(sandbox.RYADOM_PLACES) ? sandbox.RYADOM_PLACES : [];
+    return new Map(list.map((place) => [String(place.id), place]));
+  } catch (error) {
+    console.error('[stena] static places catalog failed', error.message);
+    return new Map();
+  }
+}
+
+const STATIC_PLACES = loadStaticPlaces();
 const SESSION_COOKIE = 'stena_session';
 
 seedDatabase();
@@ -35,6 +48,22 @@ void backfillMediaHashes().catch((error) => {
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 'loopback');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; media-src 'self'; font-src 'self' data:; worker-src 'self'; manifest-src 'self'",
+    );
+  }
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser(COOKIE_SECRET));
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '30d', immutable: true }));
@@ -72,6 +101,7 @@ const STYLES = new Set(['mural', 'graffiti', 'stencil', 'sticker', 'text', 'othe
 const WALL_TYPES = new Set(['garage', 'facade', 'fence', 'wall', 'other']);
 const WALL_TERMS = new Set(['free', 'materials', 'paid', 'negotiable']);
 const WALK_BUILDING_CATEGORIES = new Set(['Архитектура', 'История', 'Искусство', 'Природа', 'Стрит-арт']);
+const RESERVED_NAMES = new Set(['администратор', 'редакция', 'admin', 'moderator', 'модератор', 'support', 'поддержка']);
 const walkRouteCache = new Map();
 
 function publicUser(user) {
@@ -101,6 +131,7 @@ function setSession(res, user) {
   );
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
@@ -133,6 +164,26 @@ function requireAdmin(req, res, next) {
 }
 
 app.use('/api', attachUser);
+app.use('/api', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api/auth') || req.originalUrl.startsWith('/api/admin')) {
+    res.setHeader('Cache-Control', 'no-store');
+  }
+  if (process.env.NODE_ENV === 'production' && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const origin = req.get('origin');
+    if (origin) {
+      try {
+        if (new URL(origin).host !== req.get('host')) {
+          res.status(403).json({ error: 'Недопустимый источник запроса' });
+          return;
+        }
+      } catch {
+        res.status(403).json({ error: 'Недопустимый источник запроса' });
+        return;
+      }
+    }
+  }
+  next();
+});
 
 app.get('/api/walk-route', async (req, res) => {
   const raw = String(req.query.coords || '');
@@ -198,6 +249,10 @@ app.post('/api/auth/register', (req, res) => {
     res.status(400).json({ error: 'Имя должно быть не короче 2 символов' });
     return;
   }
+  if (RESERVED_NAMES.has(name.toLowerCase())) {
+    res.status(400).json({ error: 'Это имя зарезервировано' });
+    return;
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     res.status(400).json({ error: 'Введите корректный email, например name@mail.ru' });
     return;
@@ -239,6 +294,10 @@ app.post('/api/auth/login', (req, res) => {
   const password = String(req.body?.password ?? '');
   if (!email || !password) {
     res.status(400).json({ error: 'Введите email и пароль' });
+    return;
+  }
+  if (!rateLimit(`login-ip:${req.ip}`, 40, 15 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много попыток входа. Попробуйте позже.' });
     return;
   }
   if (!rateLimit(`login:${req.ip}:${email}`, 12, 15 * 60 * 1000)) {
@@ -314,6 +373,15 @@ function rateLimit(key, limit, windowMs) {
   return true;
 }
 
+setInterval(() => {
+  const current = Date.now();
+  for (const [key, bucket] of buckets) {
+    const fresh = bucket.filter((time) => current - time < 24 * 60 * 60 * 1000);
+    if (fresh.length) buckets.set(key, fresh);
+    else buckets.delete(key);
+  }
+}, 10 * 60 * 1000).unref();
+
 const GRAFFITI_SELECT = `
   SELECT g.*,
     (SELECT COUNT(*) FROM reactions r WHERE r.graffiti_id = g.id AND r.value = 'like' AND r.actor_id NOT IN (SELECT 'user:' || u.id FROM users u WHERE u.shadow_banned = 1)) AS likes,
@@ -322,41 +390,6 @@ const GRAFFITI_SELECT = `
     (SELECT r.value FROM reactions r WHERE r.graffiti_id = g.id AND r.actor_id = ?) AS my_reaction
   FROM graffiti g
 `;
-
-function attachAiChecks(items) {
-  if (items.length === 0) return items;
-  const placeholders = items.map(() => '?').join(',');
-  const checks = db
-    .prepare(`
-      SELECT * FROM moderation_checks
-      WHERE graffiti_id IN (${placeholders})
-      ORDER BY id ASC
-    `)
-    .all(...items.map((item) => item.id));
-  const latest = new Map();
-  for (const check of checks) latest.set(check.graffiti_id, check);
-  return items.map((item) => {
-    const check = latest.get(item.id);
-    if (!check) return item;
-    let verdict = {};
-    try {
-      verdict = JSON.parse(check.verdict);
-    } catch {
-      verdict = {};
-    }
-    return {
-      ...item,
-      ai: {
-        provider: check.provider,
-        model: check.model,
-        confidence: check.confidence,
-        summary: check.summary,
-        verdict,
-        created_at: check.created_at,
-      },
-    };
-  });
-}
 
 function publicStats() {
   return db
@@ -374,14 +407,60 @@ function publicStats() {
 
 app.get('/api/media/:id', (req, res) => {
   const item = db
-    .prepare('SELECT mime, data FROM media WHERE id = ?')
-    .get(Number(req.params.id));
+    .prepare(`
+      SELECT m.mime, m.data,
+        EXISTS(
+          SELECT 1 FROM graffiti g
+          WHERE g.image_path = '/api/media/' || m.id
+            AND g.moderation_status = 'published'
+        ) AS public_graffiti,
+        EXISTS(
+          SELECT 1 FROM walls w
+          WHERE w.image_path = '/api/media/' || m.id
+            AND w.moderation_status = 'published'
+            AND w.status = 'open'
+            AND w.kind = 'wall'
+        ) AS public_wall,
+        EXISTS(
+          SELECT 1 FROM walls w
+          WHERE w.image_path = '/api/media/' || m.id
+            AND w.moderation_status = 'published'
+            AND w.status = 'open'
+            AND w.kind = 'building'
+            AND NOT EXISTS (
+              SELECT 1 FROM hidden_places hp WHERE hp.place_id = 'building-' || w.id
+            )
+        ) AS public_building,
+        EXISTS(
+          SELECT 1 FROM graffiti g
+          WHERE g.image_path = '/api/media/' || m.id AND g.created_by = ?
+        ) AS owned_graffiti,
+        EXISTS(
+          SELECT 1 FROM walls w
+          WHERE w.image_path = '/api/media/' || m.id AND w.owner_id = ?
+        ) AS owned_wall
+      FROM media m
+      WHERE m.id = ?
+    `)
+    .get(req.actorId || '', req.user?.id || 0, Number(req.params.id));
   if (!item) {
     res.status(404).json({ error: 'Файл не найден' });
     return;
   }
+  const isPublic = Boolean(item.public_graffiti || item.public_wall || item.public_building);
+  const canSeePrivate = Boolean(
+    req.user && (req.user.role === 'admin' || item.owned_graffiti || item.owned_wall),
+  );
+  if (!isPublic && !canSeePrivate) {
+    res.status(404).json({ error: 'Файл не найден' });
+    return;
+  }
   res.set('Content-Type', item.mime);
-  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('Cache-Control', isPublic ? 'public, max-age=31536000, immutable' : 'private, no-store');
+  if (item.mime === 'image/svg+xml') {
+    res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+  }
   res.send(item.data);
 });
 
@@ -1427,63 +1506,13 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
     return;
   }
 
-  const imageHash = contentHash(req.file.buffer);
-  const imageDHash = await dHash(req.file.buffer).catch(() => null);
-  const duplicate = await findDuplicate({ contentHash: imageHash, dhash: imageDHash });
-
-  let ai;
-  if (duplicate) {
-    ai = {
-      provider: 'local',
-      model: duplicate.type === 'exact' ? 'sha256' : 'dhash',
-      verdict: {
-        isGraffiti: true,
-        duplicate: true,
-        duplicateOf: duplicate.graffitiId,
-        duplicateDistance: duplicate.distance || 0,
-      },
-      confidence: duplicate.type === 'exact' ? 0.99 : 0.9,
-      summary:
-        duplicate.type === 'exact'
-          ? duplicate.graffitiId
-            ? `Точный дубль уже загруженного фото (работа #${duplicate.graffitiId})`
-            : 'Точный дубль уже загруженного фото'
-          : duplicate.graffitiId
-            ? `Похоже на дубль работы #${duplicate.graffitiId} (совпадение dHash)`
-            : 'Похоже на дубль ранее загруженного фото (совпадение dHash)',
-      decision: 'review',
-    };
-  } else {
-    const reference = db
-      .prepare(`
-        SELECT m.data, m.mime
-        FROM graffiti g
-        JOIN media m ON g.image_path = '/api/media/' || m.id
-        WHERE g.address = ? AND g.moderation_status = 'published'
-        ORDER BY g.id DESC
-        LIMIT 1
-      `)
-      .get(address);
-    ai = await moderateImage({
-      buffer: req.file.buffer,
-      mime: req.file.mimetype,
-      address,
-      description,
-      reference: reference
-        ? { buffer: Buffer.from(reference.data), mime: reference.mime }
-        : undefined,
-    });
-  }
-
   const mediaInfo = db
-    .prepare('INSERT INTO media (mime, data, created_at, content_hash, dhash) VALUES (?, ?, ?, ?, ?)')
-    .run(req.file.mimetype, req.file.buffer, nowIso(), imageHash, imageDHash);
+    .prepare('INSERT INTO media (mime, data, created_at) VALUES (?, ?, ?)')
+    .run(req.file.mimetype, req.file.buffer, nowIso());
   const imagePath = `/api/media/${Number(mediaInfo.lastInsertRowid)}`;
   const shadowBanned = Boolean(req.user.shadow_banned);
-  const autoPublish = !shadowBanned && canAutoPublish(ai);
   const createdAt = nowIso();
-  const moderationStatus = autoPublish ? 'published' : 'pending';
-  const storedStatus = shadowBanned ? 'rejected' : moderationStatus;
+  const storedStatus = shadowBanned ? 'rejected' : 'pending';
   const storedReason = shadowBanned ? 'Скрыто теневой модерацией' : '';
 
   const info = db
@@ -1491,7 +1520,7 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
       INSERT INTO graffiti (
         image_path, address, status, style, author_name, description,
         moderation_status, reject_reason, created_by, created_at, published_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
     `)
     .run(
       imagePath,
@@ -1504,35 +1533,11 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
       storedReason,
       req.actorId,
       createdAt,
-      autoPublish ? createdAt : null,
     );
 
-  const graffitiId = Number(info.lastInsertRowid);
-  db.prepare(`
-    INSERT INTO moderation_checks (
-      graffiti_id, provider, model, verdict, confidence, summary, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    graffitiId,
-    ai.provider,
-    ai.model,
-    JSON.stringify(ai.verdict),
-    ai.confidence,
-    ai.summary,
-    createdAt,
-  );
-
   res.status(201).json({
-    id: graffitiId,
-    moderation_status: moderationStatus,
-    ai: {
-      provider: ai.provider,
-      model: ai.model,
-      confidence: ai.confidence,
-      summary: ai.summary,
-      decision: ai.decision,
-      autoPublished: autoPublish,
-    },
+    id: Number(info.lastInsertRowid),
+    moderation_status: storedStatus,
   });
 });
 
@@ -1584,7 +1589,11 @@ app.get('/api/walls/:id', (req, res) => {
   }
   const canSeeUnpublished =
     req.user && (req.user.id === wall.owner_id || req.user.role === 'admin');
-  if (wall.moderation_status !== 'published' && !canSeeUnpublished) {
+  const hiddenBuilding = wall.kind === 'building' && (
+    wall.status === 'closed' ||
+    Boolean(db.prepare('SELECT 1 FROM hidden_places WHERE place_id = ?').get(`building-${wall.id}`))
+  );
+  if ((wall.moderation_status !== 'published' || hiddenBuilding) && !canSeeUnpublished) {
     res.status(404).json({ error: 'Стена не найдена' });
     return;
   }
@@ -1595,6 +1604,10 @@ app.get('/api/walls/:id', (req, res) => {
 app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'Прикрепите фото стены' });
+    return;
+  }
+  if (!rateLimit(`wall-create:${req.actorId}`, 5, 60 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много заявок на стены. Попробуйте позже.' });
     return;
   }
   const title = cleanUserText(req.body?.title, 100);
@@ -1648,6 +1661,13 @@ app.patch('/api/walls/:id', requireUser, (req, res) => {
     res.status(403).json({ error: 'Можно менять только свои стены' });
     return;
   }
+  const hidden = wall.kind === 'building' && Boolean(
+    db.prepare('SELECT 1 FROM hidden_places WHERE place_id = ?').get(`building-${wall.id}`),
+  );
+  if (hidden && req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Объект скрыт модерацией' });
+    return;
+  }
   const status = ['open', 'closed'].includes(req.body?.status) ? req.body.status : wall.status;
   db.prepare('UPDATE walls SET status = ? WHERE id = ?').run(status, wall.id);
   res.json({ ok: true, status });
@@ -1687,6 +1707,10 @@ app.get('/api/my/walls', requireUser, (req, res) => {
 app.post('/api/walk-buildings', requireUser, upload.single('photo'), (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'Прикрепите фото здания' });
+    return;
+  }
+  if (!rateLimit(`building-create:${req.actorId}`, 5, 60 * 60 * 1000)) {
+    res.status(429).json({ error: 'Слишком много заявок на здания. Попробуйте позже.' });
     return;
   }
   const title = cleanUserText(req.body?.title, 100);
@@ -1744,9 +1768,11 @@ app.get('/api/walk-buildings', (_req, res) => {
              u.name AS owner_name
       FROM walls w
       JOIN users u ON u.id = w.owner_id
+      LEFT JOIN hidden_places hp ON hp.place_id = 'building-' || w.id
       WHERE w.kind = 'building'
         AND w.moderation_status = 'published'
         AND w.status = 'open'
+        AND hp.place_id IS NULL
       ORDER BY datetime(COALESCE(w.published_at, w.created_at)) DESC
       LIMIT 200
     `)
@@ -1834,15 +1860,81 @@ app.post('/api/admin/walls/:id/reject', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+function deriveReportTarget(type, id) {
+  const targetId = cleanText(id, 120);
+  if (!targetId) return null;
+  if (type === 'route_comment' || type === 'comment' || type === 'graffiti_comment') {
+    const commentId = Number(targetId);
+    if (!Number.isInteger(commentId)) return null;
+    const routeComment = type === 'graffiti_comment'
+      ? null
+      : db.prepare('SELECT id, route_id, author_name, body, deleted_at FROM walk_route_comments WHERE id = ?').get(commentId);
+    const graffitiComment = type === 'route_comment'
+      ? null
+      : db.prepare('SELECT id, graffiti_id, author_name, body, deleted_at FROM comments WHERE id = ?').get(commentId);
+    if (type === 'comment' && routeComment && graffitiComment) {
+      return { ambiguous: true };
+    }
+    const comment = type === 'route_comment' ? routeComment : type === 'graffiti_comment' ? graffitiComment : (routeComment || graffitiComment);
+    if (!comment) return null;
+    return {
+      type: routeComment ? 'route_comment' : 'graffiti_comment',
+      id: targetId,
+      title: comment.author_name || 'Комментарий',
+      excerpt: String(comment.body || '').slice(0, 400),
+    };
+  }
+  if (type === 'place' || type === 'building') {
+    if (targetId.startsWith('building-')) {
+      const buildingId = Number(targetId.slice('building-'.length));
+      const building = Number.isInteger(buildingId)
+        ? db.prepare("SELECT id, title, address FROM walls WHERE id = ? AND kind = 'building'").get(buildingId)
+        : null;
+      if (!building) return null;
+      return {
+        type: 'building',
+        id: targetId,
+        title: building.title,
+        excerpt: building.address || '',
+      };
+    }
+    if (targetId.startsWith('stena-')) {
+      const graffitiId = Number(targetId.slice('stena-'.length));
+      const graffiti = Number.isInteger(graffitiId)
+        ? db.prepare("SELECT id, address FROM graffiti WHERE id = ? AND moderation_status = 'published'").get(graffitiId)
+        : null;
+      if (!graffiti) return null;
+      return {
+        type: 'place',
+        id: targetId,
+        title: `Граффити: ${graffiti.address}`,
+        excerpt: graffiti.address || '',
+      };
+    }
+    const place = STATIC_PLACES.get(targetId);
+    if (!place) return null;
+    return {
+      type: 'place',
+      id: targetId,
+      title: place.name || 'Объект',
+      excerpt: place.address || '',
+    };
+  }
+  return null;
+}
+
 app.post('/api/reports', requireUser, (req, res) => {
-  const targetType = String(req.body?.target_type || '');
-  const targetId = cleanText(req.body?.target_id, 120);
-  const targetTitle = cleanUserText(req.body?.target_title, 160);
-  const targetExcerpt = cleanUserText(req.body?.target_excerpt, 400);
+  const requestedType = String(req.body?.target_type || '');
+  const requestedId = cleanText(req.body?.target_id, 120);
   const reason = cleanUserText(req.body?.reason, 120);
   const details = cleanUserText(req.body?.details, 800);
-  if (!['comment', 'route_comment', 'place'].includes(targetType) || !targetId || !reason) {
+  if (!requestedId || !reason) {
     res.status(400).json({ error: 'Укажите объект и причину жалобы' });
+    return;
+  }
+  const target = deriveReportTarget(requestedType, requestedId);
+  if (!target || target.ambiguous) {
+    res.status(400).json({ error: target?.ambiguous ? 'Уточните, на какой комментарий жалоба' : 'Объект жалобы не найден' });
     return;
   }
   if (!rateLimit(`report:${req.actorId}`, 10, 60 * 60 * 1000)) {
@@ -1856,7 +1948,7 @@ app.post('/api/reports', requireUser, (req, res) => {
         reason, details, status, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
     `)
-    .run(targetType, targetId, targetTitle, targetExcerpt, req.user.id, req.user.name, reason, details, nowIso());
+    .run(target.type, target.id, target.title, target.excerpt, req.user.id, req.user.name, reason, details, nowIso());
   res.status(201).json({ id: Number(info.lastInsertRowid) });
 });
 
@@ -1907,25 +1999,32 @@ app.post('/api/admin/reports/:id/resolve', requireAdmin, (req, res) => {
     return;
   }
   const now = nowIso();
-  if (report.target_type === 'comment' || report.target_type === 'route_comment') {
+  if (report.target_type === 'route_comment' || report.target_type === 'graffiti_comment' || report.target_type === 'comment') {
     const commentId = Number(report.target_id);
-    let changed = 0;
-    if (Number.isInteger(commentId)) {
-      changed = db.prepare('UPDATE walk_route_comments SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL')
-        .run(now, commentId).changes;
-      if (!changed) {
-        changed = db.prepare('UPDATE comments SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL')
-          .run(now, commentId).changes;
-      }
+    if (!Number.isInteger(commentId)) {
+      res.status(400).json({ error: 'Некорректный комментарий' });
+      return;
     }
-    if (!changed) {
+    const routeCandidate = report.target_type !== 'graffiti_comment'
+      ? db.prepare('SELECT id FROM walk_route_comments WHERE id = ? AND deleted_at IS NULL').get(commentId)
+      : null;
+    const graffitiCandidate = report.target_type !== 'route_comment'
+      ? db.prepare('SELECT id FROM comments WHERE id = ? AND deleted_at IS NULL').get(commentId)
+      : null;
+    if (report.target_type === 'comment' && routeCandidate && graffitiCandidate) {
+      res.status(409).json({ error: 'Неоднозначная жалоба: комментарий с таким ID есть и в маршрутах, и в граффити' });
+      return;
+    }
+    const table = routeCandidate ? 'walk_route_comments' : graffitiCandidate ? 'comments' : null;
+    if (!table) {
       res.status(404).json({ error: 'Комментарий уже удалён или не найден' });
       return;
     }
-  } else if (report.target_type === 'place') {
+    db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, commentId);
+  } else if (['place', 'building'].includes(report.target_type)) {
     db.prepare('INSERT OR IGNORE INTO hidden_places (place_id, reason, created_at) VALUES (?, ?, ?)')
       .run(report.target_id, report.reason || 'Жалоба принята', now);
-    if (report.target_id.startsWith('building-')) {
+    if (report.target_type === 'building' || report.target_id.startsWith('building-')) {
       const buildingId = Number(report.target_id.slice('building-'.length));
       if (Number.isInteger(buildingId)) {
         db.prepare("UPDATE walls SET status = 'closed' WHERE id = ? AND kind = 'building'").run(buildingId);
@@ -1938,7 +2037,7 @@ app.post('/api/admin/reports/:id/resolve', requireAdmin, (req, res) => {
 });
 
 app.get('/api/hidden-places', (_req, res) => {
-  const items = db.prepare('SELECT place_id, reason, created_at FROM hidden_places').all();
+  const items = db.prepare('SELECT place_id FROM hidden_places').all();
   res.json({ items });
 });
 
@@ -2084,7 +2183,7 @@ app.get('/api/admin/graffiti', requireAdmin, (req, res) => {
     `)
     .get();
   res.json({
-    items: attachAiChecks(itemsWithSubmitters),
+    items: itemsWithSubmitters,
     counts: {
       pending: counts.pending || 0,
       published: counts.published || 0,
@@ -2276,7 +2375,6 @@ app.use((error, _req, res, _next) => {
 app.listen(PORT, HOST, () => {
   console.log(`[stena] API: http://localhost:${PORT}`);
   console.log(
-    `[stena] AI moderation: ${aiConfig.provider}/${aiConfig.model} (auto-publish: ${aiConfig.autoPublish ? 'on' : 'off'})`,
   );
   if (process.env.NODE_ENV !== 'production') {
     console.log('[stena] web: http://localhost:5173');

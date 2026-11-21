@@ -8,7 +8,8 @@ export function LoginPage() {
   const { user, refresh } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from || '/';
+  const requestedFrom = (location.state as { from?: string } | null)?.from;
+  const from = typeof requestedFrom === 'string' && requestedFrom.startsWith('/') && !requestedFrom.startsWith('//') ? requestedFrom : '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

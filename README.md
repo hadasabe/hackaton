@@ -24,7 +24,6 @@
 - коллекции работ с обложками и публичными подборками;
 - раздел «Стены»: владелец публикует фасад, гараж или забор, указывает условия и контакт;
 - модерация всех заявок в админ-панели;
-- AI-предпроверка фото и текста через DeepSeek, OpenAI или локальный Ollama (необязательно).
 
 ### Прогулка
 
@@ -84,7 +83,7 @@
 ```bash
 cd graffiti
 npm install
-cp .env.example .env   # при необходимости: AI-ключи и настройки
+cp .env.example .env   # секреты и настройки сервера
 npm run dev
 ```
 
@@ -117,7 +116,7 @@ NODE_ENV=production npm start
 
 ## Документация
 
-- [graffiti/README.md](graffiti/README.md) — API, модерация, AI-проверка и работа с базой.
+- [graffiti/README.md](graffiti/README.md) — API, модерация и работа с базой.
 - [ryadom/README.md](ryadom/README.md) — карта, GPS, маршруты и аудиогид.
 
 ## Лицензия
