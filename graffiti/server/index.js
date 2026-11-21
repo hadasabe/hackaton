@@ -2083,7 +2083,7 @@ app.get('/api/my/walls', requireUser, (req, res) => {
 
 app.post('/api/walk-buildings', requireUser, upload.single('photo'), (req, res) => {
   if (!req.file) {
-    res.status(400).json({ error: 'Прикрепите фото здания' });
+    res.status(400).json({ error: 'Прикрепите фото достопримечательности' });
     return;
   }
   if (!rateLimit(`building-create:${req.actorId}`, 5, 60 * 60 * 1000)) {
@@ -2100,11 +2100,11 @@ app.post('/api/walk-buildings', requireUser, upload.single('photo'), (req, res) 
   const lng = Number(req.body?.lng);
   const consent = String(req.body?.consent || '') === '1';
   if (!title || !address) {
-    res.status(400).json({ error: 'Заполните название и адрес здания' });
+    res.status(400).json({ error: 'Заполните название и адрес' });
     return;
   }
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-    res.status(400).json({ error: 'Выберите точку здания на карте' });
+    res.status(400).json({ error: 'Выберите точку на карте' });
     return;
   }
   if (!consent) {

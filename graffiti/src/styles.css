@@ -5269,6 +5269,14 @@ button.profile-stat {
   line-height: 1;
   letter-spacing: -0.04em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.add-object-card-attraction h2 {
+  font-size: 18px;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
 }
 
 .add-object-card p {
