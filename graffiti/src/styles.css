@@ -5942,3 +5942,25 @@ a.people-row:hover {
   color: var(--ink-soft);
   font-size: 11.5px;
 }
+
+.admin-card-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 190px;
+  border-right: 2px solid var(--ink);
+  background: var(--paper-deep);
+  color: var(--muted);
+}
+
+.admin-card-body .admin-id {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .admin-card-placeholder {
+    min-height: 140px;
+    border-right: 0;
+    border-bottom: 2px solid var(--ink);
+  }
+}

@@ -90,6 +90,35 @@ function graffitiObject(item: Graffiti): CityObject {
   };
 }
 
+const ADDRESS_STOP_WORDS = new Set([
+  'улица', 'улицы', 'ул', 'проспект', 'пр', 'переулок', 'пер',
+  'набережная', 'наб', 'площадь', 'пл', 'бульвар', 'шоссе', 'проезд',
+  'район', 'дом', 'д', 'здание', 'здания', 'фасад', 'торец', 'торцевой',
+  'внутренний', 'двор', 'дворе', 'у', 'в', 'на', 'со', 'стороны',
+  'центра', 'культуры', 'правительства', 'стена', 'храма',
+  'петра', 'им', 'имени',
+]);
+
+function addressKey(value: string): string {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9]+/gi, ' ')
+    .trim()
+    .split(' ')
+    .filter((token) => token && !ADDRESS_STOP_WORDS.has(token))
+    .join(' ');
+}
+
+function sameAddress(one: string, two: string): boolean {
+  const a = addressKey(one);
+  const b = addressKey(two);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (!/[0-9]/.test(a) || !/[0-9]/.test(b)) return false;
+  return a.startsWith(`${b} `) || b.startsWith(`${a} `);
+}
+
 function interleave(places: CityObject[], graffiti: CityObject[]): CityObject[] {
   const result: CityObject[] = [];
   const length = Math.max(places.length, graffiti.length);
@@ -129,10 +158,18 @@ export async function loadCityObjects(): Promise<CityObjectsState> {
     error = error || 'Не удалось загрузить граффити';
   }
 
+  const artPlaceAddresses = placeObjects
+    .filter((object) => object.place && object.category === 'Стрит-арт')
+    .map((object) => object.address);
+
+  const uniqueGraffiti = graffitiObjects.filter((object) => (
+    !artPlaceAddresses.some((placeAddress) => sameAddress(object.address, placeAddress))
+  ));
+
   return {
-    objects: interleave(placeObjects, graffitiObjects),
+    objects: interleave(placeObjects, uniqueGraffiti),
     places: placeObjects,
-    graffiti: graffitiObjects,
+    graffiti: uniqueGraffiti,
     stats,
     loading: false,
     error,

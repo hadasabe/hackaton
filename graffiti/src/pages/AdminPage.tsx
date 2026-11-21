@@ -446,7 +446,11 @@ function PlacesPanel({
     <div className="admin-list">
       {places.map((place) => (
         <article className="admin-card" key={place.id}>
-          {place.image ? <img src={place.image} alt={place.name} loading="lazy" /> : null}
+          {place.image ? (
+            <img src={place.image} alt={place.name} loading="lazy" />
+          ) : (
+            <span className="admin-card-placeholder" aria-hidden="true"><MapPin size={28} /></span>
+          )}
           <div className="admin-card-body">
             <div className="admin-card-top">
               <span className="admin-id">{place.id}</span>

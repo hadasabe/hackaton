@@ -899,7 +899,7 @@
     "name": "Городской парк",
     "category": "Природа",
     "address": "Улица Чернышевского, 81/83",
-    "description": "До аттракционов здесь находились губернаторская усадьба, владения института благородных девиц и частные увеселительные сады. Городской парк открылся в 1935 году.",
+    "description": "До аттракционов здесь находились губернаторская усадьба, владения института благородных девиц и частные увеселительные сады. Городской парк, который горожане называют Горпарком, открылся в 1935 году.",
     "story": "Дубовая роща старше городского парка. В начале 19 века усадьба и роща принадлежали саратовскому губернатору Алексею Панчулидзеву. Во время пожара 1811 года, уничтожившего значительную часть Саратова, эта находившаяся за тогдашней городской чертой территория уцелела. В 1844 году усадьбу приобрели для Мариинского института благородных девиц; к владению присоединили ещё два участка городской земли.\n\nПозднее части рощи переходили к частным владельцам. В дореволюционном Саратове употреблялись названия Парусиновская и Вакуровская рощи — по фамилиям хозяев. У Царицынской улицы, нынешней Чернышевского, находились летний театр «Фантазия», ресторан и увеселительные заведения. Следовательно, отдых и публичные представления появились здесь раньше советского парка культуры.\n\nВ мае 1935 года президиум городского исполкома решил преобразовать Вакуровскую рощу в городской парк культуры и отдыха. Средства привлекали от предприятий и учреждений Октябрьского района. Пруды очищали от ила, проводили озеленение и противомалярийные мероприятия. Городской исторический очерк оценивает число участников строительных работ примерно в двадцать тысяч человек. Открытие состоялось уже 17 августа 1935 года, однако благоустройство продолжалось и после этой даты. На прудах появились лодочная станция и водная карусель.\n\nПосле Великой Отечественной войны территорию вновь приводили в порядок на субботниках; парк получил имя Максима Горького. В его планировке сохранились дубовый массив и каскад прудов, которые определяли выбор места ещё при создании ГПКиО.",
     "era": "Усадебная роща 19 века · открытие парка: 17 августа 1935 года",
     "lookFor": "Проследите каскад прудов среди дубовой рощи. Это основа исторического ландшафта, вокруг которого в 1935 году устроили общественный парк.",
@@ -3450,5 +3450,156 @@
       "imageUrl": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%AE%D1%80%D0%B8%D1%8E_%D0%93%D0%B0%D0%B3%D0%B0%D1%80%D0%B8%D0%BD%D1%83_%28%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2%29.jpg",
       "modified": "Уменьшено; в интерфейсе кадрировано"
     }
+  },
+  {
+    "id": "childrens-park",
+    "name": "Детский парк",
+    "category": "Природа",
+    "address": "Улица Пугачёва, у пересечения с Мичурина",
+    "description": "Один из главных парков Саратова для семейного отдыха: тенистые аллеи, игровые площадки и скульптура «Позвони маме».",
+    "story": "Детский парк занимает квартал в центре города, между улицами Пугачёва, Мичурина и Астраханской. Здесь проходят детские праздники, работают аттракционы и игровые площадки, а на центральной аллее стоит скульптура «Позвони маме».\n\nКомпозицию Владимира Пальмина открыли 1 июня 2019 года. Это не памятник конкретному человеку, а посвящение матерям и бабушкам: женщина у окна ждёт звонка от выросших детей. Рядом с окном предусмотрено место, чтобы посидеть и сделать фотографию.",
+    "era": "Городской парк для детей",
+    "lookFor": "Скульптуру «Позвони маме» на центральной аллее и старые ворота со стороны Пугачёва.",
+    "sources": [
+      {
+        "title": "Администрация Саратова — скульптура «Позвони маме»",
+        "url": "https://saratovmer.ru/news/60059/"
+      },
+      {
+        "title": "Фотография входа в Детский парк — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg"
+      }
+    ],
+    "lat": 51.5328,
+    "lng": 46.0077,
+    "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+    "verified": "2026-11-21",
+    "glyph": "leaf",
+    "image": "assets/photos/childrens-park.jpg",
+    "photo": {
+      "src": "assets/photos/childrens-park.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "title": "Ворота Детского парка со стороны улицы Пугачёва",
+      "author": "ИринаЯ",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480,
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/childrens-park.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BF%D0%B0%D1%80%D0%BA_%D0%92%D0%BE%D1%80%D0%BE%D1%82%D0%B0_%D1%81_%D1%83%D0%BB_%D0%9F%D1%83%D0%B3%D0%B0%D1%87%D1%91%D0%B2%D0%B0_%D0%B2%D0%B8%D0%B4_%D0%BD%D0%B0_%D0%B0%D0%BB%D0%BB%D0%B5%D1%8E_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "title": "Ворота Детского парка со стороны улицы Пугачёва",
+        "author": "ИринаЯ",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480,
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+      }
+    ]
+  },
+  {
+    "id": "city-beach",
+    "name": "Городской пляж",
+    "category": "Природа",
+    "address": "Набережная Космонавтов, у Саратовского моста",
+    "description": "Песчаный пляж на Волге в районе Саратовского моста — одно из популярных мест летнего отдыха горожан.",
+    "story": "Городской пляж расположен на волжском берегу рядом с набережной Космонавтов и Саратовским мостом. Летом здесь оборудуют места для купания и отдыха, работают кафе и пункты проката.\n\nС пляжа открывается вид на Волгу, мост и противоположный берег. В сезон воды берег становится одной из самых оживлённых прогулочных точек города.",
+    "era": "Пляж на Волге",
+    "lookFor": "Вид на Саратовский мост и Волгу — лучше всего с кромки воды в вечернем свете.",
+    "sources": [
+      {
+        "title": "Фотография городского пляжа — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:Saratov_City_Beach_(4).jpg"
+      }
+    ],
+    "lat": 51.5157246,
+    "lng": 46.0759019,
+    "source": "https://commons.wikimedia.org/wiki/File:Saratov_City_Beach_(4).jpg",
+    "verified": "2026-11-21",
+    "glyph": "pin",
+    "image": "assets/photos/city-beach.jpg",
+    "photo": {
+      "src": "assets/photos/city-beach.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Saratov_City_Beach_(4).jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Saratov_City_Beach_%284%29.jpg/960px-Saratov_City_Beach_%284%29.jpg",
+      "title": "Городской пляж Саратова",
+      "author": "Villarreal9",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480,
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/city-beach.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Saratov_City_Beach_(4).jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Saratov_City_Beach_%284%29.jpg/960px-Saratov_City_Beach_%284%29.jpg",
+        "title": "Городской пляж Саратова",
+        "author": "Villarreal9",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480,
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+      }
+    ]
+  },
+  {
+    "id": "tuz",
+    "name": "Саратовский ТЮЗ имени Ю. П. Киселёва",
+    "category": "Архитектура",
+    "address": "Улица Чапаева, 74",
+    "description": "Театр юного зрителя на площади Киселёва — один из старейших детских театров России и заметная точка в центре Саратова.",
+    "story": "Саратовский театр юного зрителя основан в 1918 году и носит имя режиссёра Юрия Петровича Киселёва. Современное здание театра выходит на площадь Киселёва, где рядом находятся почтамт и цирк.\n\nТЮЗ ставит спектакли для детей, подростков и взрослых. Площадь перед театром — удобная остановка на прогулке по улице Чапаева и соседним кварталам центра.",
+    "era": "Основан в 1918 году",
+    "lookFor": "Фасад театра и вечернюю подсветку площади Киселёва.",
+    "sources": [
+      {
+        "title": "Фотография ТЮЗа — Wikimedia Commons",
+        "url": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg"
+      }
+    ],
+    "lat": 51.5347429,
+    "lng": 46.0239235,
+    "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+    "verified": "2026-11-21",
+    "glyph": "building",
+    "image": "assets/photos/tuz.jpg",
+    "photo": {
+      "src": "assets/photos/tuz.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+      "title": "Театр юного зрителя на площади Киселёва",
+      "author": "ИринаЯ",
+      "modified": "Уменьшено",
+      "width": 640,
+      "height": 480,
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "audio": null,
+    "gallery": [
+      {
+        "src": "assets/photos/tuz.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg/960px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D1%8E%D0%BD%D0%BE%D0%B3%D0%BE_%D0%B7%D1%80%D0%B8%D1%82%D0%B5%D0%BB%D1%8F_%D0%BD%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%9A%D0%B8%D1%81%D0%B5%D0%BB%D1%91%D0%B2%D0%B0_%D0%A1%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg",
+        "title": "Театр юного зрителя на площади Киселёва",
+        "author": "ИринаЯ",
+        "modified": "Уменьшено",
+        "width": 640,
+        "height": 480,
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+      }
+    ]
   }
 ]
