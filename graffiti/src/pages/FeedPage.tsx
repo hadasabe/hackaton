@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, MapPin, Map as MapIcon, Plus, Search } from 'lucide-react';
+import { ArrowRight, Heart, MapPin, Map as MapIcon, Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import type { FeedStats, Graffiti, ReactionValue, WalkBuilding, WalkPlace } from '../lib/types';
 import { plural } from '../lib/format';
+import { PLACE_FAVORITES_EVENT, readFavoritePlaceIds, writeFavoritePlaceIds } from '../lib/placeFavorites';
 import { ContentTabs } from '../components/ContentTabs';
 import { GraffitiCard } from '../components/GraffitiCard';
 import { useAuth } from '../context/AuthContext';
@@ -28,7 +29,15 @@ function buildingToPlace(building: WalkBuilding): WalkPlace {
   };
 }
 
-function PlaceCard({ place }: { place: WalkPlace }) {
+function PlaceCard({
+  place,
+  isFavorite,
+  onToggleFavorite,
+}: {
+  place: WalkPlace;
+  isFavorite: boolean;
+  onToggleFavorite: (id: string) => void;
+}) {
   const href = `/map?place=${encodeURIComponent(place.id)}`;
   return (
     <article className="graffiti-card place-feed-card">
@@ -59,6 +68,16 @@ function PlaceCard({ place }: { place: WalkPlace }) {
         {place.description ? <p className="card-description">{place.description}</p> : null}
 
         <div className="card-actions">
+          <button
+            type="button"
+            className={`reaction place-favorite${isFavorite ? ' active like' : ''}`}
+            onClick={() => onToggleFavorite(place.id)}
+            aria-pressed={isFavorite}
+            aria-label={`${isFavorite ? 'Убрать из избранного' : 'Сохранить в избранное'}: ${place.name}`}
+          >
+            <Heart size={16} />
+            {isFavorite ? 'В избранном' : 'В избранное'}
+          </button>
           <Link to={href} className="reaction comments-link">
             <MapIcon size={16} />
             На карте
@@ -77,8 +96,19 @@ export function FeedPage() {
   const [stats, setStats] = useState<FeedStats | null>(null);
   const [kind, setKind] = useState<FeedKind>('all');
   const [query, setQuery] = useState('');
+  const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>(() => readFavoritePlaceIds());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const syncFavorites = () => setFavoritePlaceIds(readFavoritePlaceIds());
+    window.addEventListener('storage', syncFavorites);
+    window.addEventListener(PLACE_FAVORITES_EVENT, syncFavorites);
+    return () => {
+      window.removeEventListener('storage', syncFavorites);
+      window.removeEventListener(PLACE_FAVORITES_EVENT, syncFavorites);
+    };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -149,6 +179,14 @@ export function FeedPage() {
     } catch {
       void load();
     }
+  }
+
+  function toggleFavoritePlace(id: string) {
+    const next = favoritePlaceIds.includes(id)
+      ? favoritePlaceIds.filter((placeId) => placeId !== id)
+      : [...favoritePlaceIds, id];
+    writeFavoritePlaceIds(next);
+    setFavoritePlaceIds(next);
   }
 
   const needle = query.trim().toLowerCase();
@@ -289,7 +327,12 @@ export function FeedPage() {
           <div className="feed-grid">
             {entries.map((entry) => (
               entry.kind === 'place' ? (
-                <PlaceCard key={entry.key} place={entry.place} />
+                <PlaceCard
+                  key={entry.key}
+                  place={entry.place}
+                  isFavorite={favoritePlaceIds.includes(entry.place.id)}
+                  onToggleFavorite={toggleFavoritePlace}
+                />
               ) : (
                 <GraffitiCard
                   key={entry.key}
