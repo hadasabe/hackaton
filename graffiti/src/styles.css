@@ -3242,3 +3242,91 @@ body.walk-route .site-footer {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+.comment-reply-to {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--paper-deep);
+  color: var(--muted);
+  font-size: 10px !important;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.comment-reaction,
+.comment-reply-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.comment-reaction:hover,
+.comment-reply-button:hover {
+  background: var(--paper-deep);
+}
+
+.comment-reaction.active {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.comment-reply-button {
+  margin-left: auto;
+}
+
+.comment-replies {
+  margin: 10px 0 0 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+
+.comment-replies .comment {
+  margin-top: 8px;
+  background: var(--card);
+}
+
+.comment-reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-reply-actions .text-button {
+  font-size: 12px;
+}
+
+.comment-reply-actions .button {
+  min-height: 38px;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.comment-delete {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  color: var(--muted);
+}

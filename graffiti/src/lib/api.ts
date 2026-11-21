@@ -106,11 +106,18 @@ export const api = {
     );
   },
 
-  addComment(id: number, body: string) {
+  addComment(id: number, body: string, parentId?: number | null) {
     return request<Comment>(`/api/graffiti/${id}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ body }),
+      body: JSON.stringify({ body, parent_id: parentId || null }),
     });
+  },
+
+  reactComment(id: number, value: ReactionValue) {
+    return request<{ likes: number; dislikes: number; my_reaction: ReactionValue | null }>(
+      `/api/comments/${id}/reaction`,
+      { method: 'POST', body: JSON.stringify({ value }) },
+    );
   },
 
   deleteComment(id: number) {

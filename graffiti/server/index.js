@@ -671,17 +671,26 @@ app.get('/api/walk-routes/:slug', (req, res) => {
   }
   const comments = db
     .prepare(`
-      SELECT id, actor_id, author_name, body, created_at
-      FROM walk_route_comments
-      WHERE route_id = ? AND deleted_at IS NULL
-      ORDER BY datetime(created_at) ASC
+      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at,
+        (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
+        (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
+        (SELECT cr.value FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
+        (SELECT p.author_name FROM walk_route_comments p WHERE p.id = c.parent_id) AS reply_to_name
+      FROM walk_route_comments c
+      WHERE c.route_id = ? AND c.deleted_at IS NULL
+      ORDER BY datetime(c.created_at) ASC
     `)
-    .all(row.id)
+    .all(req.actorId, row.id)
     .map((comment) => ({
       id: comment.id,
+      parent_id: comment.parent_id,
       author_name: comment.author_name,
       body: comment.body,
       created_at: comment.created_at,
+      likes: Number(comment.likes || 0),
+      dislikes: Number(comment.dislikes || 0),
+      my_reaction: comment.my_reaction || null,
+      reply_to_name: comment.reply_to_name || null,
       can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
     }));
   res.json({ route: walkRouteSummary(row, req), comments });
@@ -870,19 +879,81 @@ app.post('/api/walk-routes/:id/comments', requireUser, (req, res) => {
     res.status(429).json({ error: 'Слишком много комментариев. Попробуйте позже.' });
     return;
   }
+  const parentId = Number(req.body?.parent_id);
+  let parent = null;
+  if (Number.isInteger(parentId) && parentId > 0) {
+    parent = db
+      .prepare('SELECT id, route_id, author_name FROM walk_route_comments WHERE id = ? AND deleted_at IS NULL')
+      .get(parentId);
+    if (!parent || parent.route_id !== id) {
+      res.status(400).json({ error: 'Комментарий, на который вы отвечаете, не найден' });
+      return;
+    }
+  }
   const createdAt = nowIso();
   const info = db
     .prepare(`
-      INSERT INTO walk_route_comments (route_id, actor_id, author_name, body, created_at)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO walk_route_comments (route_id, parent_id, actor_id, author_name, body, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
     `)
-    .run(id, req.actorId, req.user.name, body, createdAt);
+    .run(id, parent ? parent.id : null, req.actorId, req.user.name, body, createdAt);
   res.status(201).json({
     id: Number(info.lastInsertRowid),
+    parent_id: parent ? parent.id : null,
     author_name: req.user.name,
     body,
     created_at: createdAt,
+    likes: 0,
+    dislikes: 0,
+    my_reaction: null,
+    reply_to_name: parent?.author_name || null,
     can_delete: true,
+  });
+});
+
+app.post('/api/walk-routes/comments/:commentId/reaction', requireUser, (req, res) => {
+  const id = Number(req.params.commentId);
+  const value = req.body?.value;
+  if (!Number.isInteger(id) || !['like', 'dislike'].includes(value)) {
+    res.status(400).json({ error: 'Некорректная реакция' });
+    return;
+  }
+  const comment = db
+    .prepare('SELECT id FROM walk_route_comments WHERE id = ? AND deleted_at IS NULL')
+    .get(id);
+  if (!comment) {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  const current = db
+    .prepare('SELECT value FROM walk_route_comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (current?.value === value) {
+    db.prepare('DELETE FROM walk_route_comment_reactions WHERE comment_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else if (current) {
+    db.prepare(
+      'UPDATE walk_route_comment_reactions SET value = ?, created_at = ? WHERE comment_id = ? AND actor_id = ?',
+    ).run(value, nowIso(), id, req.actorId);
+  } else {
+    db.prepare(
+      'INSERT INTO walk_route_comment_reactions (comment_id, actor_id, value, created_at) VALUES (?, ?, ?, ?)',
+    ).run(id, req.actorId, value, nowIso());
+  }
+  const counts = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN value = 'like' THEN 1 ELSE 0 END) AS likes,
+        SUM(CASE WHEN value = 'dislike' THEN 1 ELSE 0 END) AS dislikes
+      FROM walk_route_comment_reactions WHERE comment_id = ?
+    `)
+    .get(id);
+  const mine = db
+    .prepare('SELECT value FROM walk_route_comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  res.json({
+    likes: counts.likes || 0,
+    dislikes: counts.dislikes || 0,
+    my_reaction: mine?.value || null,
   });
 });
 
@@ -916,18 +987,27 @@ app.get('/api/graffiti/:id', (req, res) => {
   }
   const comments = db
     .prepare(`
-      SELECT id, actor_id, author_name, body, created_at
-      FROM comments
-      WHERE graffiti_id = ? AND deleted_at IS NULL
-        AND (hidden = 0 OR actor_id = ? OR ? = 1)
-      ORDER BY datetime(created_at) ASC
+      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at,
+        (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
+        (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
+        (SELECT cr.value FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
+        (SELECT p.author_name FROM comments p WHERE p.id = c.parent_id) AS reply_to_name
+      FROM comments c
+      WHERE c.graffiti_id = ? AND c.deleted_at IS NULL
+        AND (c.hidden = 0 OR c.actor_id = ? OR ? = 1)
+      ORDER BY datetime(c.created_at) ASC
     `)
-    .all(id, req.actorId, req.user?.role === 'admin' ? 1 : 0)
+    .all(req.actorId, id, req.actorId, req.user?.role === 'admin' ? 1 : 0)
     .map((comment) => ({
       id: comment.id,
+      parent_id: comment.parent_id,
       author_name: comment.author_name,
       body: comment.body,
       created_at: comment.created_at,
+      likes: Number(comment.likes || 0),
+      dislikes: Number(comment.dislikes || 0),
+      my_reaction: comment.my_reaction || null,
+      reply_to_name: comment.reply_to_name || null,
       can_delete: comment.actor_id === req.actorId || req.user?.role === 'admin',
     }));
   res.json({ item, comments });
@@ -1003,14 +1083,31 @@ app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
     res.status(404).json({ error: 'Работа не найдена' });
     return;
   }
+  const parentId = Number(req.body?.parent_id);
+  let parent = null;
+  if (Number.isInteger(parentId) && parentId > 0) {
+    parent = db
+      .prepare('SELECT id, graffiti_id, author_name FROM comments WHERE id = ? AND deleted_at IS NULL')
+      .get(parentId);
+    if (!parent || parent.graffiti_id !== id) {
+      res.status(400).json({ error: 'Комментарий, на который вы отвечаете, не найден' });
+      return;
+    }
+  }
+  const createdAt = nowIso();
   const info = db
-    .prepare('INSERT INTO comments (graffiti_id, actor_id, author_name, body, created_at, hidden) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(id, req.actorId, authorName, body, nowIso(), req.user.shadow_banned ? 1 : 0);
+    .prepare('INSERT INTO comments (graffiti_id, parent_id, actor_id, author_name, body, created_at, hidden) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(id, parent ? parent.id : null, req.actorId, authorName, body, createdAt, req.user.shadow_banned ? 1 : 0);
   res.status(201).json({
     id: Number(info.lastInsertRowid),
+    parent_id: parent ? parent.id : null,
     author_name: authorName,
     body,
-    created_at: nowIso(),
+    created_at: createdAt,
+    likes: 0,
+    dislikes: 0,
+    my_reaction: null,
+    reply_to_name: parent?.author_name || null,
     can_delete: true,
   });
 });
@@ -1057,6 +1154,56 @@ app.post('/api/graffiti/:id/status-reports', requireUser, (req, res) => {
     id: Number(info.lastInsertRowid),
     status,
     moderation_status: 'pending',
+  });
+});
+
+app.post('/api/comments/:id/reaction', requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const value = req.body?.value;
+  if (!Number.isInteger(id) || !['like', 'dislike'].includes(value)) {
+    res.status(400).json({ error: 'Некорректная реакция' });
+    return;
+  }
+  const comment = db
+    .prepare('SELECT id, actor_id, hidden FROM comments WHERE id = ? AND deleted_at IS NULL')
+    .get(id);
+  if (!comment) {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  if (comment.hidden && comment.actor_id !== req.actorId && req.user.role !== 'admin') {
+    res.status(404).json({ error: 'Комментарий не найден' });
+    return;
+  }
+  const current = db
+    .prepare('SELECT value FROM comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  if (current?.value === value) {
+    db.prepare('DELETE FROM comment_reactions WHERE comment_id = ? AND actor_id = ?').run(id, req.actorId);
+  } else if (current) {
+    db.prepare(
+      'UPDATE comment_reactions SET value = ?, created_at = ? WHERE comment_id = ? AND actor_id = ?',
+    ).run(value, nowIso(), id, req.actorId);
+  } else {
+    db.prepare(
+      'INSERT INTO comment_reactions (comment_id, actor_id, value, created_at) VALUES (?, ?, ?, ?)',
+    ).run(id, req.actorId, value, nowIso());
+  }
+  const counts = db
+    .prepare(`
+      SELECT
+        SUM(CASE WHEN value = 'like' THEN 1 ELSE 0 END) AS likes,
+        SUM(CASE WHEN value = 'dislike' THEN 1 ELSE 0 END) AS dislikes
+      FROM comment_reactions WHERE comment_id = ?
+    `)
+    .get(id);
+  const mine = db
+    .prepare('SELECT value FROM comment_reactions WHERE comment_id = ? AND actor_id = ?')
+    .get(id, req.actorId);
+  res.json({
+    likes: counts.likes || 0,
+    dislikes: counts.dislikes || 0,
+    my_reaction: mine?.value || null,
   });
 });
 

@@ -53,12 +53,22 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     graffiti_id INTEGER NOT NULL,
+    parent_id INTEGER,
     actor_id TEXT NOT NULL,
     author_name TEXT NOT NULL,
     body TEXT NOT NULL,
     created_at TEXT NOT NULL,
     deleted_at TEXT,
     FOREIGN KEY (graffiti_id) REFERENCES graffiti(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS comment_reactions (
+    comment_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    value TEXT NOT NULL CHECK (value IN ('like', 'dislike')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (comment_id, actor_id),
+    FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS media (
@@ -167,12 +177,22 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS walk_route_comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     route_id INTEGER NOT NULL,
+    parent_id INTEGER,
     actor_id TEXT NOT NULL,
     author_name TEXT NOT NULL,
     body TEXT NOT NULL,
     created_at TEXT NOT NULL,
     deleted_at TEXT,
     FOREIGN KEY (route_id) REFERENCES walk_routes(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS walk_route_comment_reactions (
+    comment_id INTEGER NOT NULL,
+    actor_id TEXT NOT NULL,
+    value TEXT NOT NULL CHECK (value IN ('like', 'dislike')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (comment_id, actor_id),
+    FOREIGN KEY (comment_id) REFERENCES walk_route_comments(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS walk_route_favorites (
@@ -187,6 +207,10 @@ db.exec(`
     ON graffiti(moderation_status, published_at DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_graffiti
     ON comments(graffiti_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_comment_reactions
+    ON comment_reactions(comment_id);
+  CREATE INDEX IF NOT EXISTS idx_walk_route_comment_reactions
+    ON walk_route_comment_reactions(comment_id);
   CREATE INDEX IF NOT EXISTS idx_reactions_graffiti
     ON reactions(graffiti_id);
   CREATE INDEX IF NOT EXISTS idx_status_reports
@@ -218,6 +242,8 @@ ensureColumn('media', 'content_hash', 'TEXT');
 ensureColumn('media', 'dhash', 'TEXT');
 ensureColumn('users', 'shadow_banned', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('comments', 'hidden', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('comments', 'parent_id', 'INTEGER');
+ensureColumn('walk_route_comments', 'parent_id', 'INTEGER');
 ensureColumn('walls', 'contact', "TEXT NOT NULL DEFAULT ''");
 {
   const wallColumns = db.prepare('PRAGMA table_info(walls)').all();

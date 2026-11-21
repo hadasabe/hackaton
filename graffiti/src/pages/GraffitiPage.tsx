@@ -7,6 +7,7 @@ import {
   FolderPlus,
   MapPin,
   MessageCircle,
+  Reply,
   Send,
   Share2,
   ThumbsDown,
@@ -16,6 +17,21 @@ import {
 import { api, ApiError } from '../lib/api';
 import { STATUS_META, STATUS_OPTIONS } from '../lib/constants';
 import type { Comment, Graffiti, ReactionValue, Status } from '../lib/types';
+
+interface CommentNode extends Comment {
+  replies: CommentNode[];
+}
+
+function buildCommentTree(comments: Comment[]): CommentNode[] {
+  const nodes = comments.map((comment) => ({ ...comment, replies: [] as CommentNode[] }));
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const roots: CommentNode[] = [];
+  for (const node of nodes) {
+    if (node.parent_id && byId.has(node.parent_id)) byId.get(node.parent_id)!.replies.push(node);
+    else roots.push(node);
+  }
+  return roots;
+}
 import { formatDate, timeAgo } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
 import { CollectionPickerDialog } from '../components/CollectionPickerDialog';
@@ -43,6 +59,9 @@ export function GraffitiPage() {
   const [reportError, setReportError] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState('');
+  const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
+  const [replyBody, setReplyBody] = useState('');
+  const [replySending, setReplySending] = useState(false);
 
   useEffect(() => {
     if (!Number.isInteger(numericId)) {
@@ -115,6 +134,55 @@ export function GraffitiPage() {
     }
   }
 
+  async function submitReply(event: FormEvent, parentId: number) {
+    event.preventDefault();
+    if (!item || !replyBody.trim()) return;
+    setReplySending(true);
+    setError('');
+    try {
+      const comment = await api.addComment(item.id, replyBody.trim(), parentId);
+      setComments((current) => [...current, comment]);
+      setReplyBody('');
+      setReplyTo(null);
+      setItem((current) =>
+        current ? { ...current, comments_count: current.comments_count + 1 } : current,
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отправить ответ');
+    } finally {
+      setReplySending(false);
+    }
+  }
+
+  async function reactComment(comment: Comment, value: ReactionValue) {
+    if (!user) {
+      navigate('/login', { state: { from: `/g/${numericId}` } });
+      return;
+    }
+    let likes = comment.likes;
+    let dislikes = comment.dislikes;
+    let myReaction = comment.my_reaction;
+    if (myReaction === 'like') likes -= 1;
+    if (myReaction === 'dislike') dislikes -= 1;
+    if (myReaction === value) myReaction = null;
+    else {
+      if (value === 'like') likes += 1;
+      else dislikes += 1;
+      myReaction = value;
+    }
+    setComments((current) =>
+      current.map((item) => (item.id === comment.id ? { ...item, likes, dislikes, my_reaction: myReaction } : item)),
+    );
+    try {
+      const result = await api.reactComment(comment.id, value);
+      setComments((current) =>
+        current.map((item) => (item.id === comment.id ? { ...item, ...result } : item)),
+      );
+    } catch {
+      setComments((current) => current.map((item) => (item.id === comment.id ? comment : item)));
+    }
+  }
+
   async function shareGraffiti() {
     const url = `${window.location.origin}/#/g/${numericId}`;
     try {
@@ -176,6 +244,89 @@ export function GraffitiPage() {
         <div className="notice error">{error || 'Работа не найдена'}</div>
         <Link to="/" className="button button-outline"><ArrowLeft size={16} /> В ленту</Link>
       </main>
+    );
+  }
+
+  const commentTree = buildCommentTree(comments);
+
+  function renderComment(comment: CommentNode) {
+    return (
+      <article className="comment" key={comment.id}>
+        <div className="comment-head">
+          <strong>{comment.author_name}</strong>
+          <span>{timeAgo(comment.created_at)}</span>
+          {comment.reply_to_name ? <span className="comment-reply-to">в ответ {comment.reply_to_name}</span> : null}
+          {comment.can_delete ? (
+            <button
+              type="button"
+              className="icon-button comment-delete"
+              onClick={() => void removeComment(comment.id)}
+              aria-label="Удалить комментарий"
+            >
+              <Trash2 size={14} />
+            </button>
+          ) : null}
+        </div>
+        <p>{comment.body}</p>
+        <div className="comment-actions">
+          <button
+            type="button"
+            className={`comment-reaction ${comment.my_reaction === 'like' ? 'active' : ''}`}
+            onClick={() => void reactComment(comment, 'like')}
+            aria-label="Нравится комментарий"
+          >
+            <ThumbsUp size={13} /> {comment.likes}
+          </button>
+          <button
+            type="button"
+            className={`comment-reaction ${comment.my_reaction === 'dislike' ? 'active' : ''}`}
+            onClick={() => void reactComment(comment, 'dislike')}
+            aria-label="Не нравится комментарий"
+          >
+            <ThumbsDown size={13} /> {comment.dislikes}
+          </button>
+          {user ? (
+            <button
+              type="button"
+              className="comment-reply-button"
+              onClick={() => {
+                setReplyTo({ id: comment.id, name: comment.author_name });
+                setReplyBody('');
+              }}
+            >
+              <Reply size={13} /> Ответить
+            </button>
+          ) : null}
+        </div>
+
+        {replyTo?.id === comment.id ? (
+          <form className="comment-reply-form" onSubmit={(event) => void submitReply(event, comment.id)}>
+            <textarea
+              className="textarea"
+              value={replyBody}
+              onChange={(event) => setReplyBody(event.target.value)}
+              placeholder={`Ответ ${replyTo.name}`}
+              maxLength={1000}
+              rows={2}
+              autoFocus
+            />
+            <div className="comment-reply-actions">
+              <button type="button" className="text-button" onClick={() => setReplyTo(null)}>
+                Отмена
+              </button>
+              <button type="submit" className="button button-dark" disabled={replySending || !replyBody.trim()}>
+                {replySending ? 'Отправляем…' : 'Ответить'}
+              </button>
+            </div>
+          </form>
+        ) : null}
+
+        {comment.replies.length > 0 ? (
+          <div className="comment-replies">
+            {comment.replies.map((reply) => renderComment(reply))}
+          </div>
+        ) : null}
+      </article>
     );
   }
 
@@ -326,25 +477,7 @@ export function GraffitiPage() {
               <p className="muted">Пока никто не оставил комментарий. Будьте первым.</p>
             ) : (
               <div className="comment-list">
-                {comments.map((comment) => (
-                  <article className="comment" key={comment.id}>
-                    <div className="comment-head">
-                      <strong>{comment.author_name}</strong>
-                      <span>{timeAgo(comment.created_at)}</span>
-                      {comment.can_delete ? (
-                        <button
-                          type="button"
-                          className="icon-button"
-                          onClick={() => void removeComment(comment.id)}
-                          aria-label="Удалить комментарий"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      ) : null}
-                    </div>
-                    <p>{comment.body}</p>
-                  </article>
-                ))}
+                {commentTree.map((comment) => renderComment(comment))}
               </div>
             )}
 

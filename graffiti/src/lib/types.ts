@@ -73,9 +73,14 @@ export interface Graffiti {
 
 export interface Comment {
   id: number;
+  parent_id?: number | null;
   author_name: string;
   body: string;
   created_at: string;
+  likes: number;
+  dislikes: number;
+  my_reaction: ReactionValue | null;
+  reply_to_name?: string | null;
   can_delete: boolean;
 }
 
