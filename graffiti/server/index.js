@@ -1033,6 +1033,47 @@ app.get('/api/users/:id', (req, res) => {
   });
 });
 
+function userRelationList(req, res, kind) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  const target = db.prepare('SELECT id, banned FROM users WHERE id = ?').get(id);
+  if (!target || target.banned) {
+    res.status(404).json({ error: 'Пользователь не найден' });
+    return;
+  }
+  const joinColumn = kind === 'followers' ? 'f.follower_id' : 'f.following_id';
+  const whereColumn = kind === 'followers' ? 'f.following_id' : 'f.follower_id';
+  const items = db
+    .prepare(`
+      SELECT u.id, u.name, u.role, u.created_at,
+        (SELECT COUNT(*) FROM walk_routes wr
+         WHERE wr.owner_id = u.id AND wr.visibility = 'public') AS routes_count,
+        (SELECT 1 FROM user_follows mine
+         WHERE mine.follower_id = ? AND mine.following_id = u.id) AS is_following
+      FROM user_follows f
+      JOIN users u ON u.id = ${joinColumn}
+      WHERE ${whereColumn} = ? AND u.banned = 0
+      ORDER BY datetime(f.created_at) DESC
+      LIMIT 200
+    `)
+    .all(req.user?.id || 0, id)
+    .map((user) => ({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      created_at: user.created_at,
+      routes_count: Number(user.routes_count || 0),
+      is_following: Boolean(user.is_following),
+    }));
+  res.json({ items });
+}
+
+app.get('/api/users/:id/followers', (req, res) => userRelationList(req, res, 'followers'));
+app.get('/api/users/:id/following', (req, res) => userRelationList(req, res, 'following'));
+
 app.post('/api/users/:id/follow', requireUser, (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id === req.user.id) {

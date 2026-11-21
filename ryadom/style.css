@@ -1,4 +1,4 @@
-:root{--paper:#f4f2e9;--surface:#fffdf6;--ink:#171914;--muted:#65685e;--line:#dedfd4;--lime:#caff00;--dark:#20231f;--nav-height:76px;--header-height:78px;--radius:24px}
+:root{--paper:#f2efe7;--surface:#fffdf8;--ink:#121212;--muted:#746c5e;--line:#cfc7b8;--lime:#d8ff3e;--dark:#20231f;--nav-height:76px;--header-height:78px;--radius:20px}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit}
@@ -366,6 +366,23 @@ body.embed-mode .network-note{display:none!important}
 .location-box,
 .exp-saved-card,
 .profile-stats button{box-shadow:5px 5px 0 var(--ink)}
+.place-card,
+.exp-route-card{transition:transform .16s ease,box-shadow .16s ease}
+.place-card:hover,
+.exp-route-card:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.exp-route-card{border:2px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);overflow:hidden}
+.exp-route-detail .exp-route-cover{border:2px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink)}
+.exp-route-actions button,
+.exp-route-detail-actions button{border:1.5px solid var(--ink);border-radius:999px;background:var(--surface);color:var(--ink)}
+.exp-route-actions button.active,
+.exp-route-detail-actions button.active{background:var(--lime);border-color:var(--ink)}
+.exp-route-comment{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);margin-top:8px}
+.exp-route-comment-replies .exp-route-comment{background:var(--surface)}
+.exp-route-comment-form textarea,
+.exp-route-reply-form textarea,
+.route-input,
+.route-textarea,
+.route-select{border:1.5px solid var(--ink);border-radius:12px;background:var(--surface)}
 .button{border:2px solid var(--ink);border-radius:999px;box-shadow:3px 3px 0 var(--ink)}
 .button:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
 .button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
