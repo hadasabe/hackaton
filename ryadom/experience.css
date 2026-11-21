@@ -326,3 +326,10 @@ dialog.exp-gallery{width:100vw;max-width:none;height:100dvh;max-height:none;marg
 
 .exp-support{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);text-align:center;font-size:11px}
 .exp-support a{color:var(--ink);font-weight:800;text-underline-offset:3px}
+
+/* Three equal actions on each building card. */
+.card-actions .listen-story,
+.card-actions .card-map-link,
+.card-actions .exp-add-plan{flex:1 1 0;min-width:0;width:auto;height:44px;min-height:44px;padding:9px 8px;border-radius:12px;font-size:12px}
+.card-actions .exp-add-plan{display:flex;align-items:center;justify-content:center}
+.card-actions .exp-add-plan svg{width:18px;height:18px}
