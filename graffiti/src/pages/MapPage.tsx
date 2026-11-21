@@ -180,6 +180,8 @@ function MapObjectRow({
 export function MapPage() {
   const { objects, loading, error } = useCityObjects();
   const [searchParams, setSearchParams] = useSearchParams();
+  const routeMode = searchParams.get('mode') === 'route';
+  const planTitle = routeMode ? 'Мой маршрут' : 'Моя прогулка';
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get('place'));
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => readFavoritePlaceIds());
@@ -735,7 +737,7 @@ export function MapPage() {
         <div className="map-head-actions">
           <Link to="/routes" className="button button-outline"><Route size={16} /> Маршруты</Link>
           <button type="button" className="button button-dark" onClick={() => setShowPlan(true)}>
-            Мой маршрут · {plan.length}
+            {planTitle} · {plan.length}
           </button>
         </div>
       </div>
@@ -747,7 +749,7 @@ export function MapPage() {
       <div className="map-layout">
         <aside className="map-sidebar">
           <div className="map-sidebar-head">
-            <strong>{showPlan ? 'Мой маршрут' : 'Объекты'}</strong>
+            <strong>{showPlan ? planTitle : 'Объекты'}</strong>
             <div className="map-sidebar-head-right">
               <span>{showPlan ? planObjects.length : sortedObjects.length}</span>
               {showPlan ? (
@@ -789,7 +791,7 @@ export function MapPage() {
                     >
                       <MoreVertical size={17} />
                     </button>
-                    <button type="button" className="icon-button map-plan-remove" onClick={() => togglePlan(object.id)} aria-label={`Убрать из маршрута: ${object.name}`}>
+                    <button type="button" className="icon-button map-plan-remove" onClick={() => togglePlan(object.id)} aria-label={`Убрать из ${routeMode ? 'маршрута' : 'прогулки'}: ${object.name}`}>
                       <X size={15} />
                     </button>
                   </div>
@@ -802,7 +804,7 @@ export function MapPage() {
                       onClick={() => void startWalk()}
                       disabled={locating}
                     >
-                      Начать прогулку
+                      {routeMode ? 'Начать маршрут' : 'Начать прогулку'}
                     </button>
                   ) : null}
                   {planObjects.length >= 2 ? (
@@ -820,14 +822,14 @@ export function MapPage() {
                     setPlan([]);
                     setWalkStarted(false);
                   }}>
-                    Очистить маршрут
+                    {routeMode ? 'Очистить маршрут' : 'Очистить прогулку'}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="map-empty">
                 <Route size={28} />
-                <p>Добавляйте объекты в маршрут кнопкой на карточке.</p>
+                <p>Добавляйте объекты в {routeMode ? 'маршрут' : 'прогулку'} кнопкой на карточке.</p>
               </div>
             )
           ) : (
@@ -894,7 +896,9 @@ export function MapPage() {
                     onClick={() => togglePlan(selected.id)}
                     disabled={selected.lat == null || selected.lng == null}
                   >
-                    <Plus size={16} /> {plan.includes(selected.id) ? 'В маршруте' : 'Добавить в маршрут'}
+                    <Plus size={16} /> {routeMode
+                      ? (plan.includes(selected.id) ? 'В маршруте' : 'Добавить в маршрут')
+                      : (plan.includes(selected.id) ? 'В прогулке' : 'В прогулку')}
                   </button>
                 </div>
                 {selected.lat == null || selected.lng == null ? (

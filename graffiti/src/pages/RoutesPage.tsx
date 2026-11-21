@@ -162,7 +162,7 @@ export function RoutesPage() {
           </div>
           {createError ? <div className="notice error">{createError}</div> : null}
           <div className="route-create-actions">
-            <Link to="/map?plan=1" className="button button-outline">
+            <Link to="/map?plan=1&mode=route" className="button button-outline">
               <MapIcon size={16} /> Выбрать места
             </Link>
             <button type="submit" className="button button-dark" disabled={sending}>
