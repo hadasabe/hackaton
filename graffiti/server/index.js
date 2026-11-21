@@ -16,6 +16,7 @@ import {
   dHash,
   findDuplicate,
 } from './image-check.js';
+import { maskProfanity } from './profanity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3001);
@@ -188,7 +189,7 @@ app.get('/api/walk-route', async (req, res) => {
 });
 
 app.post('/api/auth/register', (req, res) => {
-  const name = cleanText(req.body?.name, 40);
+  const name = cleanUserText(req.body?.name, 40);
   const email = cleanText(req.body?.email, 120).toLowerCase();
   const password = String(req.body?.password ?? '');
 
@@ -271,6 +272,10 @@ app.get('/api/auth/me', (req, res) => {
 
 function cleanText(value, max) {
   return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function cleanUserText(value, max) {
+  return maskProfanity(cleanText(value, max));
 }
 
 function nowIso() {
@@ -489,8 +494,8 @@ app.get('/api/collections/:id', (req, res) => {
 });
 
 app.post('/api/collections', requireUser, (req, res) => {
-  const title = cleanText(req.body?.title, 80);
-  const description = cleanText(req.body?.description, 400);
+  const title = cleanUserText(req.body?.title, 80);
+  const description = cleanUserText(req.body?.description, 400);
   if (title.length < 2) {
     res.status(400).json({ error: 'Название коллекции слишком короткое' });
     return;
@@ -526,8 +531,8 @@ app.patch('/api/collections/:id', requireUser, (req, res) => {
     res.status(403).json({ error: 'Можно менять только свои коллекции' });
     return;
   }
-  const title = cleanText(req.body?.title ?? collection.title, 80);
-  const description = cleanText(req.body?.description ?? collection.description, 400);
+  const title = cleanUserText(req.body?.title ?? collection.title, 80);
+  const description = cleanUserText(req.body?.description ?? collection.description, 400);
   if (title.length < 2) {
     res.status(400).json({ error: 'Название коллекции слишком короткое' });
     return;
@@ -709,8 +714,8 @@ app.get('/api/walk-routes/:slug', (req, res) => {
 });
 
 app.post('/api/walk-routes', requireUser, (req, res) => {
-  const title = cleanText(req.body?.title, 80);
-  const description = cleanText(req.body?.description, 600);
+  const title = cleanUserText(req.body?.title, 80);
+  const description = cleanUserText(req.body?.description, 600);
   const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility) ? req.body.visibility : 'public';
   const stops = normalizeWalkStops(req.body?.stops);
   if (title.length < 2) {
@@ -764,8 +769,8 @@ app.patch('/api/walk-routes/:id', requireUser, (req, res) => {
     res.status(403).json({ error: 'Можно менять только свои маршруты' });
     return;
   }
-  const title = cleanText(req.body?.title ?? route.title, 80);
-  const description = cleanText(req.body?.description ?? route.description, 600);
+  const title = cleanUserText(req.body?.title ?? route.title, 80);
+  const description = cleanUserText(req.body?.description ?? route.description, 600);
   const visibility = WALK_ROUTE_VISIBILITIES.has(req.body?.visibility)
     ? req.body.visibility
     : route.visibility;
@@ -877,7 +882,7 @@ app.post('/api/walk-routes/:id/favorite', requireUser, (req, res) => {
 
 app.post('/api/walk-routes/:id/comments', requireUser, (req, res) => {
   const id = Number(req.params.id);
-  const body = cleanText(req.body?.body, 800);
+  const body = cleanUserText(req.body?.body, 800);
   if (!Number.isInteger(id) || body.length < 1) {
     res.status(400).json({ error: 'Комментарий не может быть пустым' });
     return;
@@ -1195,7 +1200,7 @@ app.post('/api/graffiti/:id/reaction', requireUser, (req, res) => {
 
 app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
   const id = Number(req.params.id);
-  const body = cleanText(req.body?.body, 1000);
+  const body = cleanUserText(req.body?.body, 1000);
   const authorName = req.user.name;
   if (!Number.isInteger(id) || body.length < 1) {
     res.status(400).json({ error: 'Комментарий не может быть пустым' });
@@ -1244,7 +1249,7 @@ app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
 app.post('/api/graffiti/:id/status-reports', requireUser, (req, res) => {
   const id = Number(req.params.id);
   const status = STATUSES.has(req.body?.status) ? req.body.status : null;
-  const comment = cleanText(req.body?.comment, 400);
+  const comment = cleanUserText(req.body?.comment, 400);
   if (!Number.isInteger(id) || !status) {
     res.status(400).json({ error: 'Выберите, что сейчас с работой' });
     return;
@@ -1364,7 +1369,7 @@ app.post('/api/submissions', requireUser, upload.single('photo'), async (req, re
   const address = cleanText(req.body?.address, 160);
   const status = STATUSES.has(req.body?.status) ? req.body.status : null;
   const style = STYLES.has(req.body?.style) ? req.body.style : null;
-  const description = cleanText(req.body?.description, 600);
+  const description = cleanUserText(req.body?.description, 600);
 
   if (!address || !status || !style) {
     res.status(400).json({ error: 'Заполните адрес, статус и стиль' });
@@ -1541,13 +1546,13 @@ app.post('/api/walls', requireUser, upload.single('photo'), (req, res) => {
     res.status(400).json({ error: 'Прикрепите фото стены' });
     return;
   }
-  const title = cleanText(req.body?.title, 100);
+  const title = cleanUserText(req.body?.title, 100);
   const address = cleanText(req.body?.address, 160);
-  const description = cleanText(req.body?.description, 800);
+  const description = cleanUserText(req.body?.description, 800);
   const type = WALL_TYPES.has(req.body?.type) ? req.body.type : 'wall';
   const terms = WALL_TERMS.has(req.body?.terms) ? req.body.terms : 'negotiable';
   const size = cleanText(req.body?.size, 40);
-  const priceNote = cleanText(req.body?.price_note, 200);
+  const priceNote = cleanUserText(req.body?.price_note, 200);
   const contact = cleanText(req.body?.contact, 200);
 
   if (!title || !address || !contact) {
@@ -1920,7 +1925,7 @@ app.patch('/api/admin/graffiti/:id', requireAdmin, (req, res) => {
   const status = STATUSES.has(req.body?.status) ? req.body.status : current.status;
   const style = STYLES.has(req.body?.style) ? req.body.style : current.style;
   const author = cleanText(req.body?.author_name ?? current.author_name, 80);
-  const description = cleanText(req.body?.description ?? current.description, 600);
+  const description = cleanUserText(req.body?.description ?? current.description, 600);
   db.prepare(`
     UPDATE graffiti
     SET address = ?, status = ?, style = ?, author_name = ?, description = ?
