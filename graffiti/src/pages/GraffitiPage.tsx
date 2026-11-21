@@ -38,6 +38,7 @@ function buildCommentTree(comments: Comment[]): CommentNode[] {
 }
 import { formatDate, timeAgo } from '../lib/format';
 import { Tags } from '../components/GraffitiCard';
+import { CommentAvatar } from '../components/CommentAvatar';
 import { CollectionPickerDialog } from '../components/CollectionPickerDialog';
 import { useConfirm } from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
@@ -297,6 +298,7 @@ export function GraffitiPage() {
     return (
       <article className={`comment${deleted ? ' deleted' : ''}`} key={comment.id}>
         <div className="comment-head">
+          <CommentAvatar name={comment.author_name} avatarUrl={comment.avatar_url} />
           <strong>{comment.author_name}</strong>
           <span>{timeAgo(comment.created_at)}</span>
           {comment.reply_to_name ? <span className="comment-reply-to">в ответ {comment.reply_to_name}</span> : null}

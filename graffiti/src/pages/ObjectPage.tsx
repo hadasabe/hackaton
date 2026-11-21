@@ -13,6 +13,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { NotFoundPage } from './NotFoundPage';
 import { BackLink } from '../components/BackLink';
+import { CommentAvatar } from '../components/CommentAvatar';
 
 export function ObjectPage() {
   const { id = '' } = useParams();
@@ -238,8 +239,11 @@ export function ObjectPage() {
             <div className="object-comments-list">
               {comments.map((item) => (
                 <article className="route-comment" key={item.id}>
-                  <strong>{item.author_name}</strong>
-                  <span>{new Date(item.created_at).toLocaleDateString('ru-RU')}</span>
+                  <div className="route-comment-head">
+                    <CommentAvatar name={item.author_name} avatarUrl={item.avatar_url} />
+                    <strong>{item.author_name}</strong>
+                    <span>{new Date(item.created_at).toLocaleDateString('ru-RU')}</span>
+                  </div>
                   <p>{item.body}</p>
                 </article>
               ))}

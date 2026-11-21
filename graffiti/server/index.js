@@ -847,8 +847,9 @@ function walkPlaceItem(place) {
 function walkPlaceComments(placeId, req) {
   return db
     .prepare(`
-      SELECT id, parent_id, actor_id, author_name, body, created_at, deleted_at
-      FROM walk_place_comments
+      SELECT c.id, c.parent_id, c.actor_id, c.author_name, c.body, c.created_at, c.deleted_at,
+        (SELECT u.avatar_path FROM users u WHERE 'user:' || u.id = c.actor_id) AS avatar_url
+      FROM walk_place_comments c
       WHERE place_id = ?
       ORDER BY datetime(created_at) ASC
     `)
@@ -859,6 +860,7 @@ function walkPlaceComments(placeId, req) {
         id: comment.id,
         parent_id: comment.parent_id,
         author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+        avatar_url: deleted ? '' : (comment.avatar_url || ''),
         body: deleted ? '' : comment.body,
         created_at: comment.created_at,
         deleted,
@@ -968,6 +970,7 @@ app.post('/api/walk-places/:id/comments', requireUser, (req, res) => {
     id: Number(info.lastInsertRowid),
     parent_id: parent ? parent.id : null,
     author_name: req.user.name,
+    avatar_url: req.user.avatar_path || '',
     body,
     created_at: createdAt,
     deleted: false,
@@ -1038,7 +1041,8 @@ app.get('/api/walk-routes/:slug', (req, res) => {
         (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
         (SELECT COUNT(*) FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
         (SELECT cr.value FROM walk_route_comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
-        (SELECT p.author_name FROM walk_route_comments p WHERE p.id = c.parent_id) AS reply_to_name
+        (SELECT p.author_name FROM walk_route_comments p WHERE p.id = c.parent_id) AS reply_to_name,
+        (SELECT u.avatar_path FROM users u WHERE 'user:' || u.id = c.actor_id) AS avatar_url
       FROM walk_route_comments c
       WHERE c.route_id = ?
       ORDER BY datetime(c.created_at) ASC
@@ -1052,6 +1056,7 @@ app.get('/api/walk-routes/:slug', (req, res) => {
       id: comment.id,
       parent_id: comment.parent_id,
       author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+      avatar_url: deleted ? '' : (comment.avatar_url || ''),
       body: deleted ? '' : comment.body,
       created_at: comment.created_at,
       deleted,
@@ -1521,7 +1526,8 @@ app.get('/api/graffiti/:id', (req, res) => {
         (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'like') AS likes,
         (SELECT COUNT(*) FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.value = 'dislike') AS dislikes,
         (SELECT cr.value FROM comment_reactions cr WHERE cr.comment_id = c.id AND cr.actor_id = ?) AS my_reaction,
-        (SELECT p.author_name FROM comments p WHERE p.id = c.parent_id) AS reply_to_name
+        (SELECT p.author_name FROM comments p WHERE p.id = c.parent_id) AS reply_to_name,
+        (SELECT u.avatar_path FROM users u WHERE 'user:' || u.id = c.actor_id) AS avatar_url
       FROM comments c
       WHERE c.graffiti_id = ?
         AND (c.hidden = 0 OR c.actor_id = ? OR ? = 1)
@@ -1536,6 +1542,7 @@ app.get('/api/graffiti/:id', (req, res) => {
       id: comment.id,
       parent_id: comment.parent_id,
       author_name: deleted ? 'Комментарий удалён' : comment.author_name,
+      avatar_url: deleted ? '' : (comment.avatar_url || ''),
       body: deleted ? '' : comment.body,
       created_at: comment.created_at,
       deleted,
@@ -1638,6 +1645,7 @@ app.post('/api/graffiti/:id/comments', requireUser, (req, res) => {
     id: Number(info.lastInsertRowid),
     parent_id: parent ? parent.id : null,
     author_name: authorName,
+    avatar_url: req.user.avatar_path || '',
     body,
     created_at: createdAt,
     likes: 0,

@@ -9,6 +9,7 @@ import { formatDate, formatDuration, plural } from '../lib/format';
 import { writePlan } from '../lib/plan';
 import { NotFoundPage } from './NotFoundPage';
 import { BackLink } from '../components/BackLink';
+import { CommentAvatar } from '../components/CommentAvatar';
 
 export function RoutePage() {
   const { slug = '' } = useParams();
@@ -156,8 +157,11 @@ export function RoutePage() {
           <div className="route-comments-list">
             {comments.map((item) => (
               <article key={item.id} className="route-comment">
-                <strong>{item.author_name}</strong>
-                <span>{formatDate(item.created_at)}</span>
+                <div className="route-comment-head">
+                  <CommentAvatar name={item.author_name} avatarUrl={item.avatar_url} />
+                  <strong>{item.author_name}</strong>
+                  <span>{formatDate(item.created_at)}</span>
+                </div>
                 <p>{item.body}</p>
               </article>
             ))}
